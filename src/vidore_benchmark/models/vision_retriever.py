@@ -1,19 +1,16 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, cast, Tuple
+from typing import Dict, List, Tuple, cast
 
 import torch
 from datasets import Dataset
-from mteb.evaluation.evaluators import RetrievalEvaluator
 from PIL import Image
 from torch.utils.data import DataLoader
 from transformers import PreTrainedModel, ProcessorMixin
 
 from vidore_benchmark.dataset.vision_collator import VisionCollator
 from vidore_benchmark.evaluation.retrieval_evaluator import CustomEvaluator
-
-from FlagEmbedding import BGEM3FlagModel
 
 
 class VisionRetriever(ABC):
@@ -22,6 +19,7 @@ class VisionRetriever(ABC):
     """
 
     model: torch.nn.Module | PreTrainedModel
+    is_multi_vector: bool
     processor: ProcessorMixin | None
     collator: VisionCollator | None
 
@@ -43,14 +41,14 @@ class VisionRetriever(ABC):
         pass
 
     @abstractmethod
-    def forward_queries(self, **kwargs) -> torch.Tensor:
+    def forward_queries(self, queries, **kwargs) -> torch.Tensor:
         """
         Forward pass the processed queries.
         """
         pass
 
     @abstractmethod
-    def forward_documents(self, **kwargs) -> torch.Tensor:
+    def forward_documents(self, documents, **kwargs) -> torch.Tensor:
         """
         Forward pass the processed documents (i.e. page images).
         """
@@ -97,7 +95,6 @@ class VisionRetriever(ABC):
         self,
         ds: Dataset,
         batch_size: int,
-        is_multi_vector: bool,
     ) -> Dict[str, float]:
         """
         Evaluate the model on a given dataset using the MTEB metrics.
@@ -109,7 +106,7 @@ class VisionRetriever(ABC):
         dataloader = DataLoader(ds, batch_size=batch_size, collate_fn=self.collator)
 
         # Create the evaluator
-        evaluator = CustomEvaluator(is_multi_vector=is_multi_vector)
+        evaluator = CustomEvaluator(is_multi_vector=self.is_multi_vector)
 
         # Placeholder for the embeddings
         list_emb_queries: List[torch.Tensor] = []
@@ -119,8 +116,12 @@ class VisionRetriever(ABC):
             batch = cast(Dict[str, torch.Tensor], batch)
             # Embed the queries and documents
             # NOTE: in the original code: `emb_queries` -> `qs`, `emb_documents` -> `ps`
-            list_emb_queries.append(self.forward_queries(batch[self.collator.col_query]))
-            list_emb_documents.append(self.forward_documents(batch[self.collator.col_document]))
+            if self.collator is None:
+                # TODO: what if we don't use a collator?
+                pass
+            else:
+                list_emb_queries.append(self.forward_queries(batch[self.collator.col_query]))
+                list_emb_documents.append(self.forward_documents(batch[self.collator.col_document]))
 
         # Concatenate the embeddings
         emb_queries = torch.cat(list_emb_queries, dim=0)
@@ -145,12 +146,12 @@ class VisionRetriever(ABC):
         return metrics
 
     def get_top_k(
-        self, queries: List[str],
+        self,
+        queries: List[str],
         ds: Dataset,
-        batch_size: int, 
-        is_multi_vector: bool,
-        k: int
-    ) -> List[Tuple[str, float]]:
+        batch_size: int,
+        k: int,
+    ) -> Dict[str, float]:
         """
         Get the top-k documents for a given query.
         """
@@ -160,13 +161,13 @@ class VisionRetriever(ABC):
         # Create the dataloader
         dataloader = DataLoader(ds, batch_size=batch_size, collate_fn=self.collator)
 
-        evaluator = CustomEvaluator(is_multi_vector=is_multi_vector)
+        evaluator = CustomEvaluator(is_multi_vector=self.is_multi_vector)
 
         # Placeholder for the embeddings
+        # TODO: what if we don't use a collator?
         list_emb_queries: List[torch.Tensor] = []
         for query in queries:
-            list_emb_queries.append(self.forward_queries(query))
-
+            list_emb_queries.append(self.forward_queries(batch[self.collator.col_query]))
 
         list_emb_documents: List[torch.Tensor] = []
         for batch in dataloader:
@@ -187,15 +188,14 @@ class VisionRetriever(ABC):
         ), f"Scores shape is {scores.shape} instead of {(len(queries), len(ds[self.collator.col_document]))}"
 
         # Get the top-k documents
+        # TODO: implement logic here
 
-        # TODO: implement logic here 
+        relevant_docs, results = self.get_relevant_docs_results(queries, ds[self.collator.col_document], scores)
 
-        relevant_docs, results = self.get_relevant_docs_results(
-            queries, ds[self.collator.col_document], scores
-        )
-
-        #sort the results
-        top_k = {}
+        # sort the results
+        top_k: Dict[str, float] = {}
 
         for query in queries:
             top_k[query] = sorted(results[query].items(), key=lambda x: x[1], reverse=True)[:k]
+
+        return top_k

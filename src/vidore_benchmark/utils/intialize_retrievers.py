@@ -1,14 +1,14 @@
-from vidore_benchmark.models.vision_retriever import VisionRetriever
-from vidore_benchmark.utils.registration import VISION_RETRIEVER_REGISTRY, RETRIEVER_COLLATOR_REGISTRY
-
 from FlagEmbedding import BGEM3FlagModel
+
+from vidore_benchmark.models.vision_retriever import VisionRetriever
+from vidore_benchmark.utils.registration import RETRIEVER_COLLATOR_REGISTRY, VISION_RETRIEVER_REGISTRY
 
 
 def create_vision_retriever(model_name: str, *args, **kwargs) -> VisionRetriever:
     """
     Create a vision retriever instance based on the model name.
     """
-    
+
     if model_name not in VISION_RETRIEVER_REGISTRY:
         raise ValueError(f"Model {model_name} is not registered in the vision retriever registry.")
 
@@ -39,7 +39,6 @@ def initialize_processor(model_name: str, *args, **kwargs):
 
 def initialize_collator(model_name: str, *args, **kwargs):
     if model_name in RETRIEVER_COLLATOR_REGISTRY:
-        Collator = RETRIEVER_COLLATOR_REGISTRY[model_name]
-        return Collator(*args, **kwargs)
+        return RETRIEVER_COLLATOR_REGISTRY[model_name](*args, **kwargs)
     else:
         raise ValueError(f"Unknown model name: {model_name}")
