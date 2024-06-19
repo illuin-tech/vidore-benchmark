@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, cast
+from typing import Dict, List, Optional, cast, Tuple
 
 import torch
 from datasets import Dataset
@@ -11,6 +11,9 @@ from torch.utils.data import DataLoader
 from transformers import PreTrainedModel, ProcessorMixin
 
 from vidore_benchmark.dataset.vision_collator import VisionCollator
+from vidore_benchmark.evaluation.retrieval_evaluator import CustomEvaluator
+
+from FlagEmbedding import BGEM3FlagModel
 
 
 class VisionRetriever(ABC):
@@ -19,8 +22,8 @@ class VisionRetriever(ABC):
     """
 
     model: torch.nn.Module | PreTrainedModel
-    processor: ProcessorMixin
-    collator: VisionCollator
+    processor: ProcessorMixin | None
+    collator: VisionCollator | None
 
     def __init__(
         self,
@@ -69,89 +72,130 @@ class VisionRetriever(ABC):
         # TODO: processor -> self.forward_documents -> return embeddings
         pass
 
-    @abstractmethod
-    def get_similarity_matrix(
-        self,
-        emb_queries: torch.Tensor,
-        emb_documents: torch.Tensor,
-        batch_size: Optional[int] = None,
-    ) -> torch.Tensor:
+    def get_relevant_docs_results(
+        self, queries: List[str], documents: List[str], scores: torch.Tensor
+    ) -> Tuple[Dict[str, float], Dict[str, Dict[str, float]]]:
         """
-        Compute the similarity matrix between a batch of queries and a batch of documents.
+        Get the relevant documents and the results from the scores.
 
         Inputs:
-        - emb_queries: (n_queries, emb_dim)
-        - emb_documents: (n_documents, emb_dim)
-        - batch_size: int (optional), some models require batching as the similarity matrix computation is memory-intensive
+        - queries: List[str]
+        - documents: List[str]
+        - scores: torch.Tensor (n_queries, n_documents)
 
-        Output:
-        - similarity_matrix: (n_queries, n_documents)
+        Outputs:
+        - relevant_docs: Dict[str, float] (document -> 1) for each query (i.e. only one relevant document per query)
+        - results: Dict[str, Dict[str, float]] (query -> {document: score}) for each query
         """
-        # TODO: for ColPali, import and use the ColBERT scoring method (use einsum for efficiency)
+
+        relevant_docs = {}
+        results = {}
+
         pass
 
+    def evaluate_dataset(
+        self,
+        ds: Dataset,
+        batch_size: int,
+        is_multi_vector: bool,
+    ) -> Dict[str, float]:
+        """
+        Evaluate the model on a given dataset using the MTEB metrics.
+        """
+        # Dataset: sanity check
+        # TODO: assert if all the necessary columns are present in the dataset
 
-def compute_mteb_metrics(relevant_docs, results, **kwargs) -> Dict[str, float]:
-    """
-    TODO: Fill in the docstring.
-    TODO: type the arg inputs
-    """
-    mteb_evaluator = RetrievalEvaluator()
+        # Create the dataloader
+        dataloader = DataLoader(ds, batch_size=batch_size, collate_fn=self.collator)
 
-    ndcg, _map, recall, precision, naucs = mteb_evaluator.evaluate(
-        relevant_docs,
-        results,
-        mteb_evaluator.k_values,
-        ignore_identical_ids=kwargs.get("ignore_identical_ids", True),
-    )
+        # Create the evaluator
+        evaluator = CustomEvaluator(is_multi_vector=is_multi_vector)
 
-    mrr = mteb_evaluator.evaluate_custom(relevant_docs, results, mteb_evaluator.k_values, "mrr")
+        # Placeholder for the embeddings
+        list_emb_queries: List[torch.Tensor] = []
+        list_emb_documents: List[torch.Tensor] = []
 
-    scores = {
-        **{f"ndcg_at_{k.split('@')[1]}": v for (k, v) in ndcg.items()},
-        **{f"map_at_{k.split('@')[1]}": v for (k, v) in _map.items()},
-        **{f"recall_at_{k.split('@')[1]}": v for (k, v) in recall.items()},
-        **{f"precision_at_{k.split('@')[1]}": v for (k, v) in precision.items()},
-        **{f"mrr_at_{k.split('@')[1]}": v for (k, v) in mrr[0].items()},
-        **{f"naucs_at_{k.split('@')[1]}": v for (k, v) in naucs.items()},
-    }
+        for batch in dataloader:
+            batch = cast(Dict[str, torch.Tensor], batch)
+            # Embed the queries and documents
+            # NOTE: in the original code: `emb_queries` -> `qs`, `emb_documents` -> `ps`
+            list_emb_queries.append(self.forward_queries(batch[self.collator.col_query]))
+            list_emb_documents.append(self.forward_documents(batch[self.collator.col_document]))
 
-    return scores
+        # Concatenate the embeddings
+        emb_queries = torch.cat(list_emb_queries, dim=0)
+        emb_documents = torch.cat(list_emb_documents, dim=0)
+
+        # Evaluate the model
+        scores = evaluator.get_scores_matrix(emb_queries, emb_documents)
+
+        assert scores.shape == (
+            len(ds[self.collator.col_query]),
+            len(ds[self.collator.col_document]),
+        ), f"Scores shape is {scores.shape} instead of {(len(ds[self.collator.col_query]), len(ds[self.collator.col_document]))}"
+
+        # Compute the metrics
+        relevant_docs, results = self.get_relevant_docs_results(
+            ds[self.collator.col_query], ds[self.collator.col_document], scores
+        )
+
+        metrics = evaluator.compute_metrics(relevant_docs, results)
+
+        # TODO ? : return also the times ?
+        return metrics
+
+    def get_top_k(
+        self, queries: List[str],
+        ds: Dataset,
+        batch_size: int, 
+        is_multi_vector: bool,
+        k: int
+    ) -> List[Tuple[str, float]]:
+        """
+        Get the top-k documents for a given query.
+        """
+        # Dataset: sanity check
+        # TODO: assert if all the necessary columns are present in the dataset
+
+        # Create the dataloader
+        dataloader = DataLoader(ds, batch_size=batch_size, collate_fn=self.collator)
+
+        evaluator = CustomEvaluator(is_multi_vector=is_multi_vector)
+
+        # Placeholder for the embeddings
+        list_emb_queries: List[torch.Tensor] = []
+        for query in queries:
+            list_emb_queries.append(self.forward_queries(query))
 
 
-def evaluate(
-    retriever: VisionRetriever,
-    ds: Dataset,
-    batch_size: int,
-) -> Dict[str, float]:
-    """
-    Evaluate the model on a given dataset using the MTEB metrics.
-    """
-    # Dataset: sanity check
-    # TODO: assert if all the necessary columns are present in the dataset
+        list_emb_documents: List[torch.Tensor] = []
+        for batch in dataloader:
+            batch = cast(Dict[str, torch.Tensor], batch)
+            list_emb_documents.append(self.forward_documents(batch[self.collator.col_document]))
 
-    # Create the dataloader
-    dataloader = DataLoader(ds, batch_size=batch_size, collate_fn=retriever.collator)
+        # Concatenate the embeddings
+        emb_query = torch.cat(list_emb_queries, dim=0)
+        emb_documents = torch.cat(list_emb_documents, dim=0)
 
-    # Placeholder for the embeddings
-    list_emb_queries: List[torch.Tensor] = []
-    list_emb_documents: List[torch.Tensor] = []
+        # Evaluate the model
 
-    for batch in dataloader:
-        batch = cast(Dict[str, torch.Tensor], batch)
-        # Embed the queries and documents
-        # NOTE: in the original code: `emb_queries` -> `qs`, `emb_documents` -> `ps`
-        list_emb_queries.append(retriever.forward_queries(batch[retriever.collator.col_query]))
-        list_emb_documents.append(retriever.forward_documents(batch[retriever.collator.col_query]))
+        scores = evaluator.get_scores_matrix(emb_query, emb_documents)
 
-    # Concatenate the embeddings
-    emb_queries = torch.cat(list_emb_queries, dim=0)
-    emb_documents = torch.cat(list_emb_documents, dim=0)
+        assert scores.shape == (
+            len(queries),
+            len(ds[self.collator.col_document]),
+        ), f"Scores shape is {scores.shape} instead of {(len(queries), len(ds[self.collator.col_document]))}"
 
-    # Compute the similarity matrix
-    similarity_matrix = retriever.get_similarity_matrix(emb_queries, emb_documents)  # (n_queries, n_documents)
+        # Get the top-k documents
 
-    # Compute the metrics
-    metrics = compute_mteb_metrics(similarity_matrix)  # FIXME
+        # TODO: implement logic here 
 
-    return metrics
+        relevant_docs, results = self.get_relevant_docs_results(
+            queries, ds[self.collator.col_document], scores
+        )
+
+        #sort the results
+        top_k = {}
+
+        for query in queries:
+            top_k[query] = sorted(results[query].items(), key=lambda x: x[1], reverse=True)[:k]
