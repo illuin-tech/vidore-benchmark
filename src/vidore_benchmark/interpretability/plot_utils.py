@@ -7,8 +7,6 @@ import seaborn as sns
 import torch
 from PIL import Image
 
-MAX_OPACITY = 255
-
 
 def plot_patches(
     img: Image.Image,
@@ -22,6 +20,7 @@ def plot_patches(
     Plot patches of a square image.
     Set `style` to "dark_background" if your image has a light background.
     """
+    MAX_OPACITY = 255
 
     # Get the number of patches
     if image_resolution % patch_size != 0:

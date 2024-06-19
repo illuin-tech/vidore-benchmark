@@ -10,6 +10,18 @@ from transformers import LlamaTokenizerFast, PaliGemmaProcessor
 
 @dataclass
 class ColPaliTextInput:
+    """
+    Dataclass for text inputs to ColPali.
+
+    Usage:
+    >>> from dataclasses import asdict
+    >>> model = ColPaliProcessor.from_pretrained("my_model_name")
+    >>> processor = ColPaliProcessor.from_pretrained("my_model_name")
+    >>> input_text_processed = processor.process_text("The quick brown fox jumps over the lazy dog.").to("cuda:0")
+    >>> with torch.no_grad():
+    >>>     output_text = model.forward(**asdict(input_text_processed))
+    """
+
     input_ids: torch.Tensor
     attention_mask: torch.Tensor
 
@@ -22,6 +34,18 @@ class ColPaliTextInput:
 
 @dataclass
 class ColPaliImageInput:
+    """
+    Dataclass for image inputs to ColPali.
+
+    Usage:
+    >>> from dataclasses import asdict
+    >>> model = ColPaliProcessor.from_pretrained("my_model_name")
+    >>> processor = ColPaliProcessor.from_pretrained("my_model_name")
+    >>> input_image_processed = processor.process_image("The quick brown fox jumps over the lazy dog.").to("cuda:0")
+    >>> with torch.no_grad():
+    >>>     output_image = model.forward(**asdict(input_image_processed))
+    """
+
     input_ids: torch.Tensor
     pixel_values: torch.Tensor
     attention_mask: torch.Tensor
@@ -35,6 +59,10 @@ class ColPaliImageInput:
 
 
 class ColPaliProcessor:
+    """
+    Wrapper class for the PaliGemmaProcessor with additional methods for processing text and image inputs for ColPali.
+    """
+
     def __init__(self, processor: PaliGemmaProcessor):
         self.processor = processor
         self.tokenizer = cast(LlamaTokenizerFast, self.processor.tokenizer)  # type: ignore
@@ -52,7 +80,8 @@ class ColPaliProcessor:
     ) -> ColPaliTextInput:
         """
         Process text inputs for the model.
-        If `add_special_tokens` is True (default), the text will be prepended with the <bos> token and appended with " \n".
+        If `add_special_tokens` is True (default), the text will be prepended with the <bos>
+        token and appended with " \n".
         """
         if add_special_tokens:
             if isinstance(text, str):
@@ -79,7 +108,13 @@ class ColPaliProcessor:
         return_tensors: str = "pt",
         add_special_prompt: bool = True,
     ) -> ColPaliImageInput:
-        # NOTE: The special prompt was used at training time,
+        """
+        Process image inputs for the model.
+
+        If `add_special_prompt` is True (default), the image will be prepended with the special
+        prompt "Describe the image." (which was used during training).
+        """
+
         special_prompt = "Describe the image." if add_special_prompt else None
         if isinstance(image, Image.Image):
             text_input = [special_prompt]
@@ -110,7 +145,13 @@ class ColPaliProcessor:
             )
 
     def decode(self, *args, **kwargs):
+        """
+        Call the tokenizer's decode method.
+        """
         return self.tokenizer.decode(*args, **kwargs)
 
     def batch_decode(self, *args, **kwargs):
+        """
+        Call the tokenizer's batch_decode method.
+        """
         return self.tokenizer.batch_decode(*args, **kwargs)
