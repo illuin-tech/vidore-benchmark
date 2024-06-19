@@ -9,7 +9,7 @@ from tqdm import tqdm
 random.seed(42)
 
 
-def convert_pdf_to_images(pdf_file: str, save_folder: str):
+def convert_pdf_to_images(pdf_file: str, save_folder: str) -> None:
     """
     Convert each page of a pdf to a jpg image and save them in a folder.
 
@@ -25,8 +25,10 @@ def convert_pdf_to_images(pdf_file: str, save_folder: str):
             os.makedirs(save_folder)
         image.save(os.path.join(save_folder, f"page_{i+1}.jpg"), "JPEG")
 
+    return
 
-def convert_all_pdfs_to_images(path_to_folder: str, n_samples: int = 0):
+
+def convert_all_pdfs_to_images(path_to_folder: str, n_samples: int = 0) -> None:
     """
     Convert all pdfs in a folder and its subfolder to images and save them in a folder.
     It will sample n_samples pdf files in each subfolder, allowing to have granularity on the number of pdf files to convert.
@@ -47,7 +49,6 @@ def convert_all_pdfs_to_images(path_to_folder: str, n_samples: int = 0):
             - pdf2
             - ...
         - ...
-
     """
     # take n_samples pdf files in each subfolder : I want to take 10 pdf files from each subfolder
     sub_dirs = [d for d in os.listdir(path_to_folder) if os.path.isdir(os.path.join(path_to_folder, d))]
