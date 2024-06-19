@@ -2,7 +2,7 @@
 [[Blog]]()
 [[Paper]]()
 [[ColPali Model card]]()
-[[DoViRe Dataset card]]()
+[[ViDoRe Dataset card]]()
 [[Colab example]]()
 [[HuggingFace Space]]()
 
