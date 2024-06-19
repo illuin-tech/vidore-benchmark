@@ -1,9 +1,12 @@
 from typing import Any, Dict, List
 
-from vidore_benchmark.tesseract.interfaces import BoundingBox, ExtractedWord
+from vidore_benchmark.ocr.interfaces import BoundingBox, ExtractedWord
 
 
 def to_extracted_words(data: Dict[str, Any]) -> List[ExtractedWord]:
+    """
+    Util function to convert Tesseract output to ExtractedWord objects.
+    """
     words: List[ExtractedWord] = []
 
     for text, x0, y0, word_w, word_h, ocr_conf in zip(

@@ -68,6 +68,10 @@ class BoundingBox:
 
 @dataclass
 class ExtractedWord:
+    """
+    Contains one word from the output of an OCR model (e.g. Tesseract).
+    """
+
     text: str
     bbox: BoundingBox
     extraction_confidence: float
