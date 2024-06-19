@@ -8,11 +8,12 @@ import torch
 from einops import rearrange
 from PIL import Image
 from tqdm import trange
+
 from vidore_benchmark.interpretability.plot_utils import plot_patches
 from vidore_benchmark.interpretability.processor import ColPaliProcessor
 from vidore_benchmark.interpretability.torch_utils import normalize_attention_map_per_query_token
 from vidore_benchmark.interpretability.vit_configs import VIT_CONFIG
-from vidore_benchmark.models.paligemma_colbert_architecture import ColPali
+from vidore_benchmark.models.colpali import ColPali
 
 OUTDIR_INTERPRETABILITY = Path("outputs/interpretability")
 
