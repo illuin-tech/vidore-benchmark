@@ -8,9 +8,12 @@ from datasets import Dataset
 from PIL import Image
 from torch.utils.data import DataLoader
 from transformers import PreTrainedModel, ProcessorMixin
+from FlagEmbedding import BGEM3FlagModel
+
 
 from vidore_benchmark.dataset.vision_collator import VisionCollator
 from vidore_benchmark.evaluation.retrieval_evaluator import CustomEvaluator
+
 
 
 class VisionRetriever(ABC):
@@ -18,10 +21,11 @@ class VisionRetriever(ABC):
     Abstract class for ViDoRe retrievers.
     """
 
-    model: torch.nn.Module | PreTrainedModel
+    model: torch.nn.Module | PreTrainedModel | BGEM3FlagModel 
+    is_vision_retriever: bool
     is_multi_vector: bool
     processor: ProcessorMixin | None
-    collator: VisionCollator | None
+    collator: VisionCollator
 
     def __init__(
         self,
@@ -63,7 +67,7 @@ class VisionRetriever(ABC):
         pass
 
     @abstractmethod
-    def embed_documents(self, documents: List[Image.Image]) -> torch.Tensor:
+    def embed_documents(self, documents: List[Image.Image | str]) -> torch.Tensor:
         """
         Embed a list of documents (i.e. a list of page images) into a batched tensor.
         """
@@ -89,7 +93,7 @@ class VisionRetriever(ABC):
         relevant_docs = {}
         results = {}
 
-        pass
+        raise NotImplementedError
 
     def evaluate_dataset(
         self,
@@ -101,7 +105,14 @@ class VisionRetriever(ABC):
         """
         # Dataset: sanity check
         # TODO: assert if all the necessary columns are present in the dataset
-
+        if self.is_vision_retriever:
+            # Vision retriever: check if the necessary columns are present
+            # 'image', 'query', 'image_filename'
+            pass
+        else:
+            # Text retriever: check if the necessary columns are present
+            # 'query', 'text_description', 'image_filename'
+            pass
         # Create the dataloader
         dataloader = DataLoader(ds, batch_size=batch_size, collate_fn=self.collator)
 
@@ -120,8 +131,8 @@ class VisionRetriever(ABC):
                 # TODO: what if we don't use a collator?
                 pass
             else:
-                list_emb_queries.append(self.forward_queries(batch[self.collator.col_query]))
-                list_emb_documents.append(self.forward_documents(batch[self.collator.col_document]))
+                list_emb_queries.append(self.forward_queries(batch['query']))
+                list_emb_documents.append(self.forward_documents(batch['document']))
 
         # Concatenate the embeddings
         emb_queries = torch.cat(list_emb_queries, dim=0)
@@ -167,12 +178,12 @@ class VisionRetriever(ABC):
         # TODO: what if we don't use a collator?
         list_emb_queries: List[torch.Tensor] = []
         for query in queries:
-            list_emb_queries.append(self.forward_queries(batch[self.collator.col_query]))
+            list_emb_queries.append(self.forward_queries(query))
 
         list_emb_documents: List[torch.Tensor] = []
         for batch in dataloader:
             batch = cast(Dict[str, torch.Tensor], batch)
-            list_emb_documents.append(self.forward_documents(batch[self.collator.col_document]))
+            list_emb_documents.append(self.forward_documents(batch['document']))
 
         # Concatenate the embeddings
         emb_query = torch.cat(list_emb_queries, dim=0)
@@ -195,7 +206,4 @@ class VisionRetriever(ABC):
         # sort the results
         top_k: Dict[str, float] = {}
 
-        for query in queries:
-            top_k[query] = sorted(results[query].items(), key=lambda x: x[1], reverse=True)[:k]
-
-        return top_k
+        raise NotImplementedError("Implement the logic to get the top-k documents")
