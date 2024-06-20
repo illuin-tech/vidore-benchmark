@@ -21,12 +21,10 @@ class BGEM3(VisionRetriever):
         raise NotImplementedError
 
     def forward_queries(self, queries, **kwargs) -> torch.Tensor:
-        # No forward pass needed
-        output = self.model.encode(queries)["dense_vecs"]
+        output = self.model.encode(queries, max_length=512)["dense_vecs"]
         return torch.tensor(output)
 
     def forward_documents(self, documents: List[str], **kwargs) -> torch.Tensor:
-        # No forward pass needed
         output = self.model.encode(documents)["dense_vecs"]
         return torch.tensor(output)
 
@@ -46,6 +44,6 @@ class CollatorBGEM3(VisionCollator):
         pass
 
     def __call__(self, batch: Dict[str, List[Dict[str, torch.Tensor]]]) -> Any:
-        queries = [item[self.col_query] for item in batch]
+        # queries = [item[self.col_query] for item in batch]
         documents = [item[self.col_document] for item in batch]
-        return {"query": queries, "document": documents}
+        return {"document": documents}
