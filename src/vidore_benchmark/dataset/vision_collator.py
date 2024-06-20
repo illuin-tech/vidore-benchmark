@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
 import torch
 
@@ -13,8 +13,7 @@ class VisionCollator(ABC):
     col_document: str = "image"
 
     @abstractmethod
-    def __call__(self, batch: Dict[str, List[Dict[str, torch.Tensor]]]
-    ) -> Any :
+    def __call__(self, batch: Dict[str, List[Dict[str, torch.Tensor]]]) -> Any:
         """
         Collate a batch of data.
 

@@ -2,7 +2,7 @@ from typing import Annotated, cast
 
 import typer
 from datasets import Dataset, load_dataset
-from vidore_benchmark.utils.intialize_retrievers import create_vision_retriever
+from vidore_benchmark.models.utils.initialize_retrievers import create_vision_retriever
 
 
 def main(
@@ -10,22 +10,26 @@ def main(
     dataset_name: Annotated[str, typer.Option(help="Dataset on Hugging Face to evaluate")],
     split: Annotated[str, typer.Option(help="Split of the dataset to use for evaluation")],
     batch_size: Annotated[int, typer.Option(help="Batch size to use for evaluation")],
-    pdf_folder: Annotated[str, typer.Option(help="Path to the folder containing PDFs")],
+    query: Annotated[str, typer.Option(help="Query to use for retrieval")],
     k: Annotated[int, typer.Option(help="Number of documents to retrieve")],
 ):
     """
-    This script is used to ask a query and retrieve the top-k documents from a given dataset.
+    This script is used to ask a query and retrieve the top-k documents from a given HuggingFace Dataset.
     """
 
     # Create the vision retriever
     retriever = create_vision_retriever(model_name)
-    query = [input("Enter the query: ")]
 
     # Load the dataset
     dataset = cast(Dataset, load_dataset(dataset_name, split=split))
 
     # Get the top-k documents
-    top_k = retriever.get_top_k(query, dataset, batch_size=batch_size, k=k)
+    top_k = retriever.get_top_k(
+        queries=[query],
+        ds=dataset,
+        batch_size=batch_size,
+        k=k,
+    )
 
     print(f"Top-{k} documents for the query '{query}':")
 

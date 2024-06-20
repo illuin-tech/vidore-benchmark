@@ -1,10 +1,11 @@
-from vidore_benchmark.models.vision_retriever import VisionRetriever
-from vidore_benchmark.utils.registration import VISION_RETRIEVER_REGISTRY, RETRIEVER_COLLATOR_REGISTRY, TEXT_RETRIEVER_REGISTRY
-
 from FlagEmbedding import BGEM3FlagModel
 
+from vidore_benchmark.models.utils.register_models import (
+    RETRIEVER_COLLATOR_REGISTRY,
+    TEXT_RETRIEVER_REGISTRY,
+    VISION_RETRIEVER_REGISTRY,
+)
 from vidore_benchmark.models.vision_retriever import VisionRetriever
-from vidore_benchmark.utils.registration import RETRIEVER_COLLATOR_REGISTRY, VISION_RETRIEVER_REGISTRY
 
 
 def create_vision_retriever(model_name: str, *args, **kwargs) -> VisionRetriever:
@@ -15,7 +16,7 @@ def create_vision_retriever(model_name: str, *args, **kwargs) -> VisionRetriever
     if model_name in VISION_RETRIEVER_REGISTRY:
         retriever_class = VISION_RETRIEVER_REGISTRY[model_name]
         is_vision_retriever = True
-        
+
     elif model_name in TEXT_RETRIEVER_REGISTRY:
         retriever_class = TEXT_RETRIEVER_REGISTRY[model_name]
         is_vision_retriever = False

@@ -1,10 +1,11 @@
-from vidore_benchmark.models.vision_retriever import VisionRetriever
-from FlagEmbedding import BGEM3FlagModel
+from typing import Any, Dict, List
+
 import torch
-from PIL import Image
-from typing import List, Dict, Any
-from vidore_benchmark.utils.registration import register_collator, register_text_retriever
+from FlagEmbedding import BGEM3FlagModel
+
 from vidore_benchmark.dataset.vision_collator import VisionCollator
+from vidore_benchmark.models.utils.register_models import register_collator, register_text_retriever
+from vidore_benchmark.models.vision_retriever import VisionRetriever
 
 
 @register_text_retriever("BAAI/bge-m3")
@@ -21,12 +22,12 @@ class BGEM3(VisionRetriever):
 
     def forward_queries(self, queries, **kwargs) -> torch.Tensor:
         # No forward pass needed
-        output = self.model.encode(queries)['dense_vecs']
+        output = self.model.encode(queries)["dense_vecs"]
         return torch.tensor(output)
 
-    def forward_documents(self, documents : List[str], **kwargs) -> torch.Tensor:
+    def forward_documents(self, documents: List[str], **kwargs) -> torch.Tensor:
         # No forward pass needed
-        output = self.model.encode(documents)['dense_vecs']
+        output = self.model.encode(documents)["dense_vecs"]
         return torch.tensor(output)
 
     def embed_queries(self, queries: List[str]) -> torch.Tensor:
@@ -39,13 +40,12 @@ class BGEM3(VisionRetriever):
 @register_collator("BAAI/bge-m3")
 class CollatorBGEM3(VisionCollator):
     def __init__(self):
-        self.col_document :str = 'text_description'
-        self.col_query: str = 'query'
-        print("CollatorBGEM3 initialized")
+        self.col_document: str = "text_description"
+        self.col_query: str = "query"
+        print("Collator BAAI/bge-m3 initialized")
         pass
 
     def __call__(self, batch: Dict[str, List[Dict[str, torch.Tensor]]]) -> Any:
         queries = [item[self.col_query] for item in batch]
         documents = [item[self.col_document] for item in batch]
         return {"query": queries, "document": documents}
-    

@@ -5,15 +5,13 @@ from typing import Dict, List, Tuple, cast
 
 import torch
 from datasets import Dataset
+from FlagEmbedding import BGEM3FlagModel
 from PIL import Image
 from torch.utils.data import DataLoader
 from transformers import PreTrainedModel, ProcessorMixin
-from FlagEmbedding import BGEM3FlagModel
-
 
 from vidore_benchmark.dataset.vision_collator import VisionCollator
 from vidore_benchmark.evaluation.retrieval_evaluator import CustomEvaluator
-
 
 
 class VisionRetriever(ABC):
@@ -21,7 +19,7 @@ class VisionRetriever(ABC):
     Abstract class for ViDoRe retrievers.
     """
 
-    model: torch.nn.Module | PreTrainedModel | BGEM3FlagModel 
+    model: torch.nn.Module | PreTrainedModel | BGEM3FlagModel
     is_vision_retriever: bool
     is_multi_vector: bool
     processor: ProcessorMixin | None
@@ -124,15 +122,15 @@ class VisionRetriever(ABC):
         list_emb_documents: List[torch.Tensor] = []
 
         for batch in dataloader:
-            #batch = cast(Dict[str, torch.Tensor], batch)
+            # batch = cast(Dict[str, torch.Tensor], batch)
             # Embed the queries and documents
             # NOTE: in the original code: `emb_queries` -> `qs`, `emb_documents` -> `ps`
             if self.collator is None:
                 # TODO: what if we don't use a collator?
                 pass
             else:
-                list_emb_queries.append(self.forward_queries(batch['query']))
-                list_emb_documents.append(self.forward_documents(batch['document']))
+                list_emb_queries.append(self.forward_queries(batch["query"]))
+                list_emb_documents.append(self.forward_documents(batch["document"]))
 
         # Concatenate the embeddings
         emb_queries = torch.cat(list_emb_queries, dim=0)
@@ -183,7 +181,7 @@ class VisionRetriever(ABC):
         list_emb_documents: List[torch.Tensor] = []
         for batch in dataloader:
             batch = cast(Dict[str, torch.Tensor], batch)
-            list_emb_documents.append(self.forward_documents(batch['document']))
+            list_emb_documents.append(self.forward_documents(batch["document"]))
 
         # Concatenate the embeddings
         emb_query = torch.cat(list_emb_queries, dim=0)

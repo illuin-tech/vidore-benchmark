@@ -13,22 +13,20 @@ class CustomEvaluator:
         else:
             scores = self.evaluate_biencoder(qs, ps)
 
-        assert scores.shape[0] == len(qs)
+        assert scores.shape[0] == len(qs), f"Expected {len(qs)} scores, got {scores.shape[0]}"
 
         arg_score = scores.argmax(dim=1)
+
         # compare to arange
         accuracy = (arg_score == torch.arange(scores.shape[0], device=scores.device)).sum().item() / scores.shape[0]
         print(arg_score)
         print(f"Top 1 Accuracy (verif): {accuracy}")
 
         # cast to numpy
-        # scores = scores.cpu().numpy()
         scores = scores.to(torch.float32).cpu().numpy()
         return scores
 
     def compute_metrics(self, relevant_docs, results, **kwargs):
-        # wrap mteb package
-
         ndcg, _map, recall, precision, naucs = self.mteb_evaluator.evaluate(
             relevant_docs,
             results,
@@ -64,7 +62,6 @@ class CustomEvaluator:
         return scores
 
     def evaluate_biencoder(self, qs, ps) -> torch.Tensor:
-
         qs = torch.stack(qs)
         ps = torch.stack(ps)
 

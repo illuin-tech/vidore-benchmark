@@ -3,8 +3,8 @@ from typing import Annotated, cast
 
 import typer
 from datasets import Dataset, load_dataset
+from vidore_benchmark.models.utils.initialize_retrievers import create_vision_retriever
 from vidore_benchmark.utils.constants import OUTPUT_DIR
-from vidore_benchmark.utils.intialize_retrievers import create_vision_retriever
 
 
 def main(
@@ -12,7 +12,6 @@ def main(
     dataset_name: Annotated[str, typer.Option(help="Dataset on Hugging Face to evaluate")],
     split: Annotated[str, typer.Option(help="Split to use for evaluation")],
     batch_size: Annotated[int, typer.Option(help="Batch size to use for evaluation")] = 4,
-    is_multi_vector: Annotated[bool, typer.Option(help="If True, multi-vector evaluation will be used")] = False,
     collection_name: Annotated[str, typer.Option(help="Collection name to use for evaluation")] = "",
     text_only: Annotated[bool, typer.Option(help="If True, only text chunks will be used for evaluation")] = False,
 ):
