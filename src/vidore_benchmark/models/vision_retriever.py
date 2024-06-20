@@ -124,7 +124,7 @@ class VisionRetriever(ABC):
         list_emb_documents: List[torch.Tensor] = []
 
         for batch in dataloader:
-            batch = cast(Dict[str, torch.Tensor], batch)
+            #batch = cast(Dict[str, torch.Tensor], batch)
             # Embed the queries and documents
             # NOTE: in the original code: `emb_queries` -> `qs`, `emb_documents` -> `ps`
             if self.collator is None:

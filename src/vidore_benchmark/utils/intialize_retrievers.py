@@ -30,7 +30,7 @@ def create_vision_retriever(model_name: str, *args, **kwargs) -> VisionRetriever
 
 
 def initialize_model(model_name: str, *args, **kwargs):
-    if model_name == "BGEM3":
+    if model_name == "BAAI/bge-m3":
         return BGEM3FlagModel("BAAI/bge-m3", use_fp16=True)
     # Add more models as needed
     else:
@@ -38,7 +38,7 @@ def initialize_model(model_name: str, *args, **kwargs):
 
 
 def initialize_processor(model_name: str, *args, **kwargs):
-    if model_name == "BGEM3":
+    if model_name == "BAAI/bge-m3":
         return None  # Placeholder, update if necessary
     # Add more processors as needed
     else:

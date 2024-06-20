@@ -10,7 +10,7 @@ from vidore_benchmark.utils.intialize_retrievers import create_vision_retriever
 def main(
     model_name: Annotated[str, typer.Option(help="Model name to use for evaluation")],
     dataset_name: Annotated[str, typer.Option(help="Dataset on Hugging Face to evaluate")],
-    split: Annotated[str | None, typer.Option(help="Split to use for evaluation")],
+    split: Annotated[str, typer.Option(help="Split to use for evaluation")],
     batch_size: Annotated[int, typer.Option(help="Batch size to use for evaluation")] = 4,
     is_multi_vector: Annotated[bool, typer.Option(help="If True, multi-vector evaluation will be used")] = False,
     collection_name: Annotated[str, typer.Option(help="Collection name to use for evaluation")] = "",

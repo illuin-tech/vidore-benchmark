@@ -7,24 +7,26 @@ from vidore_benchmark.utils.registration import register_collator, register_text
 from vidore_benchmark.dataset.vision_collator import VisionCollator
 
 
-@register_text_retriever("BGEM3")
+@register_text_retriever("BAAI/bge-m3")
 class BGEM3(VisionRetriever):
     def __init__(self, model: BGEM3FlagModel, processor: None, collator: VisionCollator, *args, **kwargs):
         self.model = model
         self.processor = processor
         self.collator = collator
+        self.is_vision_retriever = False
+        self.is_multi_vector = False
 
     def to(self, device: str | torch.device) -> VisionRetriever:
         raise NotImplementedError
 
     def forward_queries(self, queries, **kwargs) -> torch.Tensor:
         # No forward pass needed
-        output = self.model.encode(queries)
+        output = self.model.encode(queries)['dense_vecs']
         return torch.tensor(output)
 
     def forward_documents(self, documents : List[str], **kwargs) -> torch.Tensor:
         # No forward pass needed
-        output = self.model.encode(documents)
+        output = self.model.encode(documents)['dense_vecs']
         return torch.tensor(output)
 
     def embed_queries(self, queries: List[str]) -> torch.Tensor:
@@ -34,7 +36,7 @@ class BGEM3(VisionRetriever):
         return torch.tensor(documents)
 
 
-@register_collator("BGEM3")
+@register_collator("BAAI/bge-m3")
 class CollatorBGEM3(VisionCollator):
     def __init__(self):
         self.col_document :str = 'text_description'
