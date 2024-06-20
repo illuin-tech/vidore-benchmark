@@ -40,8 +40,6 @@ class CollatorBGEM3(VisionCollator):
     def __init__(self):
         self.col_document: str = "text_description"
         self.col_query: str = "query"
-        print("Collator BAAI/bge-m3 initialized")
-        pass
 
     def __call__(self, batch: Dict[str, List[Dict[str, torch.Tensor]]]) -> Any:
         # queries = [item[self.col_query] for item in batch]

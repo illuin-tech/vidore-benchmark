@@ -156,6 +156,7 @@ class VisionRetriever(ABC):
             list_emb_documents.append(self.forward_documents(batch['document']))
 
         # Concatenate the embeddings
+
         emb_queries = torch.stack(list_emb_queries, dim=0)      # (n_queries, emb_dim)
         emb_documents = torch.cat(list_emb_documents, dim=0)    # (n_documents, emb_dim)
 

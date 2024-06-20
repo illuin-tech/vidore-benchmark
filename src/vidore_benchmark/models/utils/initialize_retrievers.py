@@ -1,4 +1,5 @@
 from FlagEmbedding import BGEM3FlagModel
+from transformers import AutoModel
 
 from vidore_benchmark.models.utils.register_models import (
     RETRIEVER_COLLATOR_REGISTRY,
@@ -34,14 +35,18 @@ def initialize_model(model_name: str, *args, **kwargs):
     if model_name == "BAAI/bge-m3":
         return BGEM3FlagModel("BAAI/bge-m3", use_fp16=True)
     # Add more models as needed
+    if model_name == "jinaai/jina-clip-v1":
+        return AutoModel.from_pretrained("jinaai/jina-clip-v1", trust_remote_code=True)
     else:
         raise ValueError(f"Unknown model name: {model_name}")
 
 
 def initialize_processor(model_name: str, *args, **kwargs):
     if model_name == "BAAI/bge-m3":
-        return None  # Placeholder, update if necessary
+        return None  
     # Add more processors as needed
+    if model_name == "jinaai/jina-clip-v1":
+        return None 
     else:
         raise ValueError(f"Unknown model name: {model_name}")
 
