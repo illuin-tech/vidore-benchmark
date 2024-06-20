@@ -29,7 +29,9 @@ def main(
     metrics = retriever.evaluate_dataset(ds=dataset, batch_size=batch_size)
 
     # Save the metrics as a JSON file
-    savepath = OUTPUT_DIR / f"{model_name}_metrics.json"
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    savepath = OUTPUT_DIR / f"{model_name.replace('/', '_')}_metrics.json"
     with open(savepath, "w", encoding="utf-8") as f:
         json.dump(metrics, f)
     print(f"Metrics saved to `{savepath}`")
