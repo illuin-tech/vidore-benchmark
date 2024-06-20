@@ -1,5 +1,6 @@
 import torch
 from mteb.evaluation.evaluators import RetrievalEvaluator
+from typing import Tuple
 
 
 class CustomEvaluator:
@@ -13,14 +14,7 @@ class CustomEvaluator:
         else:
             scores = self.evaluate_biencoder(qs, ps)
 
-        assert scores.shape[0] == len(qs), f"Expected {len(qs)} scores, got {scores.shape[0]}"
-
-        arg_score = scores.argmax(dim=1)
-
-        # compare to arange
-        accuracy = (arg_score == torch.arange(scores.shape[0], device=scores.device)).sum().item() / scores.shape[0]
-        print(arg_score)
-        print(f"Top 1 Accuracy (verif): {accuracy}")
+        assert scores.shape[0] == len(qs)
 
         # cast to numpy
         scores = scores.to(torch.float32).cpu().numpy()
@@ -61,9 +55,7 @@ class CustomEvaluator:
         scores = torch.cat(scores, dim=0)
         return scores
 
-    def evaluate_biencoder(self, qs, ps) -> torch.Tensor:
-        qs = torch.stack(qs)
-        ps = torch.stack(ps)
+    def evaluate_biencoder(self, qs : Tuple[torch.Tensor], ps :Tuple[torch.Tensor]) -> torch.Tensor:
 
         scores = torch.einsum("bd,cd->bc", qs, ps)
         return scores
