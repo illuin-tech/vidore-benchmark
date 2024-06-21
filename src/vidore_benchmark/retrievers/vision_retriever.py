@@ -8,22 +8,27 @@ from datasets import Dataset
 from PIL import Image
 from torch.utils.data import DataLoader
 
-from vidore_benchmark.evaluation.retrieval_evaluator import CustomEvaluator
+
+from mteb.evaluation.evaluators import RetrievalEvaluator
 
 
 class VisionRetriever(ABC):
     """
     Abstract class for ViDoRe retrievers.
+
+    Args:
+    - visual_embedding: bool (whether the retriever uses visual embeddings or not)
     """
 
-    text_only: bool  # TODO : change name
-    is_multi_vector: bool
+    visual_embedding: bool 
 
     def __init__(
         self,
+        visual_embedding: bool,
         *args,
         **kwargs,
     ):
+        self.visual_embedding = visual_embedding
         pass
 
     @abstractmethod
@@ -49,6 +54,7 @@ class VisionRetriever(ABC):
         """
         pass
 
+    # Can be overwritten if needed
     def get_relevant_docs_results(
         self, ds: Dataset, queries: List[str], scores: torch.Tensor
     ) -> Tuple[Dict[str, float], Dict[str, Dict[str, float]]]:
@@ -85,47 +91,25 @@ class VisionRetriever(ABC):
 
         return relevant_docs, results
 
-
-def evaluate_dataset(
-    vision_retriever: VisionRetriever,
-    ds: Dataset,
-    batch_query: int,
-    batch_doc: int,
-) -> Dict[str, float]:
-    """
-    Evaluate the model on a given dataset using the MTEB metrics.
-    """
-
-    # Dataset: sanity check
-    col_documents = "text_description" if vision_retriever.text_only else "image"
-    col_to_check = ["query", col_documents, "image_filename"]
-
-    if not all(col in ds.column_names for col in col_to_check):
-        raise ValueError(f"Dataset should contain the following columns: {col_to_check}")
-
-    # Remove None queries and duplicates
-    queries = list(set(ds["query"]))
-    if None in queries:
-        queries.remove(None)
-        if len(queries) == 0:
-            raise ValueError("All queries are None")
-
-    documents = ds[col_documents]
-
-    # Get the scores - size (n_queries, n_documents)
-    scores = vision_retriever.get_scores(queries, documents, batch_query=batch_query, batch_doc=batch_doc)
-
-    # Get the relevant documents and results
-    relevant_docs, results = vision_retriever.get_relevant_docs_results(ds, queries, scores)
-
-    evaluator = CustomEvaluator(is_multi_vector=False)  # TODO Change
-
-    # compute MTEB metrics
-
-    metrics = evaluator.compute_metrics(relevant_docs, results)
-
-    return metrics
-
+    # Can be overwritten if needed
+    def compute_metrics(self, relevant_docs, results, **kwargs):
+        mteb_evaluator = RetrievalEvaluator()
+        ndcg, _map, recall, precision, naucs = mteb_evaluator.evaluate(  # type: ignore
+            relevant_docs,
+            results,
+            mteb_evaluator.k_values,
+            ignore_identical_ids=kwargs.get("ignore_identical_ids", True),
+        )
+        mrr = mteb_evaluator.evaluate_custom(relevant_docs, results, mteb_evaluator.k_values, "mrr")
+        scores = {
+            **{f"ndcg_at_{k.split('@')[1]}": v for (k, v) in ndcg.items()},
+            **{f"map_at_{k.split('@')[1]}": v for (k, v) in _map.items()},
+            **{f"recall_at_{k.split('@')[1]}": v for (k, v) in recall.items()},
+            **{f"precision_at_{k.split('@')[1]}": v for (k, v) in precision.items()},
+            **{f"mrr_at_{k.split('@')[1]}": v for (k, v) in mrr[0].items()},
+            **{f"naucs_at_{k.split('@')[1]}": v for (k, v) in naucs.items()},
+        }
+        return scores
 
 def get_top_k(
     vision_retriever: VisionRetriever,

@@ -19,7 +19,9 @@ def mean_pooling(model_output: Tensor, attention_mask: Tensor) -> Tensor:
 
 @register_vision_retriever("nomic-ai/nomic-embed-vision-v1.5")
 class NomicVision(VisionRetriever):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, visual_embedding : bool,  *args, **kwargs):
+        super().__init__(visual_embedding, *args, **kwargs)
+
         self.device = get_torch_device()
 
         self.model = AutoModel.from_pretrained("nomic-ai/nomic-embed-vision-v1.5", trust_remote_code=True).to(
@@ -32,9 +34,6 @@ class NomicVision(VisionRetriever):
             self.device
         )
         self.text_tokenizer = AutoTokenizer.from_pretrained("nomic-ai/nomic-embed-text-v1.5", trust_remote_code=True)
-
-        self.text_only = False
-        self.is_multi_vector = False
 
     def forward_queries(self, queries: List[str], **kwargs) -> torch.Tensor:
         query_texts = ["search_query: " + query for query in queries]

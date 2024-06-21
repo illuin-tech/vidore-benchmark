@@ -9,16 +9,19 @@ from PIL import Image
 
 @register_text_retriever("dummy")
 class DummyRetriever(VisionRetriever):
-    def __init__(self, *args, **kwargs):
-        self.text_only = False
+    def __init__(self, visual_embedding : bool,  *args, **kwargs):
+        super().__init__(visual_embedding, *args, **kwargs)
 
-    def forward_queries(self, queries, **kwargs):
+
+        pass
+    def forward_queries(self, queries: List[str], **kwargs) -> torch.Tensor:
         return torch.randn(len(queries), 512)
 
-    def forward_documents(self, documents, **kwargs):
+    def forward_documents(self, documents: List[Image.Image], **kwargs) -> torch.Tensor:
         return torch.randn(len(documents), 512)
 
-    def get_scores(self, queries: List[str], documents: List[str | Image.Image], batch_query, batch_doc):
-
+    def get_scores(
+        self, queries: List[str], documents: List[Image.Image | str], batch_query: int, batch_doc: int
+    ) -> torch.Tensor:
         scores = torch.randn(len(queries), len(documents))
         return scores

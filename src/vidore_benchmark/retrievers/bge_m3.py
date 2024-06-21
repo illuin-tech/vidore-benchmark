@@ -10,10 +10,10 @@ from FlagEmbedding import BGEM3FlagModel
 
 @register_text_retriever("BAAI/bge-m3")
 class BGEM3(VisionRetriever):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, visual_embedding : bool,  *args, **kwargs):
+        super().__init__(visual_embedding, *args, **kwargs)
+
         self.model = BGEM3FlagModel("BAAI/bge-m3", use_fp16=True)
-        self.text_only = True
-        self.is_multi_vector = False
 
     def forward_queries(self, queries, **kwargs) -> torch.Tensor:
         output = self.model.encode(queries, max_length=512)["dense_vecs"]

@@ -15,12 +15,12 @@ def create_vision_retriever(model_name: str, *args, **kwargs) -> VisionRetriever
 
     if model_name in VISION_RETRIEVER_REGISTRY:
         retriever_class = VISION_RETRIEVER_REGISTRY[model_name]
-        text_only = False
+        visual_embedding = True
 
     elif model_name in TEXT_RETRIEVER_REGISTRY:
         retriever_class = TEXT_RETRIEVER_REGISTRY[model_name]
-        text_only = True
+        visual_embedding = False
     else:
         raise ValueError(f"Unknown model name: {model_name} or model is not initialized correctly.")
 
-    return retriever_class(text_only=text_only)
+    return retriever_class(visual_embedding=visual_embedding)

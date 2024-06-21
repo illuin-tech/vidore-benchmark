@@ -11,11 +11,10 @@ from tqdm import tqdm
 
 @register_vision_retriever("jinaai/jina-clip-v1")
 class JinaClip(VisionRetriever):
-    def __init__(self, *args, **kwargs):
-
+    def __init__(self, visual_embedding : bool,  *args, **kwargs):
+        super().__init__(visual_embedding, *args, **kwargs)
         self.device = get_torch_device()
         self.model = AutoModel.from_pretrained("jinaai/jina-clip-v1", trust_remote_code=True).to(self.device)
-        self.text_only = False
 
     def forward_queries(self, queries: List[str], **kwargs) -> torch.Tensor:
         output = self.model.encode_text(queries)
