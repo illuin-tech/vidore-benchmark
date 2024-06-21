@@ -21,7 +21,7 @@ class CustomEvaluator:
         return scores
 
     def compute_metrics(self, relevant_docs, results, **kwargs):
-        ndcg, _map, recall, precision, naucs = self.mteb_evaluator.evaluate(
+        ndcg, _map, recall, precision, naucs = self.mteb_evaluator.evaluate( # type: ignore
             relevant_docs,
             results,
             self.mteb_evaluator.k_values,

@@ -21,12 +21,3 @@ def register_text_retriever(model_name: str):
         return cls
 
     return decorator
-
-
-def register_collator(model_name: str):
-    def decorator(cls):
-        print(f"Registering collator {model_name}")
-        RETRIEVER_COLLATOR_REGISTRY[model_name] = cls
-        return cls
-
-    return decorator
