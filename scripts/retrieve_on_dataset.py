@@ -2,7 +2,7 @@ from typing import Annotated, cast
 
 import typer
 from datasets import Dataset, load_dataset
-from vidore_benchmark.models.utils.initialize_retrievers import create_vision_retriever
+from vidore_benchmark.retrievers.utils.initialize_retrievers import create_vision_retriever
 
 
 def main(
