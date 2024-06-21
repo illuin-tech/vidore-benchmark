@@ -8,7 +8,7 @@ from datasets import Dataset
 from FlagEmbedding import BGEM3FlagModel
 from PIL import Image
 from torch.utils.data import DataLoader
-from transformers import PreTrainedModel, ProcessorMixin
+from transformers import PreTrainedModel, ProcessorMixin, AutoImageProcessor
 from FlagEmbedding import BGEM3FlagModel
 from tqdm import tqdm
 
@@ -21,10 +21,11 @@ class VisionRetriever(ABC):
     Abstract class for ViDoRe retrievers.
     """
 
+    device: str
     model: torch.nn.Module | PreTrainedModel | BGEM3FlagModel
     is_vision_retriever: bool
     is_multi_vector: bool
-    processor: ProcessorMixin | None
+    processor: ProcessorMixin | AutoImageProcessor | None
     collator: VisionCollator
 
     def __init__(
@@ -35,13 +36,6 @@ class VisionRetriever(ABC):
         *args,
         **kwargs,
     ):
-        pass
-
-    @abstractmethod
-    def to(self, device: str | torch.device) -> VisionRetriever:
-        """
-        Send the model and all the necessary components to the specified device.
-        """
         pass
 
     @abstractmethod
@@ -58,24 +52,8 @@ class VisionRetriever(ABC):
         """
         pass
 
-    @abstractmethod
-    def embed_queries(self, queries: List[str]) -> torch.Tensor:
-        """
-        Embed a list of queries into a batched tensor.
-        """
-        # TODO: processor -> self.forward_queries -> return embeddings
-        pass
-
-    @abstractmethod
-    def embed_documents(self, documents: List[Image.Image | str]) -> torch.Tensor:
-        """
-        Embed a list of documents (i.e. a list of page images) into a batched tensor.
-        """
-        # TODO: processor -> self.forward_documents -> return embeddings
-        pass
-
     def get_relevant_docs_results(
-        self, ds : Dataset, queries : List[str], scores: torch.Tensor
+        self, ds: Dataset, queries: List[str], scores: torch.Tensor
     ) -> Tuple[Dict[str, float], Dict[str, Dict[str, float]]]:
         """
         Get the relevant documents and the results from the scores.
@@ -121,12 +99,12 @@ class VisionRetriever(ABC):
         # Dataset: sanity check
         if self.is_vision_retriever:
             # Vision retriever: check if the necessary columns are present
-            col_to_check = ['image', 'query', 'image_filename']
+            col_to_check = ["image", "query", "image_filename"]
             if not all([col in ds.column_names for col in col_to_check]):
                 raise ValueError(f"Dataset should contain the following columns: {col_to_check}")
         else:
             # Text retriever: check if the necessary columns are present
-            col_to_check = ['query', 'text_description', 'image_filename']
+            col_to_check = ["query", "text_description", "image_filename"]
             if not all([col in ds.column_names for col in col_to_check]):
                 raise ValueError(f"Dataset should contain the following columns: {col_to_check}")
 
@@ -137,31 +115,31 @@ class VisionRetriever(ABC):
         evaluator = CustomEvaluator(is_multi_vector=self.is_multi_vector)
 
         # Placeholder for the embeddings
-        list_emb_queries: List[torch.Tensor] = []
         list_emb_documents: List[torch.Tensor] = []
 
-        print("Embedding queries")
         # Embed queries with batch size 1
 
+        print("Embedding queries")
         queries = list(set(ds[self.collator.col_query]))
         if None in queries:
             queries.remove(None)
-        for query in tqdm(queries):
-            list_emb_queries.append(self.forward_queries(query))
+        
+        if len(queries) == 0:
+            raise ValueError("No queries found in the dataset")
+            
+        emb_queries = self.forward_queries(queries)
 
         print("Embedding documents")
         for batch in tqdm(dataloader):
             # Embed documents with batch size
             # NOTE: in the original code: `emb_queries` -> `qs`, `emb_documents` -> `ps`
-            list_emb_documents.append(self.forward_documents(batch['document']))
+            list_emb_documents.append(self.forward_documents(batch["document"]))
 
         # Concatenate the embeddings
-
-        emb_queries = torch.stack(list_emb_queries, dim=0)      # (n_queries, emb_dim)
-        emb_documents = torch.cat(list_emb_documents, dim=0)    # (n_documents, emb_dim)
+        emb_documents = torch.cat(list_emb_documents, dim=0)  # (n_documents, emb_dim)
 
         # Evaluate the model
-        scores = evaluator.get_scores_matrix(emb_queries, emb_documents) # (n_queries, n_documents)
+        scores = evaluator.get_scores_matrix(emb_queries, emb_documents)  # (n_queries, n_documents)
 
         assert scores.shape == (
             len(queries),
@@ -221,7 +199,7 @@ class VisionRetriever(ABC):
         # Get the top-k documents
         # TODO: implement logic here
 
-        relevant_docs, results = self.get_relevant_docs_results(queries, ds['image_filename'], scores)
+        relevant_docs, results = self.get_relevant_docs_results(queries, ds["image_filename"], scores)
 
         # sort the results
         top_k: Dict[str, float] = {}

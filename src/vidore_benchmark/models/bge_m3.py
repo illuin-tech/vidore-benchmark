@@ -17,9 +17,6 @@ class BGEM3(VisionRetriever):
         self.is_vision_retriever = False
         self.is_multi_vector = False
 
-    def to(self, device: str | torch.device) -> VisionRetriever:
-        raise NotImplementedError
-
     def forward_queries(self, queries, **kwargs) -> torch.Tensor:
         output = self.model.encode(queries, max_length=512)["dense_vecs"]
         return torch.tensor(output)
@@ -27,12 +24,6 @@ class BGEM3(VisionRetriever):
     def forward_documents(self, documents: List[str], **kwargs) -> torch.Tensor:
         output = self.model.encode(documents)["dense_vecs"]
         return torch.tensor(output)
-
-    def embed_queries(self, queries: List[str]) -> torch.Tensor:
-        return torch.tensor(queries)
-
-    def embed_documents(self, documents) -> torch.Tensor:
-        return torch.tensor(documents)
 
 
 @register_collator("BAAI/bge-m3")
