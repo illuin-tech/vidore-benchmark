@@ -1,7 +1,6 @@
 from typing import Any, Dict
 
 VISION_RETRIEVER_REGISTRY: Dict[str, Any] = {}
-RETRIEVER_COLLATOR_REGISTRY: Dict[str, Any] = {}
 TEXT_RETRIEVER_REGISTRY: Dict[str, Any] = {}
 
 

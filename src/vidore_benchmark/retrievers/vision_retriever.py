@@ -41,16 +41,14 @@ class VisionRetriever(ABC):
         pass
 
     @abstractmethod
-    def get_scores(self, 
-                    queries : List[str],
-                    documents : List[Image.Image | str], 
-                    batch_query : int, 
-                    batch_doc : int) -> torch.Tensor:
+    def get_scores(
+        self, queries: List[str], documents: List[Image.Image | str], batch_query: int, batch_doc: int
+    ) -> torch.Tensor:
         """
         Get the scores for the documents and queries.
         """
         pass
-    
+
     def get_relevant_docs_results(
         self, ds: Dataset, queries: List[str], scores: torch.Tensor
     ) -> Tuple[Dict[str, float], Dict[str, Dict[str, float]]]:
@@ -87,6 +85,7 @@ class VisionRetriever(ABC):
 
         return relevant_docs, results
 
+
 def evaluate_dataset(
     vision_retriever: VisionRetriever,
     ds: Dataset,
@@ -103,7 +102,7 @@ def evaluate_dataset(
 
     if not all(col in ds.column_names for col in col_to_check):
         raise ValueError(f"Dataset should contain the following columns: {col_to_check}")
-    
+
     # Remove None queries and duplicates
     queries = list(set(ds["query"]))
     if None in queries:
@@ -115,7 +114,6 @@ def evaluate_dataset(
 
     # Get the scores - size (n_queries, n_documents)
     scores = vision_retriever.get_scores(queries, documents, batch_query=batch_query, batch_doc=batch_doc)
-
 
     # Get the relevant documents and results
     relevant_docs, results = vision_retriever.get_relevant_docs_results(ds, queries, scores)
@@ -130,16 +128,14 @@ def evaluate_dataset(
 
 
 def get_top_k(
-        vision_retriever : VisionRetriever,
-        queries: List[str],
-        ds: Dataset,
-        batch_size: int,
-        k: int,
-    ) -> Dict[str, float]:
-        """
-        Get the top-k documents for a given query.
-        """
+    vision_retriever: VisionRetriever,
+    queries: List[str],
+    ds: Dataset,
+    batch_size: int,
+    k: int,
+) -> Dict[str, float]:
+    """
+    Get the top-k documents for a given query.
+    """
 
-        raise NotImplementedError("Implement the logic to get the top-k documents")
-
-
+    raise NotImplementedError("Implement the logic to get the top-k documents")

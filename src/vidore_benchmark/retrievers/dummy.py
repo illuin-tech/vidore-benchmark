@@ -7,7 +7,6 @@ from tqdm import tqdm
 from PIL import Image
 
 
-
 @register_text_retriever("dummy")
 class DummyRetriever(VisionRetriever):
     def __init__(self, *args, **kwargs):
@@ -19,10 +18,7 @@ class DummyRetriever(VisionRetriever):
     def forward_documents(self, documents, **kwargs):
         return torch.randn(len(documents), 512)
 
-    def get_scores(self, 
-            queries :List[str], 
-            documents : List[str | Image.Image],
-             batch_query, batch_doc):
-        
+    def get_scores(self, queries: List[str], documents: List[str | Image.Image], batch_query, batch_doc):
+
         scores = torch.randn(len(queries), len(documents))
         return scores

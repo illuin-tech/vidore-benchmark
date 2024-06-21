@@ -43,7 +43,7 @@ class NomicVision(VisionRetriever):
         )
         with torch.no_grad():
             qs = self.text_model(**encoded_input)
-        qs = mean_pooling(qs, encoded_input["attention_mask"]) # type: ignore
+        qs = mean_pooling(qs, encoded_input["attention_mask"])  # type: ignore
         qs = F.layer_norm(qs, normalized_shape=(qs.shape[1],))
         qs = F.normalize(qs, p=2, dim=1)
 
@@ -58,18 +58,17 @@ class NomicVision(VisionRetriever):
         return torch.tensor(ps).to(self.device)
 
     def get_scores(
-        self, queries: List[str], documents: List[Image.Image | str],
-         batch_query: int, batch_doc: int
+        self, queries: List[str], documents: List[Image.Image | str], batch_query: int, batch_doc: int
     ) -> torch.Tensor:
 
         list_emb_queries: List[torch.Tensor] = []
         for query_batch in tqdm(batched(queries, batch_query), desc="Query batch", total=len(queries) // batch_query):
-            query_embeddings = self.forward_queries(query_batch) # type: ignore
+            query_embeddings = self.forward_queries(query_batch)  # type: ignore
             list_emb_queries.append(query_embeddings)
 
         list_emb_documents: List[torch.Tensor] = []
         for doc_batch in tqdm(batched(documents, batch_doc), desc="Document batch", total=len(documents) // batch_doc):
-            doc_embeddings = self.forward_documents(doc_batch) # type: ignore
+            doc_embeddings = self.forward_documents(doc_batch)  # type: ignore
             list_emb_documents.append(doc_embeddings)
 
         emb_queries = torch.cat(list_emb_queries, dim=0)
