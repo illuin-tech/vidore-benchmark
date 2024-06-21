@@ -1,5 +1,5 @@
 from FlagEmbedding import BGEM3FlagModel
-from transformers import AutoModel
+from transformers import AutoModel, AutoImageProcessor
 
 from vidore_benchmark.models.utils.register_models import (
     RETRIEVER_COLLATOR_REGISTRY,
@@ -37,6 +37,9 @@ def initialize_model(model_name: str, *args, **kwargs):
     # Add more models as needed
     if model_name == "jinaai/jina-clip-v1":
         return AutoModel.from_pretrained("jinaai/jina-clip-v1", trust_remote_code=True)
+    
+    if model_name == "nomic-ai/nomic-embed-vision-v1.5":
+        return AutoModel.from_pretrained("nomic-ai/nomic-embed-vision-v1.5", trust_remote_code=True)
     else:
         raise ValueError(f"Unknown model name: {model_name}")
 
@@ -47,6 +50,8 @@ def initialize_processor(model_name: str, *args, **kwargs):
     # Add more processors as needed
     if model_name == "jinaai/jina-clip-v1":
         return None 
+    if model_name == "nomic-ai/nomic-embed-vision-v1.5":
+        return AutoImageProcessor.from_pretrained("nomic-ai/nomic-embed-vision-v1.5")
     else:
         raise ValueError(f"Unknown model name: {model_name}")
 
