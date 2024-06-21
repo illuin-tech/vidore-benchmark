@@ -2,7 +2,10 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
-from vidore_benchmark.models.utils.initialize_retrievers import create_vision_retriever
+from vidore_benchmark.retrievers.utils.initialize_retrievers import create_vision_retriever
+from vidore_benchmark.evaluation.evaluation import get_top_k
+from vidore_benchmark.utils.pdf_utils import convert_all_pdfs_to_images
+from vidore_benchmark.utils.image_utils import generate_dataset_from_img_folder
 
 
 def main(
@@ -17,6 +20,9 @@ def main(
     """
     This script is used to ask a query and retrieve the top-k documents from a given folder containing PDFs.
     The PDFs will be converted to a dataset of image pages and then used for retrieval.
+
+
+    >>> python scripts/retriever_on_pdfs.py --model-name google/siglip-so400m-patch14-384 --data-dirpath data/pdf_test --batch-size 4 --k 5 --query 'Where is Eiffel Tower?'
     """
 
     assert Path(data_dirpath).is_dir(), f"Invalid data directory: `{data_dirpath}`"
@@ -25,19 +31,29 @@ def main(
     retriever = create_vision_retriever(model_name)
 
     # Convert the PDFs in data_dirpath to a dataset
-    # dataset = ...  # TODO
+    convert_all_pdfs_to_images(data_dirpath)
+
+    # list all the images gnereated from the PDFs
+    image_files = list(Path(data_dirpath).rglob("*.jpg"))
+    print(f"Found {len(image_files)} images in the directory: {data_dirpath}")
+    #generate a dataset
+    dataset = generate_dataset_from_img_folder(data_dirpath)
+
 
     # Get the top-k documents
-    top_k = retriever.get_top_k(
-        queries=[query],
-        ds=dataset,
-        batch_size=batch_size,
+    top_k = get_top_k(
+        retriever,
+        [query],
+        list(dataset["image"]),
+        list(dataset["image_filename"]),
+        batch_query=1,
+        batch_doc=batch_size,
         k=k,
     )
 
     print(f"Top-{k} documents for the query '{query}':")
 
-    for document, score in top_k:
+    for document, score in top_k[query].items(): # type: ignore
         print(f"Document: {document}, Score: {score}")
 
 

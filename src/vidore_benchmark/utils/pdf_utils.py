@@ -55,16 +55,15 @@ def convert_all_pdfs_to_images(path_to_folder: str, n_samples: int = 0) -> None:
 
     sampled_files = []
 
-    for sub_dir in sub_dirs:
-        pdf_files = glob.glob(os.path.join(path_to_folder, sub_dir, "*.pdf"))
+    pdf_files = glob.glob(os.path.join(path_to_folder, "*.pdf"))
 
-        if (n_samples == 0) or (len(pdf_files) <= n_samples):
-            print(f"Taking all pdf files in {sub_dir}")
-            sampled_files.extend(pdf_files)
+    if (n_samples == 0) or (len(pdf_files) <= n_samples):
+        print(f"Taking all pdf files in {path_to_folder}")
+        sampled_files.extend(pdf_files)
 
-        else:
-            print(f"Taking {n_samples} pdf files in {sub_dir}")
-            sampled_files.extend(random.sample(pdf_files, n_samples))
+    else:
+        print(f"Taking {n_samples} pdf files in {path_to_folder}")
+        sampled_files.extend(random.sample(pdf_files, n_samples))
 
     pdf_files = [str(file) for file in sampled_files]
 

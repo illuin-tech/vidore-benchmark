@@ -110,16 +110,3 @@ class VisionRetriever(ABC):
             **{f"naucs_at_{k.split('@')[1]}": v for (k, v) in naucs.items()},
         }
         return scores
-
-def get_top_k(
-    vision_retriever: VisionRetriever,
-    queries: List[str],
-    ds: Dataset,
-    batch_size: int,
-    k: int,
-) -> Dict[str, float]:
-    """
-    Get the top-k documents for a given query.
-    """
-
-    raise NotImplementedError("Implement the logic to get the top-k documents")

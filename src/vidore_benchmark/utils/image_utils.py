@@ -5,10 +5,16 @@ Utility functions for working with images.
 import base64
 import io
 
-from PIL import Image
+from PIL import Image as PILImage
+
+from torch.utils.data import IterableDataset
+from typing import cast
+from pathlib import Path
+from tqdm import tqdm
+from datasets import Dataset, Features, Image, Value
 
 
-def scale_image(image: Image.Image, new_height: int = 1024) -> Image.Image:
+def scale_image(image: PILImage.Image, new_height: int = 1024) -> PILImage.Image:
     """
     Scale an image to a new height while maintaining the aspect ratio.
     """
@@ -23,7 +29,7 @@ def scale_image(image: Image.Image, new_height: int = 1024) -> Image.Image:
     return scaled_image
 
 
-def scale_to_max_dimension(image: Image.Image, max_dimension: int = 1024) -> Image.Image:
+def scale_to_max_dimension(image: PILImage.Image, max_dimension: int = 1024) ->PILImage.Image:
     """
     Scale an image to a maximum dimension while maintaining the aspect ratio.
     """
@@ -46,13 +52,13 @@ def scale_to_max_dimension(image: Image.Image, max_dimension: int = 1024) -> Ima
     return scaled_image
 
 
-def get_base64_image(img: str | Image.Image, add_url_prefix: bool = True) -> str:
+def get_base64_image(img: str | PILImage.Image, add_url_prefix: bool = True) -> str:
     """
     Convert an image (from a filepath or a PIL.Image object) to a JPEG-base64 string.
     """
     if isinstance(img, str):
-        img = Image.open(img)
-    elif isinstance(img, Image.Image):
+        img = PILImage.open(img)
+    elif isinstance(img, PILImage.Image):
         pass
     else:
         raise ValueError("`img` must be a path to an image or a PIL Image object.")
@@ -62,3 +68,58 @@ def get_base64_image(img: str | Image.Image, add_url_prefix: bool = True) -> str
     b64_data = base64.b64encode(buffered.getvalue()).decode("utf-8")
 
     return f"data:image/jpeg;base64,{b64_data}" if add_url_prefix else b64_data
+
+
+def shorten_image_path(image_path: str) -> str:
+    """
+    Shorten the image path to make it more readable.
+    """
+    full_path = Path(image_path)
+    enclosing_dir = full_path.parent.parent
+    return full_path.relative_to(enclosing_dir).as_posix()
+
+
+def generate_dataset_from_img_folder(
+    path_to_folder: str, n_samples: int = 1) -> IterableDataset:
+    """
+        Generate questions and answers from a folder containing pdf files and by themes.
+
+        Args:
+        - path_to_folder (str): path to the folder containing the pdf files
+
+        Returns:
+        - ds (DatasetDict): a dataset containing the questions and answers generated from the pdf files
+
+        structure of the dataset:
+        - query (str): the question generated from the image
+        - image (PIL.Image): the image
+        - image_filename (str): the path to the image
+
+    """
+    img_files = list(Path(path_to_folder).rglob("*.jpg"))
+
+    # Create a Dataset from the dictionary
+    features = Features(
+        {
+            "image": Image(),
+            "image_filename": Value("string")
+        }
+    )
+
+    def gen():
+        with tqdm(total=len(img_files)) as pbar:
+            for image_path in img_files:
+                pbar.set_description(f"Processing {shorten_image_path(str(image_path))}")
+
+                pil_image = PILImage.open(image_path)
+
+                yield {
+                    "image": pil_image,
+                    "image_filename": image_path,
+                }
+                pbar.update(1)
+
+    # Create the dataset from the generator
+    ds = cast(IterableDataset, Dataset.from_generator(gen, features=features))
+
+    return ds
