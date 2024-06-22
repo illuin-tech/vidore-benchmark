@@ -1,6 +1,7 @@
+from typing import Tuple
+
 import torch
 from mteb.evaluation.evaluators import RetrievalEvaluator
-from typing import Tuple
 
 
 class CustomEvaluator:
@@ -21,7 +22,7 @@ class CustomEvaluator:
         return scores
 
     def compute_metrics(self, relevant_docs, results, **kwargs):
-        ndcg, _map, recall, precision, naucs = self.mteb_evaluator.evaluate(  # type: ignore
+        ndcg, _map, recall, precision, naucs = self.mteb_evaluator.evaluate(
             relevant_docs,
             results,
             self.mteb_evaluator.k_values,
@@ -56,6 +57,5 @@ class CustomEvaluator:
         return scores
 
     def evaluate_biencoder(self, qs: Tuple[torch.Tensor], ps: Tuple[torch.Tensor]) -> torch.Tensor:
-
         scores = torch.einsum("bd,cd->bc", qs, ps)
         return scores

@@ -1,16 +1,18 @@
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
-import torch
 from typing import List
-from PIL import Image
-from vidore_benchmark.retrievers.utils.register_models import register_text_retriever
-from vidore_benchmark.utils.iter_utils import batched
-from tqdm import tqdm
+
+import torch
 from FlagEmbedding import BGEM3FlagModel
+from PIL import Image
+from tqdm import tqdm
+
+from vidore_benchmark.retrievers.utils.register_models import register_text_retriever
+from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+from vidore_benchmark.utils.iter_utils import batched
 
 
 @register_text_retriever("BAAI/bge-m3")
 class BGEM3(VisionRetriever):
-    def __init__(self, visual_embedding : bool,  *args, **kwargs):
+    def __init__(self, visual_embedding: bool, *args, **kwargs):
         super().__init__(visual_embedding, *args, **kwargs)
 
         self.model = BGEM3FlagModel("BAAI/bge-m3", use_fp16=True)

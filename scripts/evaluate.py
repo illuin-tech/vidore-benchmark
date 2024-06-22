@@ -3,9 +3,9 @@ from typing import Annotated, cast
 
 import typer
 from datasets import Dataset, load_dataset
+from vidore_benchmark.evaluation.evaluate import evaluate_dataset
 from vidore_benchmark.retrievers.utils.initialize_retrievers import create_vision_retriever
 from vidore_benchmark.utils.constants import OUTPUT_DIR
-from vidore_benchmark.evaluation.evaluation import evaluate_dataset
 
 
 def main(
@@ -27,7 +27,7 @@ def main(
     dataset = cast(Dataset, load_dataset(dataset_name, split=split))
 
     # Evaluate the model
-    metrics = evaluate_dataset(retriever, dataset, batch_query= batch_query, batch_doc=batch_doc)
+    metrics = evaluate_dataset(retriever, dataset, batch_query=batch_query, batch_doc=batch_doc)
 
     # Save the metrics as a JSON file
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

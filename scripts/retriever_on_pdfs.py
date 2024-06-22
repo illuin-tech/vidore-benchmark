@@ -2,10 +2,10 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from vidore_benchmark.evaluation.evaluate import get_top_k
 from vidore_benchmark.retrievers.utils.initialize_retrievers import create_vision_retriever
-from vidore_benchmark.evaluation.evaluation import get_top_k
-from vidore_benchmark.utils.pdf_utils import convert_all_pdfs_to_images
 from vidore_benchmark.utils.image_utils import generate_dataset_from_img_folder
+from vidore_benchmark.utils.pdf_utils import convert_all_pdfs_to_images
 
 
 def main(
@@ -36,9 +36,8 @@ def main(
     # list all the images gnereated from the PDFs
     image_files = list(Path(data_dirpath).rglob("*.jpg"))
     print(f"Found {len(image_files)} images in the directory: {data_dirpath}")
-    #generate a dataset
+    # generate a dataset
     dataset = generate_dataset_from_img_folder(data_dirpath)
-
 
     # Get the top-k documents
     top_k = get_top_k(
@@ -53,7 +52,7 @@ def main(
 
     print(f"Top-{k} documents for the query '{query}':")
 
-    for document, score in top_k[query].items(): # type: ignore
+    for document, score in top_k[query].items():  # type: ignore
         print(f"Document: {document}, Score: {score}")
 
 

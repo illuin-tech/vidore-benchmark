@@ -4,14 +4,13 @@ Utility functions for working with images.
 
 import base64
 import io
-
-from PIL import Image as PILImage
-
-from torch.utils.data import IterableDataset
-from typing import cast
 from pathlib import Path
-from tqdm import tqdm
+from typing import cast
+
 from datasets import Dataset, Features, Image, Value
+from PIL import Image as PILImage
+from torch.utils.data import IterableDataset
+from tqdm import tqdm
 
 
 def scale_image(image: PILImage.Image, new_height: int = 1024) -> PILImage.Image:
@@ -29,7 +28,7 @@ def scale_image(image: PILImage.Image, new_height: int = 1024) -> PILImage.Image
     return scaled_image
 
 
-def scale_to_max_dimension(image: PILImage.Image, max_dimension: int = 1024) ->PILImage.Image:
+def scale_to_max_dimension(image: PILImage.Image, max_dimension: int = 1024) -> PILImage.Image:
     """
     Scale an image to a maximum dimension while maintaining the aspect ratio.
     """
@@ -79,32 +78,26 @@ def shorten_image_path(image_path: str) -> str:
     return full_path.relative_to(enclosing_dir).as_posix()
 
 
-def generate_dataset_from_img_folder(
-    path_to_folder: str, n_samples: int = 1) -> IterableDataset:
+def generate_dataset_from_img_folder(path_to_folder: str, n_samples: int = 1) -> IterableDataset:
     """
-        Generate questions and answers from a folder containing pdf files and by themes.
+    Generate questions and answers from a folder containing pdf files and by themes.
 
-        Args:
-        - path_to_folder (str): path to the folder containing the pdf files
+    Args:
+    - path_to_folder (str): path to the folder containing the pdf files
 
-        Returns:
-        - ds (DatasetDict): a dataset containing the questions and answers generated from the pdf files
+    Returns:
+    - ds (DatasetDict): a dataset containing the questions and answers generated from the pdf files
 
-        structure of the dataset:
-        - query (str): the question generated from the image
-        - image (PIL.Image): the image
-        - image_filename (str): the path to the image
+    structure of the dataset:
+    - query (str): the question generated from the image
+    - image (PIL.Image): the image
+    - image_filename (str): the path to the image
 
     """
     img_files = list(Path(path_to_folder).rglob("*.jpg"))
 
     # Create a Dataset from the dictionary
-    features = Features(
-        {
-            "image": Image(),
-            "image_filename": Value("string")
-        }
-    )
+    features = Features({"image": Image(), "image_filename": Value("string")})
 
     def gen():
         with tqdm(total=len(img_files)) as pbar:

@@ -1,14 +1,16 @@
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
-import torch
-from PIL import Image
 from typing import List
-from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
-from vidore_benchmark.utils.torch_utils import get_torch_device
-from transformers import AutoModel, AutoTokenizer, AutoImageProcessor
-from torch import Tensor
+
+import torch
 import torch.nn.functional as F
-from vidore_benchmark.utils.iter_utils import batched
+from PIL import Image
+from torch import Tensor
 from tqdm import tqdm
+from transformers import AutoImageProcessor, AutoModel, AutoTokenizer
+
+from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
+from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+from vidore_benchmark.utils.iter_utils import batched
+from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 def mean_pooling(model_output: Tensor, attention_mask: Tensor) -> Tensor:
@@ -19,7 +21,7 @@ def mean_pooling(model_output: Tensor, attention_mask: Tensor) -> Tensor:
 
 @register_vision_retriever("nomic-ai/nomic-embed-vision-v1.5")
 class NomicVision(VisionRetriever):
-    def __init__(self, visual_embedding : bool,  *args, **kwargs):
+    def __init__(self, visual_embedding: bool, *args, **kwargs):
         super().__init__(visual_embedding, *args, **kwargs)
 
         self.device = get_torch_device()

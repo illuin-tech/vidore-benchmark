@@ -2,14 +2,15 @@ from typing import Annotated, cast
 
 import typer
 from datasets import Dataset, load_dataset
+from vidore_benchmark.evaluation.evaluate import get_top_k
 from vidore_benchmark.retrievers.utils.initialize_retrievers import create_vision_retriever
-from vidore_benchmark.evaluation.evaluation import get_top_k
+
 
 def main(
     model_name: Annotated[str, typer.Option(help="Model name to use for evaluation")],
     dataset_name: Annotated[str, typer.Option(help="Dataset on Hugging Face to evaluate")],
     split: Annotated[str, typer.Option(help="Split of the dataset to use for evaluation")],
-    batch_doc : Annotated[int, typer.Option(help="Batch size for documents")],
+    batch_doc: Annotated[int, typer.Option(help="Batch size for documents")],
     query: Annotated[str, typer.Option(help="Query to use for retrieval")],
     k: Annotated[int, typer.Option(help="Number of documents to retrieve")],
 ):
@@ -36,7 +37,7 @@ def main(
     )
     print(f"Top-{k} documents for the query '{query}':")
 
-    for document, score in top_k[query].items(): # type: ignore
+    for document, score in top_k[query].items():  # type: ignore
         print(f"Document: {document}, Score: {score}")
 
 

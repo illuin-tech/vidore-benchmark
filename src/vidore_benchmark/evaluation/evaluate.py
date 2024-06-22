@@ -1,10 +1,10 @@
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from typing import Dict, List
-from PIL import Image
+
 from datasets import Dataset
-'''
-All functions for evalaluation purposes
-'''
+from PIL import Image
+
+from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+
 
 def evaluate_dataset(
     vision_retriever: VisionRetriever,
@@ -51,7 +51,7 @@ def get_top_k(
     file_names: List[str],
     batch_query: int,
     batch_doc: int,
-    k : int,
+    k: int,
 ) -> Dict[str, float]:
     """
     Get the top-k documents for a given query.
@@ -66,14 +66,14 @@ def get_top_k(
         for docidx, score in enumerate(score_per_query):
             filename = passages2filename[docidx]
             score_passage = float(score.item())
-            
+
             if query in results:
                 results[query][filename] = max(results[query].get(filename, 0), score_passage)
             else:
                 results[query] = {filename: score_passage}
-        #sort the results by score for each query
+        # sort the results by score for each query
         results[query] = dict(sorted(results[query].items(), key=lambda item: item[1], reverse=True))
-        #get the top-k documents
+        # get the top-k documents
         results[query] = dict(list(results[query].items())[:k])
-    
+
     return results

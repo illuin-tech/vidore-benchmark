@@ -1,15 +1,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple, cast
+from typing import Dict, List, Tuple
 
 import torch
 from datasets import Dataset
-from PIL import Image
-from torch.utils.data import DataLoader
-
-
 from mteb.evaluation.evaluators import RetrievalEvaluator
+from PIL import Image
 
 
 class VisionRetriever(ABC):
@@ -20,7 +17,7 @@ class VisionRetriever(ABC):
     - visual_embedding: bool (whether the retriever uses visual embeddings or not)
     """
 
-    visual_embedding: bool 
+    visual_embedding: bool
 
     def __init__(
         self,
@@ -54,12 +51,13 @@ class VisionRetriever(ABC):
         """
         pass
 
-    # Can be overwritten if needed
     def get_relevant_docs_results(
         self, ds: Dataset, queries: List[str], scores: torch.Tensor
     ) -> Tuple[Dict[str, float], Dict[str, Dict[str, float]]]:
         """
         Get the relevant documents and the results from the scores.
+
+        NOTE: Override this method if the retriever has a different output format.
 
         Inputs:
         - queries: List[str]
@@ -91,8 +89,12 @@ class VisionRetriever(ABC):
 
         return relevant_docs, results
 
-    # Can be overwritten if needed
     def compute_metrics(self, relevant_docs, results, **kwargs):
+        """
+        Compute the MTEB metrics.
+
+        NOTE: Override this method if the retriever has a different evaluation metric.
+        """
         mteb_evaluator = RetrievalEvaluator()
         ndcg, _map, recall, precision, naucs = mteb_evaluator.evaluate(  # type: ignore
             relevant_docs,

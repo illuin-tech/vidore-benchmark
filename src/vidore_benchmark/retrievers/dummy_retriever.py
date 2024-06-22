@@ -1,19 +1,19 @@
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
-from vidore_benchmark.retrievers.utils.register_models import register_text_retriever
-import torch
-from vidore_benchmark.utils.iter_utils import batched
 from typing import List
-from tqdm import tqdm
+
+import torch
 from PIL import Image
+
+from vidore_benchmark.retrievers.utils.register_models import register_text_retriever
+from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
 
 @register_text_retriever("dummy")
 class DummyRetriever(VisionRetriever):
-    def __init__(self, visual_embedding : bool,  *args, **kwargs):
+    def __init__(self, visual_embedding: bool, *args, **kwargs):
         super().__init__(visual_embedding, *args, **kwargs)
 
-
         pass
+
     def forward_queries(self, queries: List[str], **kwargs) -> torch.Tensor:
         return torch.randn(len(queries), 512)
 

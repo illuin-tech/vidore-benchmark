@@ -1,17 +1,19 @@
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+from typing import List
+
 import torch
 from PIL import Image
-from typing import List
-from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
-from vidore_benchmark.utils.torch_utils import get_torch_device
-from vidore_benchmark.utils.iter_utils import batched
-from transformers import AutoModel
 from tqdm import tqdm
+from transformers import AutoModel
+
+from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
+from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+from vidore_benchmark.utils.iter_utils import batched
+from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 @register_vision_retriever("jinaai/jina-clip-v1")
 class JinaClip(VisionRetriever):
-    def __init__(self, visual_embedding : bool,  *args, **kwargs):
+    def __init__(self, visual_embedding: bool, *args, **kwargs):
         super().__init__(visual_embedding, *args, **kwargs)
         self.device = get_torch_device()
         self.model = AutoModel.from_pretrained("jinaai/jina-clip-v1", trust_remote_code=True).to(self.device)
