@@ -14,7 +14,6 @@ def main(
     split: Annotated[str, typer.Option(help="Split to use for evaluation")],
     batch_query: Annotated[int, typer.Option(help="Batch size to use for evaluation")] = 1,
     batch_doc: Annotated[int, typer.Option(help="Batch size to use for evaluation")] = 4,
-    collection_name: Annotated[str, typer.Option(help="Collection name to use for evaluation")] = "",
 ):
     """
     This script is used to evaluate a model on a given dataset using the MTEB metrics.
