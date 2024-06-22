@@ -10,6 +10,9 @@ from vidore_benchmark.retrievers.jina_clip import JinaClip
 
 
 def main():
+    """
+    Debugging script
+    """
     my_retriever = JinaClip(visual_embedding=True)
 
     dataset = cast(Dataset, load_dataset("coldoc/shiftproject_test", split="test"))

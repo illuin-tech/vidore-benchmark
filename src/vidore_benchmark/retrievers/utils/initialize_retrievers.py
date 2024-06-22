@@ -1,6 +1,3 @@
-from FlagEmbedding import BGEM3FlagModel
-from transformers import AutoModel, AutoImageProcessor
-
 from vidore_benchmark.retrievers.utils.register_models import (
     TEXT_RETRIEVER_REGISTRY,
     VISION_RETRIEVER_REGISTRY,

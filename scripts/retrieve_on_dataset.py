@@ -16,7 +16,15 @@ def main(
 ):
     """
     This script is used to ask a query and retrieve the top-k documents from a given HuggingFace Dataset.
-    >>> python scripts/retrieve_on_dataset.py --model-name BAAI/bge-m3 --dataset-name coldoc/shiftproject_test --split test --batch-query 1 --batch-doc 4 --k 5 --query 'Where is Eiffel Tower?'
+    
+    >>> python scripts/retrieve_on_dataset.py \
+        --model-name BAAI/bge-m3 \
+        --dataset-name coldoc/shiftproject_test \
+        --split test \
+        --batch-query 1 \
+        --batch-doc 4 \
+        --k 5 \
+        --query 'Where is Eiffel Tower?'
     """
 
     # Create the vision retriever

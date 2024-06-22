@@ -3,6 +3,10 @@ from transformers.models.paligemma.modeling_paligemma import PaliGemmaForConditi
 
 
 class ColPali(PaliGemmaPreTrainedModel):
+    """
+    TODO: Update w/ Manu's latest code.
+    """
+
     def __init__(self, config):
         super(ColPali, self).__init__(config=config)
         self.model: PaliGemmaForConditionalGeneration = PaliGemmaForConditionalGeneration(config)

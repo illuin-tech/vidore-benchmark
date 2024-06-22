@@ -21,8 +21,12 @@ def main(
     This script is used to ask a query and retrieve the top-k documents from a given folder containing PDFs.
     The PDFs will be converted to a dataset of image pages and then used for retrieval.
 
-
-    >>> python scripts/retriever_on_pdfs.py --model-name google/siglip-so400m-patch14-384 --data-dirpath data/pdf_test --batch-size 4 --k 5 --query 'Where is Eiffel Tower?'
+    >>> python scripts/retriever_on_pdfs.py \
+        --model-name google/siglip-so400m-patch14-384 \
+        --data-dirpath data/pdf_test \
+        --batch-size 4 \
+        --k 5 \
+        --query 'Where is Eiffel Tower?'
     """
 
     assert Path(data_dirpath).is_dir(), f"Invalid data directory: `{data_dirpath}`"
