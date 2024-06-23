@@ -12,7 +12,7 @@ from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 @register_vision_retriever("BAAI/bge-m3")
-class BGEM3(VisionRetriever):
+class BGEM3Retriever(VisionRetriever):
     def __init__(self, device: str = "auto"):
         super().__init__()
         self.device = get_torch_device(device)

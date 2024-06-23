@@ -14,7 +14,7 @@ from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 @register_vision_retriever("nomic-ai/nomic-embed-vision-v1.5")
-class NomicVision(VisionRetriever):
+class NomicVisionRetriever(VisionRetriever):
     def __init__(self, device: str = "auto"):
         super().__init__()
         self.device = get_torch_device(device)
