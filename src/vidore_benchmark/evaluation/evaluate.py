@@ -17,7 +17,7 @@ def evaluate_dataset(
     """
 
     # Dataset: sanity check
-    col_documents = "image" if vision_retriever.visual_embedding else "text_description"
+    col_documents = "image" if vision_retriever.use_visual_embedding else "text_description"
     col_to_check = ["query", col_documents, "image_filename"]
 
     if not all(col in ds.column_names for col in col_to_check):

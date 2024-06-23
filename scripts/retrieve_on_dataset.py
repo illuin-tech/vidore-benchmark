@@ -3,7 +3,7 @@ from typing import Annotated, cast
 import typer
 from datasets import Dataset, load_dataset
 from vidore_benchmark.evaluation.evaluate import get_top_k
-from vidore_benchmark.retrievers.utils.initialize_retrievers import create_vision_retriever
+from vidore_benchmark.retrievers.utils.initialize_retrievers import load_vision_retriever_from_registry
 
 
 def main(
@@ -28,17 +28,17 @@ def main(
     """
 
     # Create the vision retriever
-    retriever = create_vision_retriever(model_name)
+    retriever = load_vision_retriever_from_registry(model_name)
 
     # Load the dataset
-    dataset = cast(Dataset, load_dataset(dataset_name, split=split))
+    ds = cast(Dataset, load_dataset(dataset_name, split=split))
 
     # Get the top-k documents
     top_k = get_top_k(
         retriever,
-        [query],
-        list(dataset["image"]) if retriever.visual_embedding else list(dataset["text_description"]),
-        list(dataset["image_filename"]),
+        queries=[query],
+        documents=list(ds["image"]) if retriever.use_visual_embedding else list(ds["text_description"]),
+        file_names=list(ds["image_filename"]),
         batch_query=1,
         batch_doc=batch_doc,
         k=k,

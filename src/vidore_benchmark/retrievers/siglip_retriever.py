@@ -14,12 +14,20 @@ from vidore_benchmark.utils.torch_utils import get_torch_device
 
 @register_vision_retriever("google/siglip-so400m-patch14-384")
 class SigLip(VisionRetriever):
-    def __init__(self, visual_embedding: bool = True):
-        super().__init__(visual_embedding)
+    def __init__(self, device: str = "auto"):
+        super().__init__()
 
-        self.device = get_torch_device()
+        if device == "auto":
+            self.device = get_torch_device()
+        else:
+            self.device = torch.device(device)
+
         self.processor = AutoProcessor.from_pretrained("google/siglip-so400m-patch14-384")
         self.model = AutoModel.from_pretrained("google/siglip-so400m-patch14-384").to(self.device)
+
+    @property
+    def use_visual_embedding(self) -> bool:
+        return True
 
     def forward_queries(self, queries: List[str], **kwargs) -> Tensor:
         inputs_queries = self.processor(text=queries, return_tensors="pt", padding="max_length", truncation=True).to(
@@ -38,7 +46,12 @@ class SigLip(VisionRetriever):
         return torch.tensor(ps).to(self.device)
 
     def get_scores(
-        self, queries: List[str], documents: List[str | Image.Image], batch_query: int, batch_doc: int
+        self,
+        queries: List[str],
+        documents: List[str | Image.Image],
+        batch_query: int,
+        batch_doc: int,
+        **kwargs,
     ) -> Tensor:
         list_emb_queries: List[torch.Tensor] = []
         for query_batch in tqdm(batched(queries, batch_query), desc="Query batch", total=len(queries) // batch_query):

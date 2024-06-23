@@ -4,7 +4,7 @@ from typing import Annotated, cast
 import typer
 from datasets import Dataset, load_dataset
 from vidore_benchmark.evaluation.evaluate import evaluate_dataset
-from vidore_benchmark.retrievers.utils.initialize_retrievers import create_vision_retriever
+from vidore_benchmark.retrievers.utils.initialize_retrievers import load_vision_retriever_from_registry
 from vidore_benchmark.utils.constants import OUTPUT_DIR
 
 
@@ -20,7 +20,7 @@ def main(
     """
 
     # Create the vision retriever
-    retriever = create_vision_retriever(model_name)
+    retriever = load_vision_retriever_from_registry(model_name)
 
     # Load the dataset
     dataset = cast(Dataset, load_dataset(dataset_name, split=split))

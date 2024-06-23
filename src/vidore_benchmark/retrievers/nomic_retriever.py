@@ -13,29 +13,35 @@ from vidore_benchmark.utils.iter_utils import batched
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
-def mean_pooling(model_output: Tensor, attention_mask: Tensor) -> Tensor:
-    token_embeddings = model_output[0]
-    input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
-    return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
-
-
 @register_vision_retriever("nomic-ai/nomic-embed-vision-v1.5")
 class NomicVision(VisionRetriever):
-    def __init__(self, visual_embedding: bool, *args, **kwargs):
-        super().__init__(visual_embedding, *args, **kwargs)
+    def __init__(self, device: str = "auto"):
+        super().__init__()
 
-        self.device = get_torch_device()
+        if device == "auto":
+            self.device = get_torch_device()
+        else:
+            self.device = torch.device(device)
 
         self.model = AutoModel.from_pretrained("nomic-ai/nomic-embed-vision-v1.5", trust_remote_code=True).to(
             self.device
         )
         self.processor = AutoImageProcessor.from_pretrained("nomic-ai/nomic-embed-vision-v1.5")
 
-        # for nomic only
         self.text_model = AutoModel.from_pretrained("nomic-ai/nomic-embed-text-v1.5", trust_remote_code=True).to(
             self.device
         )
         self.text_tokenizer = AutoTokenizer.from_pretrained("nomic-ai/nomic-embed-text-v1.5", trust_remote_code=True)
+
+    @property
+    def use_visual_embedding(self) -> bool:
+        return True
+
+    @staticmethod
+    def _mean_pooling(model_output: Tensor, attention_mask: Tensor) -> Tensor:
+        token_embeddings = model_output[0]
+        input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+        return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
 
     def forward_queries(self, queries: List[str], **kwargs) -> torch.Tensor:
         query_texts = ["search_query: " + query for query in queries]
@@ -44,7 +50,7 @@ class NomicVision(VisionRetriever):
         )
         with torch.no_grad():
             qs = self.text_model(**encoded_input)
-        qs = mean_pooling(qs, encoded_input["attention_mask"])  # type: ignore
+        qs = self._mean_pooling(qs, encoded_input["attention_mask"])  # type: ignore
         qs = F.layer_norm(qs, normalized_shape=(qs.shape[1],))
         qs = F.normalize(qs, p=2, dim=1)
 
@@ -59,7 +65,12 @@ class NomicVision(VisionRetriever):
         return torch.tensor(ps).to(self.device)
 
     def get_scores(
-        self, queries: List[str], documents: List[Image.Image | str], batch_query: int, batch_doc: int
+        self,
+        queries: List[str],
+        documents: List[Image.Image | str],
+        batch_query: int,
+        batch_doc: int,
+        **kwargs,
     ) -> torch.Tensor:
 
         list_emb_queries: List[torch.Tensor] = []

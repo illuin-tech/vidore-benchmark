@@ -3,7 +3,7 @@ from typing import Annotated
 
 import typer
 from vidore_benchmark.evaluation.evaluate import get_top_k
-from vidore_benchmark.retrievers.utils.initialize_retrievers import create_vision_retriever
+from vidore_benchmark.retrievers.utils.initialize_retrievers import load_vision_retriever_from_registry
 from vidore_benchmark.utils.image_utils import generate_dataset_from_img_folder
 from vidore_benchmark.utils.pdf_utils import convert_all_pdfs_to_images
 
@@ -32,7 +32,7 @@ def main(
     assert Path(data_dirpath).is_dir(), f"Invalid data directory: `{data_dirpath}`"
 
     # Create the vision retriever
-    retriever = create_vision_retriever(model_name)
+    retriever = load_vision_retriever_from_registry(model_name)
 
     # Convert the PDFs in data_dirpath to a dataset
     convert_all_pdfs_to_images(data_dirpath)
@@ -46,9 +46,9 @@ def main(
     # Get the top-k documents
     top_k = get_top_k(
         retriever,
-        [query],
-        list(dataset["image"]),
-        list(dataset["image_filename"]),
+        queries=[query],
+        documents=list(dataset["image"]),
+        file_names=list(dataset["image_filename"]),
         batch_query=1,
         batch_doc=batch_size,
         k=k,

@@ -8,12 +8,12 @@ from pathlib import Path
 from typing import cast
 
 from datasets import Dataset, Features, Image, Value
-from PIL import Image as PILImage
+from PIL import Image
 from torch.utils.data import IterableDataset
 from tqdm import tqdm
 
 
-def scale_image(image: PILImage.Image, new_height: int = 1024) -> PILImage.Image:
+def scale_image(image: Image.Image, new_height: int = 1024) -> Image.Image:
     """
     Scale an image to a new height while maintaining the aspect ratio.
     """
@@ -28,7 +28,7 @@ def scale_image(image: PILImage.Image, new_height: int = 1024) -> PILImage.Image
     return scaled_image
 
 
-def scale_to_max_dimension(image: PILImage.Image, max_dimension: int = 1024) -> PILImage.Image:
+def scale_to_max_dimension(image: Image.Image, max_dimension: int = 1024) -> Image.Image:
     """
     Scale an image to a maximum dimension while maintaining the aspect ratio.
     """
@@ -51,13 +51,13 @@ def scale_to_max_dimension(image: PILImage.Image, max_dimension: int = 1024) -> 
     return scaled_image
 
 
-def get_base64_image(img: str | PILImage.Image, add_url_prefix: bool = True) -> str:
+def get_base64_image(img: str | Image.Image, add_url_prefix: bool = True) -> str:
     """
     Convert an image (from a filepath or a PIL.Image object) to a JPEG-base64 string.
     """
     if isinstance(img, str):
-        img = PILImage.open(img)
-    elif isinstance(img, PILImage.Image):
+        img = Image.open(img)
+    elif isinstance(img, Image.Image):
         pass
     else:
         raise ValueError("`img` must be a path to an image or a PIL Image object.")
@@ -97,14 +97,14 @@ def generate_dataset_from_img_folder(path_to_folder: str, n_samples: int = 1) ->
     img_files = list(Path(path_to_folder).rglob("*.jpg"))
 
     # Create a Dataset from the dictionary
-    features = Features({"image": Image(), "image_filename": Value("string")})
+    features = Features({"image": Image.Image(), "image_filename": Value("string")})
 
     def gen():
         with tqdm(total=len(img_files)) as pbar:
             for image_path in img_files:
                 pbar.set_description(f"Processing {shorten_image_path(str(image_path))}")
 
-                pil_image = PILImage.open(image_path)
+                pil_image = Image.open(image_path)
 
                 yield {
                     "image": pil_image,
