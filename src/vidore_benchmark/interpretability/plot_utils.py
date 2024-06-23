@@ -8,11 +8,11 @@ import torch
 from PIL import Image
 
 
-def plot_patches(
+def plot_similarity_patches(
     img: Image.Image,
     patch_size: int,
     image_resolution: int,
-    patch_opacities: Optional[npt.NDArray | torch.Tensor] = None,
+    similarity_map: Optional[npt.NDArray | torch.Tensor] = None,
     figsize: Tuple[int, int] = (8, 8),
     style: Dict[str, Any] | str | None = None,
 ) -> Tuple[plt.Figure, plt.Axes]:
@@ -32,12 +32,12 @@ def plot_patches(
         style = {}
 
     # Sanity checks
-    if patch_opacities is not None:
-        if isinstance(patch_opacities, torch.Tensor):
-            patch_opacities = cast(npt.NDArray, patch_opacities.cpu().numpy())
-        if patch_opacities.shape != (num_patches, num_patches):
+    if similarity_map is not None:
+        if isinstance(similarity_map, torch.Tensor):
+            similarity_map = cast(npt.NDArray, similarity_map.cpu().numpy())
+        if similarity_map.shape != (num_patches, num_patches):
             raise ValueError("The shape of the patch_opacities tensor is not correct.")
-        if not np.all((0 <= patch_opacities) & (patch_opacities <= 1)):
+        if not np.all((0 <= similarity_map) & (similarity_map <= 1)):
             raise ValueError("The patch_opacities tensor must have values between 0 and 1.")
 
     # If the image is not square, raise an error
@@ -56,8 +56,8 @@ def plot_patches(
             for j in range(num_patches):
                 patch = img_array[i * patch_size : (i + 1) * patch_size, j * patch_size : (j + 1) * patch_size, :]
                 # Set the opacity of the patch
-                if patch_opacities is not None:
-                    patch[:, :, -1] = round(patch_opacities[i, j] * MAX_OPACITY)
+                if similarity_map is not None:
+                    patch[:, :, -1] = round(similarity_map[i, j] * MAX_OPACITY)
                 axis[i, j].imshow(patch)
                 axis[i, j].axis("off")
 
@@ -68,11 +68,11 @@ def plot_patches(
     return fig, axis
 
 
-def plot_attention_heatmap(
+def plot_similarity_heatmap(
     img: Image.Image,
     patch_size: int,
     image_resolution: int,
-    attention_map: npt.NDArray | torch.Tensor,
+    similarity_map: npt.NDArray | torch.Tensor,
     figsize: Tuple[int, int] = (8, 8),
     style: Dict[str, Any] | str | None = None,
     show_colorbar: bool = False,
@@ -93,11 +93,11 @@ def plot_attention_heatmap(
         style = {}
 
     # Sanity checks
-    if isinstance(attention_map, torch.Tensor):
-        attention_map = cast(npt.NDArray, attention_map.cpu().numpy())
-    if attention_map.shape != (num_patches, num_patches):
+    if isinstance(similarity_map, torch.Tensor):
+        similarity_map = cast(npt.NDArray, similarity_map.cpu().numpy())
+    if similarity_map.shape != (num_patches, num_patches):
         raise ValueError("The shape of the patch_opacities tensor is not correct.")
-    if not np.all((0 <= attention_map) & (attention_map <= 1)):
+    if not np.all((0 <= similarity_map) & (similarity_map <= 1)):
         raise ValueError("The patch_opacities tensor must have values between 0 and 1.")
 
     # If the image is not square, raise an error
@@ -108,7 +108,7 @@ def plot_attention_heatmap(
     img_array = np.array(img.convert("RGBA"))  # (H, W, C) where the last channel is the alpha channel
 
     # Get the attention map as a numpy array
-    attention_map_image = Image.fromarray((attention_map * 255).astype("uint8")).resize(
+    attention_map_image = Image.fromarray((similarity_map * 255).astype("uint8")).resize(
         img.size, Image.Resampling.BICUBIC
     )
 
