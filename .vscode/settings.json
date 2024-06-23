@@ -1,3 +1,6 @@
 {
-  "conventionalCommits.scopes": ["models", "dataset", "scripts"]
+  "conventionalCommits.scopes": ["dataset", "models", "retrievers", "scripts"],
+  "python.testing.pytestArgs": ["tests"],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
 }
