@@ -24,7 +24,7 @@ def main(
         --batch-query 1 \
         --batch-doc 4 \
         --k 5 \
-        --query 'Where is Eiffel Tower?'
+        --query "Where is the Eiffel Tower?"
     """
 
     # Create the vision retriever

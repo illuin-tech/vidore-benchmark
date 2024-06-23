@@ -26,7 +26,7 @@ def main(
         --data-dirpath data/pdf_test \
         --batch-size 4 \
         --k 5 \
-        --query 'Where is Eiffel Tower?'
+        --query "Where is the Eiffel Tower?"
     """
 
     assert Path(data_dirpath).is_dir(), f"Invalid data directory: `{data_dirpath}`"
