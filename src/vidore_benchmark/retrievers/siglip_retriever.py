@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, cast
 
 import torch
 from PIL import Image
@@ -37,7 +37,7 @@ class SigLip(VisionRetriever):
 
         return torch.tensor(qs).to(self.device)
 
-    def forward_documents(self, documents: List[str | Image.Image], **kwargs) -> Tensor:
+    def forward_documents(self, documents: List[Image.Image] | List[str], **kwargs) -> Tensor:
         input_image_processed = self.processor(images=documents, return_tensors="pt", padding=True).to(self.device)
 
         with torch.no_grad():
@@ -55,12 +55,14 @@ class SigLip(VisionRetriever):
     ) -> Tensor:
         list_emb_queries: List[torch.Tensor] = []
         for query_batch in tqdm(batched(queries, batch_query), desc="Query batch", total=len(queries) // batch_query):
-            query_embeddings = self.forward_queries(query_batch)  # type: ignore
+            query_batch = cast(List[str], query_batch)
+            query_embeddings = self.forward_queries(query_batch)
             list_emb_queries.append(query_embeddings)
 
         list_emb_documents: List[torch.Tensor] = []
         for doc_batch in tqdm(batched(documents, batch_doc), desc="Document batch", total=len(documents) // batch_doc):
-            doc_embeddings = self.forward_documents(doc_batch)  # type: ignore
+            doc_batch = cast(List[Image.Image], doc_batch)
+            doc_embeddings = self.forward_documents(doc_batch)
             list_emb_documents.append(doc_embeddings)
 
         emb_queries = torch.cat(list_emb_queries, dim=0)

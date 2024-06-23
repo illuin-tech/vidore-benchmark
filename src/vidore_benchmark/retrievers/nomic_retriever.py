@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, cast
 
 import torch
 import torch.nn.functional as F
@@ -75,12 +75,14 @@ class NomicVision(VisionRetriever):
 
         list_emb_queries: List[torch.Tensor] = []
         for query_batch in tqdm(batched(queries, batch_query), desc="Query batch", total=len(queries) // batch_query):
-            query_embeddings = self.forward_queries(query_batch)  # type: ignore
+            query_batch = cast(List[str], query_batch)
+            query_embeddings = self.forward_queries(query_batch)
             list_emb_queries.append(query_embeddings)
 
         list_emb_documents: List[torch.Tensor] = []
         for doc_batch in tqdm(batched(documents, batch_doc), desc="Document batch", total=len(documents) // batch_doc):
-            doc_embeddings = self.forward_documents(doc_batch)  # type: ignore
+            doc_batch = cast(List[Image.Image], doc_batch)
+            doc_embeddings = self.forward_documents(doc_batch)
             list_emb_documents.append(doc_embeddings)
 
         emb_queries = torch.cat(list_emb_queries, dim=0)
