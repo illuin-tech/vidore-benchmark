@@ -7,7 +7,7 @@ from typing import cast
 from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
 from vidore_benchmark.evaluation.evaluate import evaluate_dataset
-from vidore_benchmark.retrievers.jina_clip_retriever import JinaClip
+from vidore_benchmark.retrievers.jina_clip_retriever import JinaClipRetriever
 
 load_dotenv(override=True)
 
@@ -16,7 +16,7 @@ def main():
     """
     Debugging script
     """
-    my_retriever = JinaClip()
+    my_retriever = JinaClipRetriever()
 
     dataset = cast(Dataset, load_dataset("coldoc/shiftproject_test", split="test"))
 
