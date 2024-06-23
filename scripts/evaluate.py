@@ -3,9 +3,12 @@ from typing import Annotated, cast
 
 import typer
 from datasets import Dataset, load_dataset
+from dotenv import load_dotenv
 from vidore_benchmark.evaluation.evaluate import evaluate_dataset
 from vidore_benchmark.retrievers.utils.initialize_retrievers import load_vision_retriever_from_registry
 from vidore_benchmark.utils.constants import OUTPUT_DIR
+
+load_dotenv(override=True)
 
 
 def main(

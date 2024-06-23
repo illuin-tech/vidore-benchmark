@@ -5,8 +5,11 @@ TODO: Remove file after debugging
 from typing import cast
 
 from datasets import Dataset, load_dataset
+from dotenv import load_dotenv
 from vidore_benchmark.evaluation.evaluate import evaluate_dataset
 from vidore_benchmark.retrievers.jina_clip_retriever import JinaClip
+
+load_dotenv(override=True)
 
 
 def main():
