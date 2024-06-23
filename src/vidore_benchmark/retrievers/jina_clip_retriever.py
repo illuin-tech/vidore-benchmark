@@ -15,12 +15,7 @@ from vidore_benchmark.utils.torch_utils import get_torch_device
 class JinaClip(VisionRetriever):
     def __init__(self, device: str = "auto"):
         super().__init__()
-
-        if device == "auto":
-            self.device = get_torch_device()
-        else:
-            self.device = torch.device(device)
-
+        self.device = get_torch_device(device)
         self.model = AutoModel.from_pretrained("jinaai/jina-clip-v1", trust_remote_code=True).to(self.device)
 
     @property
