@@ -1,29 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
-name = 'vidore_benchmark'
-dynamic = ["version"]
-description = 'Visual Document Retrieval Evaluation'
+name = "vidore_benchmark"
+version = "0.0.1"
+description = "Visual Document Retrieval: Benchmark"
 authors = [
-    { name = 'Manuel Faysse', email = 'manuel.faysse@illuin.tech' },
-    { name = 'Hugues Sibille', email = 'hugues.sibille@illuin.tech' },
-    { name = 'Tony Wu', email = 'tony.wu@illuin.tech' },
+    { name = "Manuel Faysse", email = "manuel.faysse@illuin.tech" },
+    { name = "Hugues Sibille", email = "hugues.sibille@illuin.tech" },
+    { name = "Tony Wu", email = "tony.wu@illuin.tech" },
 ]
-readme = 'README.md'
-requires-python = '>=3.9'
+readme = "README.md"
+requires-python = ">=3.9"
 classifiers = [
-    'Intended Audience :: Science/Research',
-    'Intended Audience :: Developers',
-    'Operating System :: OS Independent',
-    'Private :: Do Not Upload',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.11.6',
-    'Topic :: Scientific/Engineering :: Artificial Intelligence',
-    'Typing :: Typed',
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-dependencies = [
-    "datasets>=2.15.0",
-    "mteb==1.12.47",
-    "torch>=2.0.0",
-]
+
+dependencies = ["datasets>=2.15.0", "mteb==1.12.47", "torch>=2.0.0"]
 
 [project.optional-dependencies]
 dev = [
