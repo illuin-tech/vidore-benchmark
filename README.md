@@ -12,7 +12,7 @@ Vision Document Retrieval (ViDoRe): Benchmark
 To evaluate a retriever on ViDoRe benchmark, execute the following function: 
 
 ```bash
-python scripts/evaluate_retriever.py --collection-name coldoc/vidore-benchmark-667173f98e70a1c0fa4db00d --split 'test' --model-name [hf_model_name]
+python scripts/evaluate_retriever.py --collection-name vidore/vidore-benchmark-667173f98e70a1c0fa4db00d --split 'test' --model-name [hf_model_name]
 ```
 
 alternatively, you can evaluate your model on a single dataset 
@@ -87,11 +87,11 @@ class DummyRetriever(VisionRetriever):
 We compared ColPali to existing strong baseline for document retrieving, close to what is done in industry. We chunk the different document using widely used open-source tool [unstructured](unstructured.io) and treat the visual chunks (figures and tables) with OCR or Captioning. Below are the commands to reproduce baselines results (also works with `--model-name bm25`). 
 - OCR : 
 ```bash
-python scripts/evaluate.py --split 'test' --collection-name coldoc/vidore-chunk-ocr-baseline-666acce88c294ef415548a56 --model-name BAAI/bge-m3
+python scripts/evaluate.py --split 'test' --collection-name vidore/vidore-chunk-ocr-baseline-666acce88c294ef415548a56 --model-name BAAI/bge-m3
 ```
 - Captioning :  
 ```bash
-python scripts/evaluate.py --split 'test' --collection-name coldoc/vidore-captioning-baseline-6658a2a62d857c7a345195fd  --model-name BAAI/bge-m3
+python scripts/evaluate.py --split 'test' --collection-name vidore/vidore-captioning-baseline-6658a2a62d857c7a345195fd  --model-name BAAI/bge-m3
 ```
 
 ## Associated Paper
