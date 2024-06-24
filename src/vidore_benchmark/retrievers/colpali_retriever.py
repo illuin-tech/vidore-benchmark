@@ -1,48 +1,42 @@
-import torch
-from abc import abstractmethod
-from typing import List
+from __future__ import annotations
 
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+from abc import abstractmethod
+from typing import List, cast
+
+import torch
+from dotenv import load_dotenv
 from PIL import Image
-from transformers import AutoProcessor
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from transformers import AutoProcessor
 
-from typing import cast
-
-from datasets import Dataset, load_dataset
-from dotenv import load_dotenv
-
-# make sure to install the custom_colbert package
-from custom_colbert.models.paligemma_colbert_architecture import ColPali
-from custom_colbert.trainer.retrieval_evaluator import CustomEvaluator as ColPaliScorer
-from vidore_benchmark.evaluation.evaluate import evaluate_dataset
+from vidore_benchmark.evaluation.colpali_scorer import ColPaliScorer
+from vidore_benchmark.models.colpali_model import ColPali
+from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+from vidore_benchmark.utils.torch_utils import get_torch_device
 
 load_dotenv(override=True)
 
 
 class ColPaliRetriever(VisionRetriever):
     """
-    Abstract class for ViDoRe retrievers.
+    ColPali Retriever that implements the model from "ColPali: Efficient Document Retrieval with Vision Language Models".
     """
 
-    def __init__(self):
+    def __init__(self, device: str = "auto"):
         super().__init__()
         model_name = "coldoc/colpali-3b-mix-448"
-        self.model = ColPali.from_pretrained("google/paligemma-3b-mix-448", torch_dtype=torch.bfloat16,
-                                             device_map="cuda").eval()
+        self.device = get_torch_device(device)
+        self.model = cast(
+            ColPali,
+            ColPali.from_pretrained("google/paligemma-3b-mix-448", torch_dtype=torch.bfloat16, device_map=device),
+        ).eval()
         self.model.load_adapter(model_name)
         self.scorer = ColPaliScorer(is_multi_vector=True)
         self.processor = AutoProcessor.from_pretrained(model_name)
-        self.device = self.model.device
 
     @property
     def use_visual_embedding(self) -> bool:
-        """
-        The child class should instantiate the `use_visual_embedding` property:
-        - True if the retriever uses native visual embeddings (e.g. JINA-Clip, ColPali)
-        - False if the retriever uses text embeddings and possibly VLM-generated captions (e.g. BM25).
-        """
         return True
 
     def process_images(self, images, **kwargs):
@@ -59,9 +53,6 @@ class ColPaliRetriever(VisionRetriever):
         return batch_doc
 
     def process_queries(self, queries, **kwargs) -> torch.Tensor:
-        """
-        Forward pass the processed queries.
-        """
         texts_query = []
         for query in queries:
             query = f"Question: {query}<unused0><unused0><unused0><unused0><unused0>"
@@ -78,16 +69,12 @@ class ColPaliRetriever(VisionRetriever):
         )
         del batch_query["pixel_values"]
 
-        batch_query["input_ids"] = batch_query["input_ids"][..., self.processor.image_seq_length:]
-        batch_query["attention_mask"] = batch_query["attention_mask"][..., self.processor.image_seq_length:]
+        batch_query["input_ids"] = batch_query["input_ids"][..., self.processor.image_seq_length :]
+        batch_query["attention_mask"] = batch_query["attention_mask"][..., self.processor.image_seq_length :]
         return batch_query
 
     @abstractmethod
-    def forward_queries(self, queries, **kwargs) -> List[torch.Tensor]:
-        """
-        Forward pass the processed queries.
-        """
-        # run inference - docs
+    def forward_queries(self, queries, **kwargs) -> torch.Tensor:
         dataloader = DataLoader(
             queries,
             batch_size=kwargs.get("bs", 4),
@@ -101,20 +88,18 @@ class ColPaliRetriever(VisionRetriever):
                 embeddings_query = self.model(**batch_query)
                 qs.extend(list(torch.unbind(embeddings_query.to("cpu"))))
 
+        # Temporarily stack the embeddings as a tensor for class compatibility
+        qs = torch.stack(qs, dim=0)
+
         return qs
 
     @abstractmethod
-    def forward_documents(self, documents, **kwargs) -> List[torch.Tensor]:
-        """
-        Forward pass the processed documents (i.e. page images).
-        """
-
-        # run inference - docs
+    def forward_documents(self, documents, **kwargs) -> torch.Tensor:
         dataloader = DataLoader(
             documents,
             batch_size=kwargs.get("bs", 4),
             shuffle=False,
-            collate_fn=lambda x: self.process_images(x),
+            collate_fn=self.process_images,
         )
         ds = []
         for batch_doc in tqdm(dataloader):
@@ -122,40 +107,30 @@ class ColPaliRetriever(VisionRetriever):
                 batch_doc = {k: v.to(self.device) for k, v in batch_doc.items()}
                 embeddings_doc = self.model(**batch_doc)
             ds.extend(list(torch.unbind(embeddings_doc.to("cpu"))))
+
+        # Temporarily stack the embeddings as a tensor for class compatibility
+        ds = torch.stack(ds, dim=0)
+
         return ds
 
     @abstractmethod
     def get_scores(
-            self,
-            queries: List[str],
-            documents: List["Image.Image | str"],
-            batch_query: int,
-            batch_doc: int,
-            **kwargs,
+        self,
+        queries: List[str],
+        documents: List[Image.Image | str],
+        batch_query: int,
+        batch_doc: int,
+        **kwargs,
     ) -> torch.Tensor:
         """
         Get the similarity scores between queries and documents.
         """
-        qs = self.forward_queries(queries, bs=batch_query)
-        ds = self.forward_documents(documents, bs=batch_doc)
+        qs_stacked = self.forward_queries(queries, bs=batch_query)
+        ds_stacked = self.forward_documents(documents, bs=batch_doc)
+
+        # Unpack the stacked embeddings to a list for the scorer
+        qs = list(torch.unbind(qs_stacked))
+        ds = list(torch.unbind(ds_stacked))
 
         scores = self.scorer.evaluate(qs, ds)
         return scores
-
-
-def main():
-    """
-    Debugging script
-    """
-    my_retriever = ColPaliRetriever()
-
-    dataset = cast(Dataset, load_dataset("coldoc/shiftproject_test", split="test"))
-
-    print("Dataset loaded")
-    metrics = evaluate_dataset(my_retriever, dataset, batch_query=4, batch_doc=4)  # type: ignore
-
-    print(metrics)
-
-
-if __name__ == "__main__":
-    main()
