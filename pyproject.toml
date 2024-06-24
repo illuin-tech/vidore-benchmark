@@ -22,7 +22,16 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
-dependencies = ["datasets>=2.15.0", "mteb==1.12.47", "torch>=2.0.0"]
+dependencies = [
+    "datasets>=2.15.0",
+    "einops>=0.8.0",
+    "mteb>=1.12.47",
+    "peft>=0.11.1",
+    "python-dotenv>=1.0.1",
+    "torch>=2.0.0",
+    "transformers>=4.41.1",
+    "typer>=0.12.3",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -43,9 +52,7 @@ baselines = [
     "matplotlib==3.9.0",
     "mteb==1.12.47",
     "pdf2image==1.17.0",
-    "peft==0.11.1",
     "pytesseract==0.3.10",
-    "python-dotenv==1.0.1",
     "rank-bm25==0.2.2",
     "scikit-learn==1.5.0",
     "seaborn==0.13.2",
@@ -53,7 +60,6 @@ baselines = [
     "sentence-transformers==3.0.1",
     "torch==2.2.2",
     "transformers==4.41.1",
-    "typer==0.12.3",
 ]
 
 [project.urls]
