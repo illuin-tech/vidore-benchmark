@@ -1,100 +1,99 @@
-# vidore-benchmark
-[[Blog]]()
+# Vision Document Retrieval (ViDoRe): Benchmark
+
+[[Hf Blog]]()
 [[Paper]]()
-[[ColPali Model card]]()
-[[ViDoRe Dataset card]]()
+[[ColPali Model card]](https://huggingface.co/vidore/colpali-3b-mix-448)
+[[ColPali training repo]](https://github.com/ManuelFay/retriever-training)
+[[ViDoRe Dataset collection]](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d)
 [[Colab example]]()
 [[HuggingFace Space]]()
 
-Vision Document Retrieval (ViDoRe): Benchmark
+**ColPali: Efficient Document Retrieval with Vision Language Models**  
+First authors: Manuel Faysse, Hugues Sibille, Tony Wu  
+Contributors: Bilel Omrani, Gautier Viaud, CELINE HUDELOT, Pierre Colombo
 
-## Evaluate a retriever on ViDoRE
-To evaluate a retriever on ViDoRe benchmark, execute the following function: 
+## Aproach
+
+ViDoRe, the Visual Document Retrieval Benchmark, is introduced to evaluate and enhance the performance of document retrieval systems on visually rich documents across various tasks, domains, languages, and settings.
+
+## Setup
+
+We used Python 3.11.6 and PyTorch 2.2.2 to train and test our models, but the codebase is expected to be compatible with Python >=3.9 and recent PyTorch versions.
+
+The eval codebase depends on a few Python packages, which can be downloaded using the following command:
 
 ```bash
-python scripts/evaluate_retriever.py --collection-name vidore/vidore-benchmark-667173f98e70a1c0fa4db00d --split 'test' --model-name [hf_model_name]
+pip install -U vidore-benchmark  # TODO: publish the package on PyPI
 ```
 
-alternatively, you can evaluate your model on a single dataset 
+Alternatively, the following command will pull and install the latest commit from this repository, along with its Python dependencies:
 
 ```bash
-python scripts/evaluate_retriever.py --dataset-name [hf_dataset_name] --model-name [hf_model_name]
+pip install --upgrade --no-deps --force-reinstall git+https://github.com/tonywu71/vidore-benchmark.git
 ```
 
-Supported visual retrievers are ColPali (ours), JinaClip, Nomic Vision and SigLip. If you want to add more please refer to the section below [add link]()
+To keep a lightweight repostiory, only the essential packages were installed. In particular, if you need to run the interpretability scripts, you should also run:
 
+```bash
+pip install -U "vidore-benchmark[interpretability]"
+```
 
-## Implement your own retriever
+Finally, if you are willing to reproduce the results from the ColPali paper, you should run this command:
 
-Here are the steps to create your custom model for retrieval evaluation.
+```bash
+pip install -U "vidore-benchmark[baselines]"
+```
 
-- Instantiate a class inherited from `VisionRetriever` abstract class. 
-- Implement `forward_query`, `forward_documents` and `get_scores` abstract methods. 
-- [OPTIONAL] Implement `get_relevant_docs_results` and `compute_metrics` if you want custom implementation for metric computation.
+## Command-line usage
 
-If you want to call directly your class by your model_name (e.g. in  `evaluate.py` script) you can do the following:
+### Evaluate an retriever on ViDoRE
 
-- Add decorator `@register_vision_retriever([your model name])`
-- Import your class to the `vidore_benchmark/retrievers/__init__.py` file
+To evaluate an off-the-shelf retriever on the ViDoRe benchmark:
 
-Examples be found in `src/vidore_benchmark/retrievers/` :
+```bash
+python scripts/evaluate_retriever.py \
+    --collection-name vidore/vidore-benchmark-667173f98e70a1c0fa4db00d \
+    --split test \
+    --model-name {{hf_model_name}}
+```
+
+Alternatively, you can evaluate your model on a single dataset:
+
+```bash
+python scripts/evaluate_retriever.py \
+    --dataset-name {{hf_dataset_name}} \
+    --model-name {{hf_model_name}}
+```
+
+Available visual retrievers are ColPali, JinaClip, Nomic Vision, and SigLIP. Read [this section](###Implement-your-own-retriever) to learm how to use your own retriever.
+
+### Reproduce the baselines
+
+Run the following command to reproduce the results from the ColPali paper:
+
+```bash
+python scripts/evaluate.py \
+    --split 'test' \
+    --collection-name coldoc/vidore-chunk-ocr-baseline-666acce88c294ef415548a56 \
+    --model-name vidore/colpali-3b-mix-448
+```
+
+## Python usage
+
+### Implement your own retriever
+
+Read the instructions [here](https://github.com/tonywu71/vidore-benchmark/blob/main/src/vidore_benchmark/retrievers/README.md).
+
+### Show the similarity maps for interpretability
+
+By superimposing the late interaction heatmap on top of the original image, we can visualize the most salient image patches with respect to each term of the query, yielding interpretable insights into model focus zones.
+
+To generate the similarity maps for a given document-query pair:
 
 ```python
-#src/vidore_benchmark/retrievers/dummy_retriever.py
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
-from vidore_benchmark.retrievers.utils.register_models import register_text_retriever
-from typing import List
-from tqdm import tqdm
-from PIL import Image
-import torch
-
-@register_vision_retriever("dummy_retriever")
-class DummyRetriever(VisionRetriever):
-    def __init__(
-        self,
-        emb_dim_query: int = 512,
-        emb_dim_doc: int = 512,
-    ):
-        super().__init__()
-        self.emb_dim_query = emb_dim_query
-        self.emb_dim_doc = emb_dim_doc
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return False
-
-    def forward_queries(self, queries: List[str], **kwargs) -> torch.Tensor:
-        return torch.randn(len(queries), self.emb_dim_query)
-
-    def forward_documents(self, documents: List[Image.Image], **kwargs) -> torch.Tensor:
-        return torch.randn(len(documents), self.emb_dim_doc)
-
-    def get_scores(
-        self,
-        queries: List[str],
-        documents: List[Image.Image | str],
-        batch_query: int,
-        batch_doc: int,
-        **kwargs,
-    ) -> torch.Tensor:
-        scores = torch.randn(len(queries), len(documents))
-        return scores
-
+python scripts/generate_similarity_maps.py \
+    --documents "data/interpretability_examples/energy_electricity_generation.jpeg" \
+    --queries "Which hour of the day had the highest overall electricity generation in 2019?" \
+    --documents "data/interpretability_examples/shift_kazakhstan.jpg" \
+    --queries "Quelle partie de la production pétrolière du Kazakhstan provient de champs en mer ?"
 ```
-
-## Baselines Reproducibility
-
-We compared ColPali to existing strong baseline for document retrieving, close to what is done in industry. We chunk the different document using widely used open-source tool [unstructured](unstructured.io) and treat the visual chunks (figures and tables) with OCR or Captioning. Below are the commands to reproduce baselines results (also works with `--model-name bm25`). 
-- OCR : 
-```bash
-python scripts/evaluate.py --split 'test' --collection-name vidore/vidore-chunk-ocr-baseline-666acce88c294ef415548a56 --model-name BAAI/bge-m3
-```
-- Captioning :  
-```bash
-python scripts/evaluate.py --split 'test' --collection-name vidore/vidore-captioning-baseline-6658a2a62d857c7a345195fd  --model-name BAAI/bge-m3
-```
-
-## Associated Paper
-
-**ColPali: Efficient Document Retrieval with Vision Language Models**
-Manuel Faysse, Hugues Sibille, Tony Wu, Bilel Omrani, Gautier Viaud, CELINE HUDELOT, Pierre Colombo
