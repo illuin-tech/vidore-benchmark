@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List, cast
 
 import torch
@@ -33,7 +35,7 @@ class JinaClipRetriever(VisionRetriever):
     def get_scores(
         self,
         queries: List[str],
-        documents: List["Image.Image | str"],
+        documents: List[Image.Image | str],
         batch_query: int,
         batch_doc: int,
         **kwargs,
