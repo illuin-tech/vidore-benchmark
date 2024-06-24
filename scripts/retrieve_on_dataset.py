@@ -22,7 +22,7 @@ def main(
     
     >>> python scripts/retrieve_on_dataset.py \
         --model-name BAAI/bge-m3 \
-        --dataset-name coldoc/shiftproject_test \
+        --dataset-name vidore/shiftproject_test \
         --split test \
         --batch-query 1 \
         --batch-doc 4 \

@@ -38,7 +38,7 @@ def main(
     device = get_torch_device(device)
 
     model_path = "google/paligemma-3b-mix-448"
-    lora_path = "coldoc/paligemma-3b-mix-448"
+    lora_path = "vidore/paligemma-3b-mix-448"
 
     # Load the model and LORA adapter
     model = cast(ColPali, ColPali.from_pretrained(model_path, device_map=device))

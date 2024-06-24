@@ -18,7 +18,7 @@ def main():
     """
     my_retriever = JinaClipRetriever()
 
-    dataset = cast(Dataset, load_dataset("coldoc/shiftproject_test", split="test"))
+    dataset = cast(Dataset, load_dataset("vidore/shiftproject_test", split="test"))
 
     print("Dataset loaded")
     metrics = evaluate_dataset(my_retriever, dataset, batch_query=1, batch_doc=4)  # type: ignore
