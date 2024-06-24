@@ -27,7 +27,7 @@ dependencies = [
     "einops==0.8.0",
     "FlagEmbedding==1.2.10",
     "matplotlib==3.9.0",
-    "mteb==1.12.5",
+    "mteb==1.12.47",
     "pdf2image==1.17.0",
     "peft==0.11.1",
     "pytesseract==0.3.10",

@@ -4,6 +4,10 @@ from transformers.models.paligemma.modeling_paligemma import PaliGemmaForConditi
 
 
 class ColNewSiglip(PaliGemmaPreTrainedModel):
+    """
+    TODO: Update w/ Manu's latest code.
+    """
+
     def __init__(self, config):
         super(ColNewSiglip, self).__init__(config=config)
         self.model: PaliGemmaForConditionalGeneration = PaliGemmaForConditionalGeneration(config)

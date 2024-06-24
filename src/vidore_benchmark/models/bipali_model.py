@@ -3,6 +3,10 @@ from transformers.models.paligemma.modeling_paligemma import PaliGemmaForConditi
 
 
 class BiPaliLast(PaliGemmaPreTrainedModel):
+    """
+    TODO: Update w/ Manu's latest code.
+    """
+
     def __init__(self, config):
         super(BiPaliLast, self).__init__(config=config)
         self.model: PaliGemmaForConditionalGeneration = PaliGemmaForConditionalGeneration(config)
@@ -20,6 +24,10 @@ class BiPaliLast(PaliGemmaPreTrainedModel):
 
 
 class BiPaliMean(PaliGemmaPreTrainedModel):
+    """
+    TODO: Update w/ Manu's latest code.
+    """
+
     def __init__(self, config):
         super(BiPaliMean, self).__init__(config=config)
         self.model: PaliGemmaForConditionalGeneration = PaliGemmaForConditionalGeneration(config)

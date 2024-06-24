@@ -4,8 +4,13 @@ Utility functions for working with images.
 
 import base64
 import io
+from pathlib import Path
+from typing import cast
 
+from datasets import Dataset, Features, Image, Value
 from PIL import Image
+from torch.utils.data import IterableDataset
+from tqdm import tqdm
 
 
 def scale_image(image: Image.Image, new_height: int = 1024) -> Image.Image:
@@ -62,3 +67,52 @@ def get_base64_image(img: str | Image.Image, add_url_prefix: bool = True) -> str
     b64_data = base64.b64encode(buffered.getvalue()).decode("utf-8")
 
     return f"data:image/jpeg;base64,{b64_data}" if add_url_prefix else b64_data
+
+
+def shorten_image_path(image_path: str) -> str:
+    """
+    Shorten the image path to make it more readable.
+    """
+    full_path = Path(image_path)
+    enclosing_dir = full_path.parent.parent
+    return full_path.relative_to(enclosing_dir).as_posix()
+
+
+def generate_dataset_from_img_folder(path_to_folder: str, n_samples: int = 1) -> IterableDataset:
+    """
+    Generate questions and answers from a folder containing pdf files and by themes.
+
+    Args:
+    - path_to_folder (str): path to the folder containing the pdf files
+
+    Returns:
+    - ds (DatasetDict): a dataset containing the questions and answers generated from the pdf files
+
+    structure of the dataset:
+    - query (str): the question generated from the image
+    - image (PIL.Image): the image
+    - image_filename (str): the path to the image
+
+    """
+    img_files = list(Path(path_to_folder).rglob("*.jpg"))
+
+    # Create a Dataset from the dictionary
+    features = Features({"image": Image.Image(), "image_filename": Value("string")})
+
+    def gen():
+        with tqdm(total=len(img_files)) as pbar:
+            for image_path in img_files:
+                pbar.set_description(f"Processing {shorten_image_path(str(image_path))}")
+
+                pil_image = Image.open(image_path)
+
+                yield {
+                    "image": pil_image,
+                    "image_filename": image_path,
+                }
+                pbar.update(1)
+
+    # Create the dataset from the generator
+    ds = cast(IterableDataset, Dataset.from_generator(gen, features=features))
+
+    return ds

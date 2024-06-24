@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 EPSILON = 1e-10
 
 
-def normalize_attention_map_per_query_token(x: torch.Tensor) -> torch.Tensor:
+def normalize_similarity_map_per_query_token(x: torch.Tensor) -> torch.Tensor:
     """
     Normalizes the attention map for ColPali for each query token.
     The output tensor will have values in the range [0, 1] and the

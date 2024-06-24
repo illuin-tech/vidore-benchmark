@@ -8,15 +8,15 @@ import pandas as pd
 
 class EvalManager:
     """
-    Stores evaluation results for various datasets and metrics.
+    Stores evaluation results for various datasets and metrics. Supports the
+    JSON output of the `VisionRetriever.compute_metric`.
 
     The data is stored in a pandas DataFrame with a MultiIndex for columns.
     The first level of the MultiIndex is the dataset name and the second level is the metric name.
 
     Usage:
-    >>> evaluator = Evaluator.from_dirpath("data/evaluation_results/")
-    >>> print(evaluator.data)
-
+    >>> eval_manager = EvalManager.from_dirpath("data/evaluation_results/")
+    >>> print(eval_manager.data)
     """
 
     model_col: ClassVar[str] = "model"
