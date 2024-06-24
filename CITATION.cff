@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - given-names: Manuel
+    family-names: Faysse
+    email: manuel.faysse@illuin.tech
+    affiliation: ILLUIN Technology
+  - given-names: Hugues
+    family-names: Sibille
+    email: hugues.sibille@illuin.tech
+    affiliation: ILLUIN Technology
+  - given-names: Tony
+    family-names: Wu
+    affiliation: ILLUIN Technology
+    email: tony.wu@illuin.tech
+repository-code: 'https://github.com/tonywu71/vidore-benchmark'
+repository-artifact: 'https://huggingface.co/vidore'
+abstract: >-
+  Evaluation code for the "ColPali: Efficient Document
+  Retrieval with Vision Language Models" paper.
+keywords:
+  - retrieval
+  - computer vision
+  - large language models
+license: MIT
