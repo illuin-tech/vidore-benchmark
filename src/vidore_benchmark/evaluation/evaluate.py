@@ -47,7 +47,7 @@ def evaluate_dataset(
 def get_top_k(
     vision_retriever: VisionRetriever,
     queries: List[str],
-    documents: List[Image.Image | str],
+    documents: List["Image.Image | str"],
     file_names: List[str],
     batch_query: int,
     batch_doc: int,

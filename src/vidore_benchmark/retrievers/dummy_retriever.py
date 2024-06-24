@@ -31,7 +31,7 @@ class DummyRetriever(VisionRetriever):
     def get_scores(
         self,
         queries: List[str],
-        documents: List[Image.Image | str],
+        documents: List["Image.Image | str"],
         batch_query: int,
         batch_doc: int,
         **kwargs,
