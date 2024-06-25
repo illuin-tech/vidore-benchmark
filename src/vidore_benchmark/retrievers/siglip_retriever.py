@@ -19,6 +19,8 @@ class SigLIPRetriever(VisionRetriever):
         self.device = get_torch_device(device)
         self.processor = AutoProcessor.from_pretrained("google/siglip-so400m-patch14-384")
         self.model = AutoModel.from_pretrained("google/siglip-so400m-patch14-384").to(self.device)
+        # model eval()
+        self.model.eval()
 
     @property
     def use_visual_embedding(self) -> bool:
@@ -33,7 +35,10 @@ class SigLIPRetriever(VisionRetriever):
         return torch.tensor(qs).to(self.device)
 
     def forward_documents(self, documents: List[Image.Image] | List[str], **kwargs) -> Tensor:
-        input_image_processed = self.processor(images=documents, return_tensors="pt", padding=True).to(self.device)
+        # if image is not in RGB format, convert it to RGB
+        list_doc = [document.convert("RGB") for document in documents if isinstance(document, Image.Image)]
+
+        input_image_processed = self.processor(images=list_doc, return_tensors="pt", padding=True).to(self.device)
 
         with torch.no_grad():
             ps = self.model.get_image_features(**input_image_processed)
