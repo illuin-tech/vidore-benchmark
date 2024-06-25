@@ -1,20 +1,17 @@
 # Vision Document Retrieval (ViDoRe): Benchmark
 
-[[Hf Blog]]()
-[[Paper]]()
+<!-- [[Paper]]() -->
 [[ColPali Model card]](https://huggingface.co/vidore/colpali-3b-mix-448)
 [[ColPali training repo]](https://github.com/ManuelFay/retriever-training)
 [[ViDoRe Dataset collection]](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d)
-[[Colab example]]()
-[[HuggingFace Space]]()
+<!-- [[Hf Blog]]() -->
+<!-- [[Hf Leaderboard]]() -->
+<!-- [[Hf Space]]() -->
+<!-- [[Colab example]]() -->
 
-**ColPali: Efficient Document Retrieval with Vision Language Models**  
-First authors: Manuel Faysse, Hugues Sibille, Tony Wu  
-Contributors: Bilel Omrani, Gautier Viaud, CELINE HUDELOT, Pierre Colombo
+## Approach
 
-## Aproach
-
-ViDoRe, the Visual Document Retrieval Benchmark, is introduced to evaluate and enhance the performance of document retrieval systems on visually rich documents across various tasks, domains, languages, and settings.
+The Visual Document Retrieval Benchmark (ViDoRe), is introduced to evaluate and enhance the performance of document retrieval systems on visually rich documents across various tasks, domains, languages, and settings. It was used to evaluate the ColPali model, a VLM-powered retriever that efficiently retrieves documents based on their visual content and textual queries.
 
 ## Setup
 
@@ -72,10 +69,18 @@ Available visual retrievers are ColPali, JinaClip, Nomic Vision, and SigLIP. Rea
 Run the following command to reproduce the results from the ColPali paper:
 
 ```bash
-python scripts/evaluate.py \
+python scripts/evaluate_retriever.py \
     --split 'test' \
     --collection-name coldoc/vidore-chunk-ocr-baseline-666acce88c294ef415548a56 \
     --model-name vidore/colpali-3b-mix-448
+```
+
+### Documentation
+
+All scripts can be found in the `scripts/` directory. To get help on a specific script, run:
+
+```bash
+python scripts/{{script_name}} --help
 ```
 
 ## Python usage
@@ -97,3 +102,9 @@ python scripts/generate_similarity_maps.py \
     --documents "data/interpretability_examples/shift_kazakhstan.jpg" \
     --queries "Quelle partie de la production pétrolière du Kazakhstan provient de champs en mer ?"
 ```
+
+## Citation
+
+**ColPali: Efficient Document Retrieval with Vision Language Models**  
+First authors: Manuel Faysse, Hugues Sibille, Tony Wu  
+Contributors: Bilel Omrani, Gautier Viaud, CELINE HUDELOT, Pierre Colombo
