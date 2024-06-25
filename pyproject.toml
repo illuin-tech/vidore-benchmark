@@ -62,6 +62,10 @@ baselines = [
     "transformers==4.41.1",
 ]
 
+demo = [
+    "gradio"
+]
+
 [project.urls]
 homepage = "https://github.com/tonywu71/vidore-benchmark"
 
