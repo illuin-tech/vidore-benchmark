@@ -28,16 +28,23 @@ class VisionRetriever(ABC):
         pass
 
     @abstractmethod
-    def forward_queries(self, queries, **kwargs) -> torch.Tensor:
+    def forward_queries(self, queries, **kwargs) -> torch.Tensor | List[torch.Tensor]:
         """
         Forward pass the processed queries.
+
+        NOTE: If the method returns :
+        - torch.Tensor: the retriever uses a single tensor for computing the similarity scores. (e.g. SigLIP)
+        - List[torch.Tensor]: the retriever uses multiple tensors for computing the similarity scores. (e.g. ColPali)
         """
         pass
 
     @abstractmethod
-    def forward_documents(self, documents, **kwargs) -> torch.Tensor:
+    def forward_documents(self, documents, **kwargs) -> torch.Tensor | List[torch.Tensor]:
         """
         Forward pass the processed documents (i.e. page images).
+        NOTE: If the method returns :
+        - torch.Tensor: the retriever uses a single tensor for computing the similarity scores. (e.g. SigLIP)
+        - List[torch.Tensor]: the retriever uses multiple tensors for computing the similarity scores. (e.g. ColPali)
         """
         pass
 

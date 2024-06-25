@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 
+
 def log_metrics(metrics, dataset_name, log_file="metrics.json"):
     if Path(log_file).exists():
         loaded_metrics = json.load(open(log_file))

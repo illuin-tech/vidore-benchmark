@@ -1,15 +1,15 @@
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
-import torch
 from typing import List
-from PIL import Image
-from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
-from vidore_benchmark.utils.torch_utils import get_torch_device
+
+import numpy as np
+import torch
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from PIL import Image
 from rank_bm25 import BM25Okapi
-from datasets import Dataset
-import numpy as np
-from typing import Dict, List, Tuple, cast
+
+from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
+from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 @register_vision_retriever("bm25")
@@ -23,12 +23,10 @@ class BM25Retriever(VisionRetriever):
         return False
 
     def forward_queries(self, queries, **kwargs) -> torch.Tensor:
-        # return dummy tensor - not used
-        return torch.tensor([])
+        raise NotImplementedError("BM25Retriever only need get_scores method.")
 
     def forward_documents(self, documents: List[str], **kwargs) -> torch.Tensor:
-        # return dummy tensor - not used
-        return torch.tensor([])
+        raise NotImplementedError("BM25Retriever only need get_scores method.")
 
     def get_scores(
         self, queries: List[str], documents: List[str | Image.Image], batch_query: int, batch_doc: int, **kwargs
