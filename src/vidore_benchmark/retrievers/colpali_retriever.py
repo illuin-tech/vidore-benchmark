@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from abc import abstractmethod
 from typing import List, cast
 
 import torch
@@ -12,9 +11,9 @@ from transformers import AutoProcessor
 
 from vidore_benchmark.evaluation.colpali_scorer import ColPaliScorer
 from vidore_benchmark.models.colpali_model import ColPali
+from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.torch_utils import get_torch_device
-from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
 
 load_dotenv(override=True)
 
@@ -79,7 +78,6 @@ class ColPaliRetriever(VisionRetriever):
         """
         Forward pass the processed queries.
         """
-        # run inference - docs
         dataloader = DataLoader(
             queries,
             batch_size=kwargs.get("bs", 4),
@@ -99,13 +97,11 @@ class ColPaliRetriever(VisionRetriever):
         """
         Forward pass the processed documents (i.e. page images).
         """
-
-        # run inference - docs
         dataloader = DataLoader(
             documents,
             batch_size=kwargs.get("bs", 4),
             shuffle=False,
-            collate_fn=lambda x: self.process_images(x),
+            collate_fn=self.process_images,
         )
         ds = []
         for batch_doc in tqdm(dataloader):
@@ -118,7 +114,7 @@ class ColPaliRetriever(VisionRetriever):
     def get_scores(
         self,
         queries: List[str],
-        documents: List[Image.Image | str],
+        documents: List[Image.Image] | List[str],
         batch_query: int,
         batch_doc: int,
         **kwargs,
@@ -128,10 +124,6 @@ class ColPaliRetriever(VisionRetriever):
         """
         qs = self.forward_queries(queries, bs=batch_query)
         ds = self.forward_documents(documents, bs=batch_doc)
-
-        # Unpack the stacked embeddings to a list for the scorer
-        # qs = list(torch.unbind(qs_stacked))
-        # ds = list(torch.unbind(ds_stacked))
 
         scores = self.scorer.evaluate(qs, ds)
         return scores

@@ -1,4 +1,4 @@
-from typing import List, cast
+from typing import List, Optional, cast
 
 import torch
 from PIL import Image
@@ -19,7 +19,6 @@ class SigLIPRetriever(VisionRetriever):
         self.device = get_torch_device(device)
         self.processor = AutoProcessor.from_pretrained("google/siglip-so400m-patch14-384")
         self.model = AutoModel.from_pretrained("google/siglip-so400m-patch14-384").to(self.device)
-        # model eval()
         self.model.eval()
 
     @property
@@ -48,7 +47,7 @@ class SigLIPRetriever(VisionRetriever):
     def get_scores(
         self,
         queries: List[str],
-        documents: List[str | Image.Image],
+        documents: List[str] | List[Image.Image],
         batch_query: int,
         batch_doc: int,
         **kwargs,

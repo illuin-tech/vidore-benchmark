@@ -65,7 +65,7 @@ class NomicVisionRetriever(VisionRetriever):
     def get_scores(
         self,
         queries: List[str],
-        documents: List[Image.Image | str],
+        documents: List[Image.Image] | List[str],
         batch_query: int,
         batch_doc: int,
         **kwargs,
