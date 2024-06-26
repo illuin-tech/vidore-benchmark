@@ -23,41 +23,59 @@ classifiers = [
 ]
 
 dependencies = [
-    "datasets>=2.15.0",
-    "einops>=0.8.0",
-    "mteb>=1.12.47",
-    "peft>=0.11.1",
-    "python-dotenv>=1.0.1",
-    "torch>=2.0.0",
-    "transformers>=4.41.1",
-    "typer>=0.12.3",
+    "datasets>=2.15.0,<3.0.0",
+    "einops>=0.8.0,<1.0.0",
+    "GPUtil>=1.4.0,<2.0.0",
+    "mteb>=1.12.47,<2.0.0",
+    "numpy>=1.21.2,<2.0.0",
+    "pdf2image>=1.17.0,<2.0.0",
+    "peft>=0.11.1,<1.0.0",
+    "pillow>=9.2.0,<11.0.0",
+    "python-dotenv>=1.0.1,<2.0.0",
+    "sentencepiece>=0.2.0,<1.0.0",
+    "torch>=2.0.0,<3.0.0",
+    "transformers>=4.41.1,<5.0.0",
+    "typer>=0.12.3,<1.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "black>=24.4.2",
-    "coverage>=7.5.2",
     "ipykernel>=6.29.4",
     "mypy>=1.10.0",
     "pytest>=8.2.1",
     "ruff>=0.4.5",
 ]
+
+bge-m3 = ["FlagEmbedding>=1.2.10,<2.0.0"]
+bm25 = ["nltk>=3.8.1,<4.0.0", "rank-bm25>=0.2.2,<1.0.0"]
+sentence-transformers = ["sentence-transformers>=3.0.1,<4.0.0"]
+all-retrievers = [
+    "bm25>=0.2.2,<1.0.0",
+    "FlagEmbedding>=1.2.10,<2.0.0",
+    "nltk>=3.8.1,<4.0.0",
+    "sentence-transformers>=3.0.1,<4.0.0",
+]
+
+interpretability = ["matplotlib>=3.9.0,<4.0.0", "seaborn>=0.13.2,<1.0.0"]
+
 baselines = [
     "accelerate==0.30.1",
-    "configue==5.0.0",
     "datasets==2.19.1",
-    "diskcache==5.6.3",
     "einops==0.8.0",
     "FlagEmbedding==1.2.10",
-    "matplotlib==3.9.0",
-    "mteb==1.12.47",
+    "GPUtil==1.4.0",
+    "mteb>=1.12.47",
+    "nltk==3.8.1",
+    "numpy==1.26.4",
     "pdf2image==1.17.0",
+    "peft==0.11.1",
+    "pillow==10.3.0",
     "pytesseract==0.3.10",
+    "python-dotenv==1.0.1",
     "rank-bm25==0.2.2",
-    "scikit-learn==1.5.0",
-    "seaborn==0.13.2",
-    "sentencepiece==0.2.0",
     "sentence-transformers==3.0.1",
+    "sentencepiece==0.2.0",
     "torch==2.2.2",
     "transformers==4.41.1",
 ]

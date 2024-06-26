@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Faysse"
+  given-names: "Manuel"
+  email: "manuel.faysse@illuin.tech"
+- family-names: "Sibille"
+  given-names: "Hugues"
+  email: "hugues.sibille@illuin.tech"
+- family-names: "Wu"
+  given-names: "Tony"
+  email: "tony.wu@illuin.tech"
+title: "Vision Document Retrieval (ViDoRe): Benchmark"
+date-released: 2024-06-26
+url: "https://github.com/tonywu71/vidore-benchmark"
