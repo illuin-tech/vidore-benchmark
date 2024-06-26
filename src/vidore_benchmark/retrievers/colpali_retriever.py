@@ -62,12 +62,13 @@ class ColPaliRetriever(VisionRetriever):
         mock_image = Image.new("RGB", (448, 448), (255, 255, 255))
         batch_query = self.processor(
             images=[mock_image.convert("RGB")] * len(texts_query),
-            # NOTE: the image is not used in batch_query but it is required for calling the processor
             text=texts_query,
             return_tensors="pt",
             padding="longest",
             max_length=kwargs.get("max_length", 50) + self.processor.image_seq_length,
         )
+        # NOTE: the image is not used in batch_query but it is required for calling the processor
+
         del batch_query["pixel_values"]
 
         batch_query["input_ids"] = batch_query["input_ids"][..., self.processor.image_seq_length :]
@@ -75,9 +76,6 @@ class ColPaliRetriever(VisionRetriever):
         return batch_query
 
     def forward_queries(self, queries, **kwargs) -> List[torch.Tensor]:
-        """
-        Forward pass the processed queries.
-        """
         dataloader = DataLoader(
             queries,
             batch_size=kwargs.get("bs", 4),
@@ -94,9 +92,6 @@ class ColPaliRetriever(VisionRetriever):
         return qs
 
     def forward_documents(self, documents, **kwargs) -> List[torch.Tensor]:
-        """
-        Forward pass the processed documents (i.e. page images).
-        """
         dataloader = DataLoader(
             documents,
             batch_size=kwargs.get("bs", 4),
@@ -119,9 +114,11 @@ class ColPaliRetriever(VisionRetriever):
         batch_doc: int,
         **kwargs,
     ) -> torch.Tensor:
-        """
-        Get the similarity scores between queries and documents.
-        """
+        # Sanity check: `documents` must be a list of images
+        if documents and not all(isinstance(doc, Image.Image) for doc in documents):
+            raise ValueError("Documents must be a list of filepaths (strings)")
+        documents = cast(List[Image.Image], documents)
+
         qs = self.forward_queries(queries, bs=batch_query)
         ds = self.forward_documents(documents, bs=batch_doc)
 

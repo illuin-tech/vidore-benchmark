@@ -1,4 +1,4 @@
-from typing import List, Optional, cast
+from typing import List, cast
 
 import torch
 from PIL import Image
@@ -34,7 +34,6 @@ class SigLIPRetriever(VisionRetriever):
         return torch.tensor(qs).to(self.device)
 
     def forward_documents(self, documents: List[Image.Image] | List[str], **kwargs) -> Tensor:
-        # if image is not in RGB format, convert it to RGB
         list_doc = [document.convert("RGB") for document in documents if isinstance(document, Image.Image)]
 
         input_image_processed = self.processor(images=list_doc, return_tensors="pt", padding=True).to(self.device)
@@ -52,6 +51,11 @@ class SigLIPRetriever(VisionRetriever):
         batch_doc: int,
         **kwargs,
     ) -> Tensor:
+        # Sanity check: `documents` must be a list of images
+        if documents and not all(isinstance(doc, Image.Image) for doc in documents):
+            raise ValueError("Documents must be a list of filepaths (strings)")
+        documents = cast(List[Image.Image], documents)
+
         list_emb_queries: List[torch.Tensor] = []
         for query_batch in tqdm(batched(queries, batch_query), desc="Query batch", total=len(queries) // batch_query):
             query_batch = cast(List[str], query_batch)

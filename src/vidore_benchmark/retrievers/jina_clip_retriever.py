@@ -41,6 +41,11 @@ class JinaClipRetriever(VisionRetriever):
         **kwargs,
     ) -> torch.Tensor:
 
+        # Sanity check: `documents` must be a list of images
+        if documents and not all(isinstance(doc, Image.Image) for doc in documents):
+            raise ValueError("Documents must be a list of filepaths (strings)")
+        documents = cast(List[Image.Image], documents)
+
         list_emb_queries: List[torch.Tensor] = []
         for query_batch in tqdm(batched(queries, batch_query), desc="Query batch", total=len(queries) // batch_query):
             query_batch = cast(List[str], query_batch)

@@ -33,11 +33,16 @@ class BGEM3Retriever(VisionRetriever):
     def get_scores(
         self,
         queries: List[str],
-        documents: List[str | Image.Image],
+        documents: List[str] | List[Image.Image],
         batch_query: int,
         batch_doc: int,
         **kwargs,
     ) -> torch.Tensor:
+
+        # Sanity check: `documents` must be a list of filepaths (strings)
+        if documents and not all(isinstance(doc, str) for doc in documents):
+            raise ValueError("Documents must be a list of filepaths (strings)")
+        documents = cast(List[str], documents)
 
         list_emb_queries: List[torch.Tensor] = []
         for query_batch in tqdm(batched(queries, batch_query), desc="Query batch", total=len(queries) // batch_query):
