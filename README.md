@@ -1,9 +1,9 @@
 # Vision Document Retrieval (ViDoRe): Benchmark
 
 <!-- [[Paper]]() -->
-[[ColPali Model card]](https://huggingface.co/vidore/colpali-3b-mix-448)
-[[ColPali training repo]](https://github.com/ManuelFay/retriever-training)
-[[ViDoRe Dataset collection]](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d)
+[[ColPali Model card]](https://huggingface.co/vidore/colpali)
+[[ColPali training]](https://github.com/ManuelFay/retriever-training)
+[[ViDoRe Benchmark]](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d)
 <!-- [[Hf Blog]]() -->
 <!-- [[Hf Leaderboard]]() -->
 <!-- [[Hf Space]]() -->
@@ -29,7 +29,19 @@ Alternatively, the following command will pull and install the latest commit fro
 pip install --upgrade --no-deps --force-reinstall git+https://github.com/tonywu71/vidore-benchmark.git
 ```
 
-To keep a lightweight repostiory, only the essential packages were installed. In particular, if you need to run the interpretability scripts, you should also run:
+To keep a lightweight repostiory, only the essential packages were installed. In particular, you will need to specify the dependencies for the specific non-Transformers models you want to run (see the list in `pyproject.toml`). For instance, if you want to evaluate BGE-M3:
+
+```bash
+pip install -U "vidore-benchmark[bge-m3]"
+```
+
+Or if you want to evaluate all the off-the-shelf retrievers:
+
+```bash
+pip install -U "vidore-benchmark[all]"
+```
+
+Similarly, if you need to run the interpretability scripts, you should also run:
 
 ```bash
 pip install -U "vidore-benchmark[interpretability]"
