@@ -1,3 +1,4 @@
+from .colpali_retriever import ColPaliRetriever
 from .bge_m3_retriever import BGEM3Retriever
 from .jina_clip_retriever import JinaClipRetriever
 from .nomic_retriever import NomicVisionRetriever

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 import torch
 from datasets import Dataset
@@ -28,16 +28,24 @@ class VisionRetriever(ABC):
         pass
 
     @abstractmethod
-    def forward_queries(self, queries, **kwargs) -> torch.Tensor:
+    def forward_queries(self, queries: Any, **kwargs) -> torch.Tensor | List[torch.Tensor]:
         """
         Forward pass the processed queries.
+
+        NOTE: This method can either:
+        - return a single tensor where the first dimension corresponds to the number of queries.
+        - return a list of tensors where each tensor corresponds to a query.
         """
         pass
 
     @abstractmethod
-    def forward_documents(self, documents, **kwargs) -> torch.Tensor:
+    def forward_documents(self, documents: Any, **kwargs) -> torch.Tensor | List[torch.Tensor]:
         """
         Forward pass the processed documents (i.e. page images).
+
+        NOTE: This method can either:
+        - return a single tensor where the first dimension corresponds to the number of documents.
+        - return a list of tensors where each tensor corresponds to a document.
         """
         pass
 
@@ -45,13 +53,15 @@ class VisionRetriever(ABC):
     def get_scores(
         self,
         queries: List[str],
-        documents: List[Image.Image | str],
+        documents: List[Image.Image] | List[str],
         batch_query: int,
         batch_doc: int,
         **kwargs,
     ) -> torch.Tensor:
         """
         Get the similarity scores between queries and documents.
+
+        NOTE: `documents` can be a list of PIL images or a list of image filenames.
         """
         pass
 

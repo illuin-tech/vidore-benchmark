@@ -1,15 +1,15 @@
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+from typing import Dict, List, cast
+
+import numpy as np
 import torch
-from typing import List
-from PIL import Image
-from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
-from vidore_benchmark.utils.torch_utils import get_torch_device
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from PIL import Image
 from rank_bm25 import BM25Okapi
-from datasets import Dataset
-import numpy as np
-from typing import Dict, List, Tuple, cast
+
+from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
+from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 @register_vision_retriever("bm25")
@@ -23,16 +23,20 @@ class BM25Retriever(VisionRetriever):
         return False
 
     def forward_queries(self, queries, **kwargs) -> torch.Tensor:
-        # return dummy tensor - not used
-        return torch.tensor([])
+        raise NotImplementedError("BM25Retriever only need get_scores method.")
 
     def forward_documents(self, documents: List[str], **kwargs) -> torch.Tensor:
-        # return dummy tensor - not used
-        return torch.tensor([])
+        raise NotImplementedError("BM25Retriever only need get_scores method.")
 
     def get_scores(
-        self, queries: List[str], documents: List[str | Image.Image], batch_query: int, batch_doc: int, **kwargs
+        self,
+        queries: List[str],
+        documents: List[str] | List[Image.Image],
+        batch_query: int,
+        batch_doc: int,
+        **kwargs,
     ) -> torch.Tensor:
+        documents = cast(List[str], documents)
 
         queries_dict = {idx: query for idx, query in enumerate(queries)}
         tokenized_queries = self.preprocess_text(queries_dict)
@@ -46,26 +50,20 @@ class BM25Retriever(VisionRetriever):
             score = output.get_scores(query)
             scores.append(score)
 
-        scores = torch.tensor(np.array(scores))
-
-        assert scores.shape == (len(queries), len(documents))
+        scores = torch.tensor(np.array(scores))  # (num_queries, num_docs)
 
         return scores
 
-    def preprocess_text(self, documents: dict):
+    def preprocess_text(self, documents: Dict[int, str]) -> List[List[str]]:
         """
-        Basic preprocessing of the text data in english : remove stopwords, punctuation, lowercase all the words
-
-        return the tokenized list of words
+        Basic preprocessing of the text data:
+        - remove stopwords
+        - punctuation
+        - lowercase all the words.
         """
         stop_words = set(stopwords.words("english"))
         tokenized_list = [
-            [
-                word.lower()
-                for word in word_tokenize(sentence, language="french")
-                if word.isalnum() and word.lower() not in stop_words
-            ]
+            [word.lower() for word in word_tokenize(sentence) if word.isalnum() and word.lower() not in stop_words]
             for sentence in documents.values()
         ]
-
         return tokenized_list

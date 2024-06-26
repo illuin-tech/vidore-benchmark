@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from abc import abstractmethod
 from typing import List, cast
 
 import torch
@@ -12,12 +11,14 @@ from transformers import AutoProcessor
 
 from vidore_benchmark.evaluation.colpali_scorer import ColPaliScorer
 from vidore_benchmark.models.colpali_model import ColPali
+from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
 load_dotenv(override=True)
 
 
+@register_vision_retriever("coldoc/colpali-3b-mix-448")
 class ColPaliRetriever(VisionRetriever):
     """
     ColPali Retriever that implements the model from "ColPali: Efficient Document Retrieval with Vision Language Models".
@@ -73,8 +74,10 @@ class ColPaliRetriever(VisionRetriever):
         batch_query["attention_mask"] = batch_query["attention_mask"][..., self.processor.image_seq_length :]
         return batch_query
 
-    @abstractmethod
-    def forward_queries(self, queries, **kwargs) -> torch.Tensor:
+    def forward_queries(self, queries, **kwargs) -> List[torch.Tensor]:
+        """
+        Forward pass the processed queries.
+        """
         dataloader = DataLoader(
             queries,
             batch_size=kwargs.get("bs", 4),
@@ -88,13 +91,12 @@ class ColPaliRetriever(VisionRetriever):
                 embeddings_query = self.model(**batch_query)
                 qs.extend(list(torch.unbind(embeddings_query.to("cpu"))))
 
-        # Temporarily stack the embeddings as a tensor for class compatibility
-        qs = torch.stack(qs, dim=0)
-
         return qs
 
-    @abstractmethod
-    def forward_documents(self, documents, **kwargs) -> torch.Tensor:
+    def forward_documents(self, documents, **kwargs) -> List[torch.Tensor]:
+        """
+        Forward pass the processed documents (i.e. page images).
+        """
         dataloader = DataLoader(
             documents,
             batch_size=kwargs.get("bs", 4),
@@ -107,17 +109,12 @@ class ColPaliRetriever(VisionRetriever):
                 batch_doc = {k: v.to(self.device) for k, v in batch_doc.items()}
                 embeddings_doc = self.model(**batch_doc)
             ds.extend(list(torch.unbind(embeddings_doc.to("cpu"))))
-
-        # Temporarily stack the embeddings as a tensor for class compatibility
-        ds = torch.stack(ds, dim=0)
-
         return ds
 
-    @abstractmethod
     def get_scores(
         self,
         queries: List[str],
-        documents: List[Image.Image | str],
+        documents: List[Image.Image] | List[str],
         batch_query: int,
         batch_doc: int,
         **kwargs,
@@ -125,12 +122,8 @@ class ColPaliRetriever(VisionRetriever):
         """
         Get the similarity scores between queries and documents.
         """
-        qs_stacked = self.forward_queries(queries, bs=batch_query)
-        ds_stacked = self.forward_documents(documents, bs=batch_doc)
-
-        # Unpack the stacked embeddings to a list for the scorer
-        qs = list(torch.unbind(qs_stacked))
-        ds = list(torch.unbind(ds_stacked))
+        qs = self.forward_queries(queries, bs=batch_query)
+        ds = self.forward_documents(documents, bs=batch_doc)
 
         scores = self.scorer.evaluate(qs, ds)
         return scores
