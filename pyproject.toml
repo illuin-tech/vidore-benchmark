@@ -90,6 +90,7 @@ homepage = "https://github.com/tonywu71/vidore-benchmark"
 
 [project.scripts]
 vidore-benchmark = "vidore_benchmark.main:app"
+generate-similarity-maps = "vidore_benchmark.generate_similarity_maps:app"
 
 [tool.black]
 line-length = 120

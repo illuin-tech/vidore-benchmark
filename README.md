@@ -155,16 +155,10 @@ Read the instructions [here](https://github.com/tonywu71/vidore-benchmark/blob/m
 
 By superimposing the late interaction heatmap on top of the original image, we can visualize the most salient image patches with respect to each term of the query, yielding interpretable insights into model focus zones.
 
-To generate the similarity maps for a given document-query pair, you need to clone the repository and install extra dependencies:
+You can generate similarity maps using the `generate-similarity-maps`. For instance, you can reproduce the similarity maps from the paper by downloading the images from the [`data/interpretability_examples`](https://github.com/tonywu71/vidore-benchmark/tree/main/data/interpretability_examples) folder and running the following command:
 
 ```bash
-pip install "vidore-benchmark[interpretability]"
-```
-
-Then, generate the similarity map using:
-
-```python
-python scripts/generate_similarity_maps.py \
+generate-similarity-maps \
     --documents "data/interpretability_examples/energy_electricity_generation.jpeg" \
     --queries "Which hour of the day had the highest overall electricity generation in 2019?" \
     --documents "data/interpretability_examples/shift_kazakhstan.jpg" \
