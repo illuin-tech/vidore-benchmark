@@ -146,3 +146,7 @@ def retrieve_on_pdfs(
 
     for document, score in top_k[query].items():  # type: ignore
         print(f"Document: {document}, Score: {score}")
+
+
+if __name__ == "__main__":
+    app()
