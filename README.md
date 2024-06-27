@@ -55,27 +55,31 @@ The list of available retrievers can be found [here](https://github.com/tonywu71
 
 ### Evaluate a retriever on ViDoRE
 
-To evaluate an off-the-shelf retriever on the ViDoRe benchmark:
+You can evaluate any off-the-shelf retriever on the ViDoRe benchmark. For instance, you
+can evaluate the ColPali model on the ViDoRe benchmark to reproduce the results from our paper.
 
 ```bash
-python evaluate_retriever \
-    --model-name {{hf_model_name}} \
-    --collection-name vidore/vidore-**benchmark**-667173f98e70a1c0fa4db00d \
+vidore-benchmark evaluate-retriever \
+    --model-name vidore/colpali \
+    --collection-name "vidore/vidore-**benchmark**-667173f98e70a1c0fa4db00d" \
     --split test
 ```
+
+**Note:** You should get a warning about some non-initalized weights. This is a known issue in ColPali and will
+cause the metrics to be slightly different from the ones reported in the paper. We are working on fixing this issue.
 
 Alternatively, you can evaluate your model on a single dataset:
 
 ```bash
-dovire-benchmark evaluate_retriever \
-    --model-name {{hf_model_name}} \
+vidore-benchmark evaluate-retriever \
+    --model-name vidore/colpali \
     --dataset-name vidore/syntheticDocQA_dummy
 ```
 
 ### Retrieve the top-k documents from a HuggingFace dataset
 
 ```bash
-dovire-benchmark retrieve_on_dataset \
+vidore-benchmark retrieve-on-dataset \
     --model-name BAAI/bge-m3 \
     --query "Which hour of the day had the highest overall electricity generation in 2019?" \
     --k 5 \
@@ -86,22 +90,12 @@ dovire-benchmark retrieve_on_dataset \
 ### Retrieve the top-k documents from a collection of PDF documents
 
 ```bash
-dovire-benchmark retriever_on_pdfs \
-    --model-name google/siglip-so400m-patch14-384 \
-    --query "Which hour of the day had the highest overall electricity generation in 2019?" \
-    --k 5 \
-    --data-dirpath data/my_folder_with_pdf_documents/ \
-```
-
-### Reproduce the baselines
-
-Run the following command to reproduce the results from the ColPali paper:
-
-```bash
-dovire-benchmark evaluate_retriever \
-    --split test \
-    --collection-name coldoc/vidore-chunk-ocr-baseline-666acce88c294ef415548a56 \
-    --model-name vidore/colpali-3b-mix-448
+vidore-benchmark retrieve-on-dataset \
+    --model-name vidore/colpali \
+    --query "How did the average miles per shipment for single modes change from 1997 to 2007?" \
+    --k 2 \
+    --dataset-name vidore/syntheticDocQA_dummy \
+    --split test
 ```
 
 ### Documentation
@@ -109,7 +103,25 @@ dovire-benchmark evaluate_retriever \
 To get more information about the available options, run:
 
 ```bash
-dovire-benchmark --help
+❯ vidore-benchmark --help
+                                                                                                                      
+ Usage: vidore-benchmark [OPTIONS] COMMAND [ARGS]...                                                                       
+                                                                                                                      
+ CLI for evaluating retrievers on the ViDoRe benchmark.                                                               
+                                                                                                                      
+╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --install-completion          Install completion for the current shell.                                            │
+│ --show-completion             Show completion for the current shell, to copy it or customize the installation.     │
+│ --help                        Show this message and exit.                                                          │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ─────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ evaluate-retriever    Evaluate the retriever on the given dataset or collection. The metrics are saved to a JSON   │
+│                       file.                                                                                        │
+│ retrieve-on-dataset   Retrieve the top-k documents according to the given query.                                   │
+│ retrieve-on-pdfs      This script is used to ask a query and retrieve the top-k documents from a given folder      │
+│                       containing PDFs. The PDFs will be converted to a dataset of image pages and then used for    │
+│                       retrieval.                                                                                   │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
 ## Python usage
