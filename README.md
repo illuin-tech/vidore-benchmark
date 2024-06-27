@@ -20,7 +20,7 @@ We used Python 3.11.6 and PyTorch 2.2.2 to train and test our models, but the co
 The eval codebase depends on a few Python packages, which can be downloaded using the following command:
 
 ```bash
-pip install -U vidore-benchmark  # TODO: publish the package on PyPI
+pip install -U vidore-benchmark
 ```
 
 Alternatively, the following command will pull and install the latest commit from this repository, along with its Python dependencies:
@@ -38,7 +38,7 @@ pip install -U "vidore-benchmark[bge-m3]"
 Or if you want to evaluate all the off-the-shelf retrievers:
 
 ```bash
-pip install -U "vidore-benchmark[all]"
+pip install -U "vidore-benchmark[all-retrievers]"
 ```
 
 Similarly, if you need to run the interpretability scripts, you should also run:
@@ -47,10 +47,10 @@ Similarly, if you need to run the interpretability scripts, you should also run:
 pip install -U "vidore-benchmark[interpretability]"
 ```
 
-Finally, if you are willing to reproduce the results from the ColPali paper, you should run this command:
+Finally, if you are willing to reproduce the results from the ColPali paper, you can download the `requirements.txt` file to install the necessary dependencies:
 
 ```bash
-pip install -U "vidore-benchmark[baselines]"
+pip install -r requirements.txt
 ```
 
 ## Command-line usage
@@ -70,11 +70,11 @@ Alternatively, you can evaluate your model on a single dataset:
 
 ```bash
 python scripts/evaluate_retriever.py \
-    --dataset-name {{hf_dataset_name}} \
+    --dataset-name vidore/syntheticDocQA_dummy \
     --model-name {{hf_model_name}}
 ```
 
-Available visual retrievers are ColPali, JinaClip, Nomic Vision, and SigLIP. Read [this section](###Implement-your-own-retriever) to learm how to use your own retriever.
+The list of available retrievers can be found [here](https://github.com/tonywu71/vidore-benchmark/tree/main/src/vidore_benchmark/retrievers). Read [this section](###Implement-your-own-retriever) to learn how to create, use, and evaluate your own retriever.
 
 ### Reproduce the baselines
 
@@ -82,7 +82,7 @@ Run the following command to reproduce the results from the ColPali paper:
 
 ```bash
 python scripts/evaluate_retriever.py \
-    --split 'test' \
+    --split test \
     --collection-name coldoc/vidore-chunk-ocr-baseline-666acce88c294ef415548a56 \
     --model-name vidore/colpali-3b-mix-448
 ```
