@@ -19,6 +19,8 @@ class JinaClipRetriever(VisionRetriever):
         super().__init__()
         self.device = get_torch_device(device)
         self.model = AutoModel.from_pretrained("jinaai/jina-clip-v1", trust_remote_code=True).to(self.device)
+        self.emb_dim_query = 768
+        self.emb_dim_doc = 768
 
     @property
     def use_visual_embedding(self) -> bool:
@@ -43,7 +45,7 @@ class JinaClipRetriever(VisionRetriever):
 
         # Sanity check: `documents` must be a list of images
         if documents and not all(isinstance(doc, Image.Image) for doc in documents):
-            raise ValueError("Documents must be a list of filepaths (strings)")
+            raise ValueError("Documents must be a list of images")
         documents = cast(List[Image.Image], documents)
 
         list_emb_queries: List[torch.Tensor] = []

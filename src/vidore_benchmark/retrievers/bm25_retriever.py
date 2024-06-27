@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from PIL import Image
 from rank_bm25 import BM25Okapi
 
 from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
@@ -30,7 +31,7 @@ class BM25Retriever(VisionRetriever):
     def get_scores(
         self,
         queries: List[str],
-        documents: List[str],
+        documents: List[Image.Image] | List[str],
         batch_query: int,
         batch_doc: int,
         **kwargs,

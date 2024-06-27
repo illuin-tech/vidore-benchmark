@@ -35,12 +35,14 @@ class ColPaliRetriever(VisionRetriever):
         self.model.load_adapter(model_name)
         self.scorer = ColPaliScorer(is_multi_vector=True)
         self.processor = AutoProcessor.from_pretrained(model_name)
+        self.emb_dim_query = 128
+        self.emb_dim_doc = 128
 
     @property
     def use_visual_embedding(self) -> bool:
         return True
 
-    def process_images(self, images, **kwargs):
+    def process_images(self, images: List[Image.Image], **kwargs):
         texts_doc = ["Describe the image."] * len(images)
         images = [image.convert("RGB") for image in images]
 
@@ -53,7 +55,7 @@ class ColPaliRetriever(VisionRetriever):
         )
         return batch_doc
 
-    def process_queries(self, queries, **kwargs) -> torch.Tensor:
+    def process_queries(self, queries: List[str], **kwargs) -> torch.Tensor:
         texts_query = []
         for query in queries:
             query = f"Question: {query}<unused0><unused0><unused0><unused0><unused0>"
@@ -75,7 +77,7 @@ class ColPaliRetriever(VisionRetriever):
         batch_query["attention_mask"] = batch_query["attention_mask"][..., self.processor.image_seq_length :]
         return batch_query
 
-    def forward_queries(self, queries, **kwargs) -> List[torch.Tensor]:
+    def forward_queries(self, queries: List[str], **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
             queries,
             batch_size=kwargs.get("bs", 4),
@@ -91,7 +93,7 @@ class ColPaliRetriever(VisionRetriever):
 
         return qs
 
-    def forward_documents(self, documents, **kwargs) -> List[torch.Tensor]:
+    def forward_documents(self, documents: List[Image.Image], **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
             documents,
             batch_size=kwargs.get("bs", 4),
@@ -116,7 +118,7 @@ class ColPaliRetriever(VisionRetriever):
     ) -> torch.Tensor:
         # Sanity check: `documents` must be a list of images
         if documents and not all(isinstance(doc, Image.Image) for doc in documents):
-            raise ValueError("Documents must be a list of filepaths (strings)")
+            raise ValueError("Documents must be a list of Pillow images")
         documents = cast(List[Image.Image], documents)
 
         qs = self.forward_queries(queries, bs=batch_query)

@@ -53,7 +53,7 @@ class SigLIPRetriever(VisionRetriever):
     ) -> Tensor:
         # Sanity check: `documents` must be a list of images
         if documents and not all(isinstance(doc, Image.Image) for doc in documents):
-            raise ValueError("Documents must be a list of filepaths (strings)")
+            raise ValueError("Documents must be a list of Pillow images")
         documents = cast(List[Image.Image], documents)
 
         list_emb_queries: List[torch.Tensor] = []

@@ -49,10 +49,12 @@ dev = [
 
 bge-m3 = ["FlagEmbedding>=1.2.10,<2.0.0"]
 bm25 = ["nltk>=3.8.1,<4.0.0", "rank-bm25>=0.2.2,<1.0.0"]
+jina-clip = ["tim>=1.0.7,<2.0.0"]
 sentence-transformers = ["sentence-transformers>=3.0.1,<4.0.0"]
 all-retrievers = [
     "bm25>=0.2.2,<1.0.0",
     "FlagEmbedding>=1.2.10,<2.0.0",
+    "tim>=1.0.7,<2.0.0",
     "nltk>=3.8.1,<4.0.0",
     "sentence-transformers>=3.0.1,<4.0.0",
 ]
