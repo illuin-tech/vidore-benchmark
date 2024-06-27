@@ -7,7 +7,7 @@ packages = ["src/vidore_benchmark"]
 
 [project]
 name = "vidore_benchmark"
-version = "0.0.10"
+version = "1.0.0"
 description = "Visual Document Retrieval: Benchmark"
 authors = [
     { name = "Manuel Faysse", email = "manuel.faysse@illuin.tech" },
