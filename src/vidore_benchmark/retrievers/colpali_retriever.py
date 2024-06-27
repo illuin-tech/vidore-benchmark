@@ -18,7 +18,7 @@ from vidore_benchmark.utils.torch_utils import get_torch_device
 load_dotenv(override=True)
 
 
-@register_vision_retriever("coldoc/colpali-3b-mix-448")
+@register_vision_retriever("vidore/colpali")
 class ColPaliRetriever(VisionRetriever):
     """
     ColPali Retriever that implements the model from "ColPali: Efficient Document Retrieval with Vision Language Models".
@@ -26,7 +26,7 @@ class ColPaliRetriever(VisionRetriever):
 
     def __init__(self, device: str = "auto"):
         super().__init__()
-        model_name = "coldoc/colpali-3b-mix-448"
+        model_name = "vidore/colpali"
         self.device = get_torch_device(device)
         self.model = cast(
             ColPali,
