@@ -11,7 +11,7 @@ from transformers import AutoProcessor
 
 from vidore_benchmark.evaluation.colpali_scorer import ColPaliScorer
 from vidore_benchmark.models.colpali_model import ColPali
-from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
+from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.torch_utils import get_torch_device
 

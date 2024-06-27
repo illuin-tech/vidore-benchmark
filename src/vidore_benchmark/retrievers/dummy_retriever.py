@@ -5,7 +5,7 @@ from typing import List
 import torch
 from PIL import Image
 
-from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
+from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
 

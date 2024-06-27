@@ -4,7 +4,7 @@ import typer
 from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
 from vidore_benchmark.evaluation.evaluate import get_top_k
-from vidore_benchmark.retrievers.utils.initialize_retrievers import load_vision_retriever_from_registry
+from vidore_benchmark.retrievers.utils.load_retriever import load_vision_retriever_from_registry
 
 load_dotenv(override=True)
 

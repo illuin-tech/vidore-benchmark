@@ -7,7 +7,7 @@ from nltk.tokenize import word_tokenize
 from PIL import Image
 from rank_bm25 import BM25Okapi
 
-from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
+from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.torch_utils import get_torch_device
 

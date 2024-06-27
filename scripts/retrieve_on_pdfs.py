@@ -4,7 +4,7 @@ from typing import Annotated
 import typer
 from dotenv import load_dotenv
 from vidore_benchmark.evaluation.evaluate import get_top_k
-from vidore_benchmark.retrievers.utils.initialize_retrievers import load_vision_retriever_from_registry
+from vidore_benchmark.retrievers.utils.load_retriever import load_vision_retriever_from_registry
 from vidore_benchmark.utils.image_utils import generate_dataset_from_img_folder
 from vidore_benchmark.utils.pdf_utils import convert_all_pdfs_to_images
 
