@@ -13,16 +13,23 @@ load_dotenv(override=True)
 
 
 def main(
-    model_name: Annotated[str, typer.Option(help="Model name to use for evaluation")],
-    split: Annotated[str, typer.Option(help="Split to use for evaluation")],
-    dataset_name: Annotated[str, typer.Option(help="Dataset on Hugging Face to evaluate")] = "",
-    batch_query: Annotated[int, typer.Option(help="Batch size to use for evaluation")] = 1,
-    batch_doc: Annotated[int, typer.Option(help="Batch size to use for evaluation")] = 4,
-    collection_name: Annotated[str, typer.Option(help="Collection name to use for evaluation")] = "",
+    model_name: Annotated[str, typer.Option(help="Model name alias (tagged with `@register_vision_retriever`)")],
+    dataset_name: Annotated[str | None, typer.Option(help="HuggingFace Hub dataset name")] = None,
+    split: Annotated[str, typer.Option(help="Dataset split")] = "test",
+    batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 4,
+    batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
+    collection_name: Annotated[str | None, typer.Option(help="Collection name to use for evaluation")] = None,
 ):
     """
-    This script is used to evaluate a model on a given dataset using the MTEB metrics.
+    Evaluate the retriever on the given dataset or collection.
+    The metrics are saved to a JSON file.
     """
+
+    # Sanity check
+    if dataset_name is None and collection_name is None:
+        raise ValueError("Please provide a dataset name or collection name")
+    elif dataset_name is not None and collection_name is not None:
+        raise ValueError("Please provide only one of dataset name or collection name")
 
     # Create the vision retriever
     retriever = load_vision_retriever_from_registry(model_name)
@@ -33,13 +40,12 @@ def main(
     savepath = OUTPUT_DIR / f"{model_name.replace('/', '_')}_metrics.json"
     metrics = {}
 
-    if dataset_name != "":
+    if dataset_name is not None:
         dataset = cast(Dataset, load_dataset(dataset_name, split=split))
         metrics = evaluate_dataset(retriever, dataset, batch_query=batch_query, batch_doc=batch_doc)
         log_metrics(metrics, dataset_name, log_file=str(savepath))
         print(f"NDCG@5 for {model_name} on {dataset_name}: {metrics['ndcg_at_5']}")
-
-    elif collection_name != "":
+    elif collection_name is not None:
         collection = huggingface_hub.get_collection(collection_name)
         datasets = collection.items
         for dataset_item in datasets:
@@ -47,11 +53,9 @@ def main(
             dataset = cast(Dataset, load_dataset(dataset_item.item_id, split=split))
             metrics = evaluate_dataset(retriever, dataset, batch_query=batch_query, batch_doc=batch_doc)
             log_metrics(metrics, dataset_item.item_id, log_file=str(savepath))
-            print(f"Metrics saved to {savepath}")
+            print(f"Metrics saved to `{savepath}`")
 
             print(f"NDCG@5 for {model_name} on {dataset_item.item_id}: {metrics['ndcg_at_5']}")
-    else:
-        raise ValueError("Please provide a dataset name or collection name")
 
 
 if __name__ == "__main__":

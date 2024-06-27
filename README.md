@@ -53,28 +53,51 @@ Finally, if you are willing to reproduce the results from the ColPali paper, you
 pip install -r requirements.txt
 ```
 
+## Available retrievers
+
+The list of available retrievers can be found [here](https://github.com/tonywu71/vidore-benchmark/tree/main/src/vidore_benchmark/retrievers). Read [this section](###Implement-your-own-retriever) to learn how to create, use, and evaluate your own retriever.
+
 ## Command-line usage
 
-### Evaluate an retriever on ViDoRE
+### Evaluate a retriever on ViDoRE
 
 To evaluate an off-the-shelf retriever on the ViDoRe benchmark:
 
 ```bash
 python scripts/evaluate_retriever.py \
-    --collection-name vidore/vidore-benchmark-667173f98e70a1c0fa4db00d \
-    --split test \
-    --model-name {{hf_model_name}}
+    --model-name {{hf_model_name}} \
+    --collection-name vidore/vidore-**benchmark**-667173f98e70a1c0fa4db00d \
+    --split test
 ```
 
 Alternatively, you can evaluate your model on a single dataset:
 
 ```bash
 python scripts/evaluate_retriever.py \
-    --dataset-name vidore/syntheticDocQA_dummy \
-    --model-name {{hf_model_name}}
+    --model-name {{hf_model_name}} \
+    --dataset-name vidore/syntheticDocQA_dummy
 ```
 
-The list of available retrievers can be found [here](https://github.com/tonywu71/vidore-benchmark/tree/main/src/vidore_benchmark/retrievers). Read [this section](###Implement-your-own-retriever) to learn how to create, use, and evaluate your own retriever.
+### Retrieve the top-k documents from a HuggingFace dataset
+
+```bash
+python scripts/retrieve_on_dataset.py \
+    --model-name BAAI/bge-m3 \
+    --query "Which hour of the day had the highest overall electricity generation in 2019?" \
+    --k 5 \
+    --dataset-name vidore/syntheticDocQA_energy_test \
+    --split test
+```
+
+### Retrieve the top-k documents from a collection of PDF documents
+
+```bash
+    python scripts/retriever_on_pdfs.py \
+    --model-name google/siglip-so400m-patch14-384 \
+    --query "Which hour of the day had the highest overall electricity generation in 2019?" \
+    --k 5 \
+    --data-dirpath data/my_folder_with_pdf_documents/ \
+```
 
 ### Reproduce the baselines
 
@@ -87,13 +110,13 @@ python scripts/evaluate_retriever.py \
     --model-name vidore/colpali-3b-mix-448
 ```
 
-### Documentation
+<!-- ### Documentation
 
 All scripts can be found in the `scripts/` directory. To get help on a specific script, run:
 
 ```bash
 python scripts/{{script_name}} --help
-```
+``` -->
 
 ## Python usage
 

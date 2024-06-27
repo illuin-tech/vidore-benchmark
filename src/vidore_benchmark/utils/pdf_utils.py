@@ -6,8 +6,6 @@ from pathlib import Path
 from pdf2image import convert_from_path
 from tqdm import tqdm
 
-random.seed(42)
-
 
 def convert_pdf_to_images(pdf_file: str, save_folder: str) -> None:
     """
@@ -30,9 +28,9 @@ def convert_pdf_to_images(pdf_file: str, save_folder: str) -> None:
 
 def convert_all_pdfs_to_images(path_to_folder: str, n_samples: int = 0) -> None:
     """
-    Convert all pdfs in a folder and its subfolder to images and save them in a folder.
-    It will sample n_samples pdf files in each subfolder, allowing to have granularity on the number of pdf files to convert.
-
+    Convert all PDFs in a folder and its subfolder to images and save them in a folder.
+    It will sample n_samples pdf files in each subfolder, allowing to have granularity
+    on the number of PDF files to convert.
 
     Args:
     - path_to_folder (str): path to the folder containing the pdf files
@@ -50,9 +48,6 @@ def convert_all_pdfs_to_images(path_to_folder: str, n_samples: int = 0) -> None:
             - ...
         - ...
     """
-    # take n_samples pdf files in each subfolder : I want to take 10 pdf files from each subfolder
-    sub_dirs = [d for d in os.listdir(path_to_folder) if os.path.isdir(os.path.join(path_to_folder, d))]
-
     sampled_files = []
 
     pdf_files = glob.glob(os.path.join(path_to_folder, "*.pdf"))

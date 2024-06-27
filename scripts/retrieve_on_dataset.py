@@ -10,24 +10,15 @@ load_dotenv(override=True)
 
 
 def main(
-    model_name: Annotated[str, typer.Option(help="Model name to use for evaluation")],
-    dataset_name: Annotated[str, typer.Option(help="Dataset on Hugging Face to evaluate")],
-    split: Annotated[str, typer.Option(help="Split of the dataset to use for evaluation")],
-    batch_doc: Annotated[int, typer.Option(help="Batch size for documents")],
+    model_name: Annotated[str, typer.Option(help="Model name alias (tagged with `@register_vision_retriever`)")],
     query: Annotated[str, typer.Option(help="Query to use for retrieval")],
     k: Annotated[int, typer.Option(help="Number of documents to retrieve")],
+    dataset_name: Annotated[str, typer.Option(help="HuggingFace Hub dataset name")],
+    split: Annotated[str, typer.Option(help="Dataset split")] = "test",
+    batch_size: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
 ):
     """
-    This script is used to ask a query and retrieve the top-k documents from a given HuggingFace Dataset.
-    
-    >>> python scripts/retrieve_on_dataset.py \
-        --model-name BAAI/bge-m3 \
-        --dataset-name vidore/shiftproject_test \
-        --split test \
-        --batch-query 1 \
-        --batch-doc 4 \
-        --k 5 \
-        --query "Where is the Eiffel Tower?"
+    Retrieve the top-k documents according to the given query.
     """
 
     # Create the vision retriever
@@ -43,13 +34,13 @@ def main(
         documents=list(ds["image"]) if retriever.use_visual_embedding else list(ds["text_description"]),
         file_names=list(ds["image_filename"]),
         batch_query=1,
-        batch_doc=batch_doc,
+        batch_doc=batch_size,
         k=k,
     )
-    print(f"Top-{k} documents for the query '{query}':")
 
-    for document, score in top_k[query].items():  # type: ignore
-        print(f"Document: {document}, Score: {score}")
+    print(f"Top-{k} documents for the query '{query}':")
+    for document, score in top_k[query].items():
+        print(f"- Document `{document}` (score = {score})")
 
 
 if __name__ == "__main__":

@@ -13,23 +13,16 @@ load_dotenv(override=True)
 
 def main(
     model_name: Annotated[str, typer.Option(help="Model name to use for evaluation")],
+    query: Annotated[str, typer.Option(help="Query to use for retrieval")],
+    k: Annotated[int, typer.Option(help="Number of documents to retrieve")],
     data_dirpath: Annotated[
         str, typer.Option(help="Path to the folder containing the PDFs to use as the retrieval corpus")
     ],
-    batch_size: Annotated[int, typer.Option(help="Batch size to use for evaluation")],
-    query: Annotated[str, typer.Option(help="Query to use for retrieval")],
-    k: Annotated[int, typer.Option(help="Number of documents to retrieve")],
+    batch_size: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
 ):
     """
     This script is used to ask a query and retrieve the top-k documents from a given folder containing PDFs.
     The PDFs will be converted to a dataset of image pages and then used for retrieval.
-
-    >>> python scripts/retriever_on_pdfs.py \
-        --model-name google/siglip-so400m-patch14-384 \
-        --data-dirpath data/pdf_test \
-        --batch-size 4 \
-        --k 5 \
-        --query "Where is the Eiffel Tower?"
     """
 
     assert Path(data_dirpath).is_dir(), f"Invalid data directory: `{data_dirpath}`"
@@ -37,13 +30,12 @@ def main(
     # Create the vision retriever
     retriever = load_vision_retriever_from_registry(model_name)
 
-    # Convert the PDFs in data_dirpath to a dataset
+    # Convert the PDFs to a collection of images
     convert_all_pdfs_to_images(data_dirpath)
-
-    # list all the images gnereated from the PDFs
     image_files = list(Path(data_dirpath).rglob("*.jpg"))
-    print(f"Found {len(image_files)} images in the directory: {data_dirpath}")
-    # generate a dataset
+    print(f"Found {len(image_files)} images in the directory `{data_dirpath}`")
+
+    # Generate a dataset using the images
     dataset = generate_dataset_from_img_folder(data_dirpath)
 
     # Get the top-k documents

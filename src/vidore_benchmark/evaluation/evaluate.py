@@ -49,19 +49,27 @@ def evaluate_dataset(
 def get_top_k(
     vision_retriever: VisionRetriever,
     queries: List[str],
-    documents: List[Image.Image | str],
+    documents: List[Image.Image] | List[str],
     file_names: List[str],
     batch_query: int,
     batch_doc: int,
     k: int,
-) -> Dict[str, float]:
+) -> Dict[str, Dict[str, float]]:
     """
     Get the top-k documents for a given query.
+
+    Output:
+    {
+        query_1: {
+            document_1: score_1,
+            ...
+        },
+        ...
+    }
     """
     scores = vision_retriever.get_scores(queries, documents, batch_query=batch_query, batch_doc=batch_doc)
 
-    passages2filename = {docidx: image_filename for docidx, image_filename in enumerate(file_names)}
-    # Get the top-k documents
+    passages2filename = {doc_idx: image_filename for doc_idx, image_filename in enumerate(file_names)}
 
     results = {}
     for query, score_per_query in zip(queries, scores):
@@ -73,9 +81,11 @@ def get_top_k(
                 results[query][filename] = max(results[query].get(filename, 0), score_passage)
             else:
                 results[query] = {filename: score_passage}
-        # sort the results by score for each query
+
+        # Sort the results by score for each query
         results[query] = dict(sorted(results[query].items(), key=lambda item: item[1], reverse=True))
-        # get the top-k documents
+
+        # Get the top-k documents
         results[query] = dict(list(results[query].items())[:k])
 
     return results
