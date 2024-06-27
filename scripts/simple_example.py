@@ -1,7 +1,3 @@
-"""
-TODO: Remove file after debugging
-"""
-
 from typing import cast
 
 from datasets import Dataset, load_dataset
@@ -14,15 +10,11 @@ load_dotenv(override=True)
 
 def main():
     """
-    Debugging script
+    Example script for a Python usage of the Vidore Benchmark.
     """
     my_retriever = JinaClipRetriever()
-
-    dataset = cast(Dataset, load_dataset("vidore/shiftproject_test", split="test"))
-
-    print("Dataset loaded")
-    metrics = evaluate_dataset(my_retriever, dataset, batch_query=1, batch_doc=4)  # type: ignore
-
+    dataset = cast(Dataset, load_dataset("vidore/syntheticDocQA_dummy", split="test"))
+    metrics = evaluate_dataset(my_retriever, dataset, batch_query=4, batch_doc=4)
     print(metrics)
 
 

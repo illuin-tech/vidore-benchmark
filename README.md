@@ -41,12 +41,6 @@ Or if you want to evaluate all the off-the-shelf retrievers:
 pip install -U "vidore-benchmark[all-retrievers]"
 ```
 
-Similarly, if you need to run the interpretability scripts, you should also run:
-
-```bash
-pip install -U "vidore-benchmark[interpretability]"
-```
-
 Finally, if you are willing to reproduce the results from the ColPali paper, you can download the `requirements.txt` file to install the necessary dependencies:
 
 ```bash
@@ -64,7 +58,7 @@ The list of available retrievers can be found [here](https://github.com/tonywu71
 To evaluate an off-the-shelf retriever on the ViDoRe benchmark:
 
 ```bash
-python scripts/evaluate_retriever.py \
+python evaluate_retriever \
     --model-name {{hf_model_name}} \
     --collection-name vidore/vidore-**benchmark**-667173f98e70a1c0fa4db00d \
     --split test
@@ -73,7 +67,7 @@ python scripts/evaluate_retriever.py \
 Alternatively, you can evaluate your model on a single dataset:
 
 ```bash
-python scripts/evaluate_retriever.py \
+dovire-benchmark evaluate_retriever \
     --model-name {{hf_model_name}} \
     --dataset-name vidore/syntheticDocQA_dummy
 ```
@@ -81,7 +75,7 @@ python scripts/evaluate_retriever.py \
 ### Retrieve the top-k documents from a HuggingFace dataset
 
 ```bash
-python scripts/retrieve_on_dataset.py \
+dovire-benchmark retrieve_on_dataset \
     --model-name BAAI/bge-m3 \
     --query "Which hour of the day had the highest overall electricity generation in 2019?" \
     --k 5 \
@@ -92,7 +86,7 @@ python scripts/retrieve_on_dataset.py \
 ### Retrieve the top-k documents from a collection of PDF documents
 
 ```bash
-    python scripts/retriever_on_pdfs.py \
+dovire-benchmark retriever_on_pdfs \
     --model-name google/siglip-so400m-patch14-384 \
     --query "Which hour of the day had the highest overall electricity generation in 2019?" \
     --k 5 \
@@ -104,19 +98,19 @@ python scripts/retrieve_on_dataset.py \
 Run the following command to reproduce the results from the ColPali paper:
 
 ```bash
-python scripts/evaluate_retriever.py \
+dovire-benchmark evaluate_retriever \
     --split test \
     --collection-name coldoc/vidore-chunk-ocr-baseline-666acce88c294ef415548a56 \
     --model-name vidore/colpali-3b-mix-448
 ```
 
-<!-- ### Documentation
+### Documentation
 
-All scripts can be found in the `scripts/` directory. To get help on a specific script, run:
+To get more information about the available options, run:
 
 ```bash
-python scripts/{{script_name}} --help
-``` -->
+dovire-benchmark --help
+```
 
 ## Python usage
 
@@ -128,7 +122,13 @@ Read the instructions [here](https://github.com/tonywu71/vidore-benchmark/blob/m
 
 By superimposing the late interaction heatmap on top of the original image, we can visualize the most salient image patches with respect to each term of the query, yielding interpretable insights into model focus zones.
 
-To generate the similarity maps for a given document-query pair:
+To generate the similarity maps for a given document-query pair, you need to clone the repository and install extra dependencies:
+
+```bash
+pip install "vidore-benchmark[interpretability]"
+```
+
+Then, generate the similarity map using:
 
 ```python
 python scripts/generate_similarity_maps.py \

@@ -7,7 +7,7 @@ packages = ["src/vidore_benchmark"]
 
 [project]
 name = "vidore_benchmark"
-version = "0.0.5"
+version = "0.0.6"
 description = "Visual Document Retrieval: Benchmark"
 authors = [
     { name = "Manuel Faysse", email = "manuel.faysse@illuin.tech" },
@@ -88,8 +88,8 @@ baselines = [
 [project.urls]
 homepage = "https://github.com/tonywu71/vidore-benchmark"
 
-# [project.scripts]
-# evaluate_retriver = "vidore-benchmark.scripts.evaluate_retriver:main"
+[project.scripts]
+vidore-eval = "vidore_benchmark.main:app"
 
 [tool.black]
 line-length = 120

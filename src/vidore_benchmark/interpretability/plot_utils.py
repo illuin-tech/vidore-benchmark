@@ -14,7 +14,7 @@ def plot_similarity_patches(
     image_resolution: int,
     similarity_map: Optional[npt.NDArray | torch.Tensor] = None,
     figsize: Tuple[int, int] = (8, 8),
-    style: Dict[str, Any] | str | None = None,
+    style: Dict[str, Any] | Optional[str] = None,
 ) -> Tuple[plt.Figure, plt.Axes]:
     """
     Plot patches of a square image.
@@ -74,7 +74,7 @@ def plot_similarity_heatmap(
     image_resolution: int,
     similarity_map: npt.NDArray | torch.Tensor,
     figsize: Tuple[int, int] = (8, 8),
-    style: Dict[str, Any] | str | None = None,
+    style: Dict[str, Any] | Optional[str] = None,
     show_colorbar: bool = False,
     show_axes: bool = False,
 ) -> Tuple[plt.Figure, plt.Axes]:
