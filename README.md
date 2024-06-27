@@ -5,7 +5,7 @@
 [[ColPali training]](https://github.com/ManuelFay/retriever-training)
 [[ViDoRe Benchmark]](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d)
 <!-- [[Hf Blog]]() -->
-<!-- [[Hf Leaderboard]]() -->
+[[ViDoRe Leaderboard]](https://huggingface.co/spaces/vidore/vidore-leaderboard)
 <!-- [[Hf Space]]() -->
 <!-- [[Colab example]]() -->
 
@@ -20,25 +20,19 @@ We used Python 3.11.6 and PyTorch 2.2.2 to train and test our models, but the co
 The eval codebase depends on a few Python packages, which can be downloaded using the following command:
 
 ```bash
-pip install -U vidore-benchmark
-```
-
-Alternatively, the following command will pull and install the latest commit from this repository, along with its Python dependencies:
-
-```bash
-pip install --upgrade --no-deps --force-reinstall git+https://github.com/tonywu71/vidore-benchmark.git
+pip install vidore-benchmark
 ```
 
 To keep a lightweight repostiory, only the essential packages were installed. In particular, you will need to specify the dependencies for the specific non-Transformers models you want to run (see the list in `pyproject.toml`). For instance, if you want to evaluate BGE-M3:
 
 ```bash
-pip install -U "vidore-benchmark[bge-m3]"
+pip install "vidore-benchmark[bge-m3]"
 ```
 
 Or if you want to evaluate all the off-the-shelf retrievers:
 
 ```bash
-pip install -U "vidore-benchmark[all-retrievers]"
+pip install "vidore-benchmark[all-retrievers]"
 ```
 
 Finally, if you are willing to reproduce the results from the ColPali paper, you can download the `requirements.txt` file to install the necessary dependencies:
@@ -149,7 +143,7 @@ def main():
 
 ### Implement your own retriever
 
-Read the instructions [here](https://github.com/tonywu71/vidore-benchmark/blob/main/src/vidore_benchmark/retrievers/README.md).
+If you need to evaluate your own model on the ViDoRe benchmark, you can create your own instance of `VisionRetriever` in order to use it with the evaluation scripts in this package. You can find the detailed instructions [here](https://github.com/tonywu71/vidore-benchmark/blob/main/src/vidore_benchmark/retrievers/README.md).
 
 ### Show the similarity maps for interpretability
 
