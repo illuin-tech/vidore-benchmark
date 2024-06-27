@@ -1,13 +1,13 @@
 # Vision Document Retrieval (ViDoRe): Benchmark
 
-<!-- [[Paper]]() -->
 [[ColPali Model card]](https://huggingface.co/vidore/colpali)
-[[ColPali training]](https://github.com/ManuelFay/retriever-training)
+[[ColPali Training]](https://github.com/ManuelFay/retriever-training)
 [[ViDoRe Benchmark]](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d)
-<!-- [[Hf Blog]]() -->
 [[ViDoRe Leaderboard]](https://huggingface.co/spaces/vidore/vidore-leaderboard)
+<!-- [[Paper]]() -->
+<!-- [[Hf Blog]]() -->
 <!-- [[Hf Space]]() -->
-<!-- [[Colab example]]() -->
+<!-- [[Colab Example]]() -->
 
 ## Approach
 
@@ -23,7 +23,7 @@ The eval codebase depends on a few Python packages, which can be downloaded usin
 pip install vidore-benchmark
 ```
 
-To keep a lightweight repostiory, only the essential packages were installed. In particular, you will need to specify the dependencies for the specific non-Transformers models you want to run (see the list in `pyproject.toml`). For instance, if you want to evaluate BGE-M3:
+To keep a lightweight repository, only the essential packages were installed. In particular, you must specify the dependencies for the specific non-Transformers models you want to run (see the list in `pyproject.toml`). For instance, if you are going to evaluate the BGE-M3 retriever:
 
 ```bash
 pip install "vidore-benchmark[bge-m3]"
@@ -35,7 +35,7 @@ Or if you want to evaluate all the off-the-shelf retrievers:
 pip install "vidore-benchmark[all-retrievers]"
 ```
 
-Finally, if you are willing to reproduce the results from the ColPali paper, you can download the `requirements.txt` file to install the necessary dependencies:
+Finally, if you are willing to reproduce the results from the ColPali paper, you can use the `requirements.txt` file to install the dependencies used at test time:
 
 ```bash
 pip install -r requirements.txt
@@ -59,7 +59,7 @@ vidore-benchmark evaluate-retriever \
     --split test
 ```
 
-**Note:** You should get a warning about some non-initalized weights. This is a known issue in ColPali and will
+**Note:** You should get a warning about some non-initialized weights. This is a known issue in ColPali and will
 cause the metrics to be slightly different from the ones reported in the paper. We are working on fixing this issue.
 
 Alternatively, you can evaluate your model on a single dataset:
@@ -143,7 +143,7 @@ def main():
 
 ### Implement your own retriever
 
-If you need to evaluate your own model on the ViDoRe benchmark, you can create your own instance of `VisionRetriever` in order to use it with the evaluation scripts in this package. You can find the detailed instructions [here](https://github.com/tonywu71/vidore-benchmark/blob/main/src/vidore_benchmark/retrievers/README.md).
+If you need to evaluate your own model on the ViDoRe benchmark, you can create your own instance of `VisionRetriever` to use it with the evaluation scripts in this package. You can find the detailed instructions [here](https://github.com/tonywu71/vidore-benchmark/blob/main/src/vidore_benchmark/retrievers/README.md).
 
 ### Show the similarity maps for interpretability
 
