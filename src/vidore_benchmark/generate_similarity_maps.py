@@ -4,6 +4,7 @@ from typing import Annotated, List, cast
 import typer
 from dotenv import load_dotenv
 from PIL import Image
+
 from vidore_benchmark.interpretability.colpali_processor import ColPaliProcessor
 from vidore_benchmark.interpretability.gen_similarity_maps import gen_and_save_similarity_map_per_token
 from vidore_benchmark.models.colpali_model import ColPali
@@ -13,21 +14,21 @@ from vidore_benchmark.utils.torch_utils import get_torch_device
 load_dotenv(override=True)
 
 
-def main(
+app = typer.Typer(
+    help="CLI for generating similarity maps for ColPali.",
+    no_args_is_help=True,
+)
+
+
+@app.command()
+def generate_similarity_maps(
     documents: Annotated[List[Path], typer.Option(help="List of document filepaths (image format)")],
     queries: Annotated[List[str], typer.Option(help="List of queries")],
-    device: Annotated[str, typer.Option(help="Device to use (e.g. 'cuda')")] = "auto",
+    device: Annotated[str, typer.Option(help="Torch device")] = "auto",
 ) -> None:
     """
-    Load the ColPali model from "ColPali: Efficient Document Retrieval with Vision Language Models"
-    and, for each query-document pair, generate similarity maps for each token in the current query.
-    
-    Example:
-    >>> python scripts/generate_similarity_maps.py \
-    >>>     --documents "data/interpretability_examples/energy_electricity_generation.jpeg" \
-    >>>     --queries "Which hour of the day had the highest overall electricity generation in 2019?" \
-    >>>     --documents "data/interpretability_examples/shift_kazakhstan.jpg" \
-    >>>     --queries "Quelle partie de la production pétrolière du Kazakhstan provient de champs en mer ?"
+    Load the ColPali model and, for each query-document pair, generate similarity maps fo
+    each token in the current query.
     """
 
     # Sanity checks
@@ -38,7 +39,7 @@ def main(
     device = get_torch_device(device)
 
     model_path = "google/paligemma-3b-mix-448"
-    lora_path = "vidore/paligemma-3b-mix-448"
+    lora_path = "vidore/colpali"
 
     # Load the model and LORA adapter
     model = cast(ColPali, ColPali.from_pretrained(model_path, device_map=device))
@@ -60,9 +61,7 @@ def main(
 
     for query, image, filepath in zip(queries, images, documents):
         print(f"\n\nProcessing query `{query}` and document `{filepath}`\n")
-
         savedir = OUTPUT_DIR / "interpretability" / filepath.stem
-
         gen_and_save_similarity_map_per_token(
             model=model,
             processor=processor,
@@ -75,4 +74,4 @@ def main(
 
 
 if __name__ == "__main__":
-    typer.run(main)
+    app()

@@ -9,7 +9,7 @@ from torch import Tensor
 from tqdm import tqdm
 from transformers import AutoImageProcessor, AutoModel, AutoTokenizer
 
-from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
+from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
 from vidore_benchmark.utils.torch_utils import get_torch_device
@@ -30,6 +30,8 @@ class NomicVisionRetriever(VisionRetriever):
             self.device
         )
         self.text_tokenizer = AutoTokenizer.from_pretrained("nomic-ai/nomic-embed-text-v1.5", trust_remote_code=True)
+        self.emb_dim_query = 768
+        self.emb_dim_doc = 768
 
     @property
     def use_visual_embedding(self) -> bool:
@@ -70,6 +72,11 @@ class NomicVisionRetriever(VisionRetriever):
         batch_doc: int,
         **kwargs,
     ) -> torch.Tensor:
+
+        # Sanity check: `documents` must be a list of images
+        if documents and not all(isinstance(doc, Image.Image) for doc in documents):
+            raise ValueError("Documents must be a list of Pillow images")
+        documents = cast(List[Image.Image], documents)
 
         list_emb_queries: List[torch.Tensor] = []
         for query_batch in tqdm(batched(queries, batch_query), desc="Query batch", total=len(queries) // batch_query):

@@ -7,7 +7,7 @@ from nltk.tokenize import word_tokenize
 from PIL import Image
 from rank_bm25 import BM25Okapi
 
-from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
+from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
@@ -31,11 +31,15 @@ class BM25Retriever(VisionRetriever):
     def get_scores(
         self,
         queries: List[str],
-        documents: List[str] | List[Image.Image],
+        documents: List[Image.Image] | List[str],
         batch_query: int,
         batch_doc: int,
         **kwargs,
     ) -> torch.Tensor:
+
+        # Sanity check: `documents` must be a list of filepaths (strings)
+        if documents and not all(isinstance(doc, str) for doc in documents):
+            raise ValueError("Documents must be a list of filepaths (strings)")
         documents = cast(List[str], documents)
 
         queries_dict = {idx: query for idx, query in enumerate(queries)}

@@ -5,7 +5,7 @@ from FlagEmbedding import BGEM3FlagModel
 from PIL import Image
 from tqdm import tqdm
 
-from vidore_benchmark.retrievers.utils.register_models import register_vision_retriever
+from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
 from vidore_benchmark.utils.torch_utils import get_torch_device
@@ -17,6 +17,8 @@ class BGEM3Retriever(VisionRetriever):
         super().__init__()
         self.device = get_torch_device(device)
         self.model = BGEM3FlagModel("BAAI/bge-m3", use_fp16=True)
+        self.emb_dim_query = 1024
+        self.emb_dim_doc = 1024
 
     @property
     def use_visual_embedding(self) -> bool:
@@ -33,11 +35,16 @@ class BGEM3Retriever(VisionRetriever):
     def get_scores(
         self,
         queries: List[str],
-        documents: List[str | Image.Image],
+        documents: List[str] | List[Image.Image],
         batch_query: int,
         batch_doc: int,
         **kwargs,
     ) -> torch.Tensor:
+
+        # Sanity check: `documents` must be a list of filepaths (strings)
+        if documents and not all(isinstance(doc, str) for doc in documents):
+            raise ValueError("Documents must be a list of filepaths (strings)")
+        documents = cast(List[str], documents)
 
         list_emb_queries: List[torch.Tensor] = []
         for query_batch in tqdm(batched(queries, batch_query), desc="Query batch", total=len(queries) // batch_query):

@@ -7,7 +7,6 @@ VISION_RETRIEVER_REGISTRY: Dict[str, VisionRetriever] = {}
 
 def register_vision_retriever(model_name: str):
     def decorator(cls):
-        print(f"Registering vision retriever {model_name}")
         VISION_RETRIEVER_REGISTRY[model_name] = cls
         return cls
 

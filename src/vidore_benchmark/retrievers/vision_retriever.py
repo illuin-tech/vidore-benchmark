@@ -61,7 +61,10 @@ class VisionRetriever(ABC):
         """
         Get the similarity scores between queries and documents.
 
-        NOTE: `documents` can be a list of PIL images or a list of image filenames.
+        `documents` can be a list of:
+        - PIL images olist of image filenames
+        - filepaths (strings) of the images
+        - OCR-ed text (strings) of the images.
         """
         pass
 
