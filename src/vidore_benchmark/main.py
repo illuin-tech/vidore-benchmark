@@ -68,7 +68,7 @@ def evaluate_retriever(
             print(f"NDCG@5 for {model_name} on {dataset_item.item_id}: {metrics['ndcg_at_5']}")
 
 
-@app.callback()
+@app.command()
 def retrieve_on_dataset(
     model_name: Annotated[str, typer.Option(help="Model name alias (tagged with `@register_vision_retriever`)")],
     query: Annotated[str, typer.Option(help="Query to use for retrieval")],

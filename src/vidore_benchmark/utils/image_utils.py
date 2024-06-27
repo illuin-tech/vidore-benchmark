@@ -78,9 +78,9 @@ def shorten_image_path(image_path: str) -> str:
     return full_path.relative_to(enclosing_dir).as_posix()
 
 
-def generate_dataset_from_img_folder(path_to_folder: str, n_samples: int = 1) -> IterableDataset:
+def generate_dataset_from_img_folder(path_to_folder: str) -> IterableDataset:
     """
-    Generate questions and answers from a folder containing pdf files and by themes.
+    Generate a dataset from a folder containing JPG images.
 
     Args:
     - path_to_folder (str): path to the folder containing the pdf files
@@ -94,7 +94,7 @@ def generate_dataset_from_img_folder(path_to_folder: str, n_samples: int = 1) ->
     - image_filename (str): the path to the image
 
     """
-    img_files = list(Path(path_to_folder).rglob("*.jpg"))
+    img_files = list(Path(path_to_folder).rglob("*.jpg")) + list(Path(path_to_folder).rglob("*.jpeg"))
 
     # Create a Dataset from the dictionary
     features = Features({"image": Image.Image(), "image_filename": Value("string")})
