@@ -16,14 +16,20 @@ def evaluate_dataset(
 ) -> Dict[str, float]:
     """
     Evaluate the model on a given dataset using the MTEB metrics.
+
+    NOTE: The dataset should contain the following columns:
+    - query: the query text
+    - image_filename: the filename of the image
+    - image: the image (PIL.Image) if `use_visual_embedding` is True
+    - text_description: the text description (i.e. the page caption or the text chunks) if `use_visual_embedding` is False
     """
 
     # Dataset: sanity check
     col_documents = "image" if vision_retriever.use_visual_embedding else "text_description"
-    col_to_check = ["query", col_documents, "image_filename"]
+    required_columns = ["query", col_documents, "image_filename"]
 
-    if not all(col in ds.column_names for col in col_to_check):
-        raise ValueError(f"Dataset should contain the following columns: {col_to_check}")
+    if not all(col in ds.column_names for col in required_columns):
+        raise ValueError(f"Dataset should contain the following columns: {required_columns}")
 
     # Remove None queries and duplicates
     queries = list(set(ds["query"]))

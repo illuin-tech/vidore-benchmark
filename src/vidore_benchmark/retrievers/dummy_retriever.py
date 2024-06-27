@@ -11,6 +11,12 @@ from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
 @register_vision_retriever("dummy_retriever")
 class DummyRetriever(VisionRetriever):
+    """
+    Dummy retriever for testing purposes. It generates random embeddings and scores.
+
+    NOTE: The dummy retriever takes PIL images in its `forward_documents` method.
+    """
+
     def __init__(
         self,
         emb_dim_query: int = 512,
@@ -22,7 +28,7 @@ class DummyRetriever(VisionRetriever):
 
     @property
     def use_visual_embedding(self) -> bool:
-        return False
+        return True
 
     def forward_queries(self, queries: List[str], **kwargs) -> torch.Tensor:
         return torch.randn(len(queries), self.emb_dim_query)
