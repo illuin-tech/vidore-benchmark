@@ -7,7 +7,8 @@ import io
 from pathlib import Path
 from typing import cast
 
-from datasets import Dataset, Features, Image, Value
+import datasets
+from datasets import Dataset
 from PIL import Image
 from torch.utils.data import IterableDataset
 from tqdm import tqdm
@@ -97,7 +98,12 @@ def generate_dataset_from_img_folder(path_to_folder: str) -> IterableDataset:
     img_files = list(Path(path_to_folder).rglob("*.jpg")) + list(Path(path_to_folder).rglob("*.jpeg"))
 
     # Create a Dataset from the dictionary
-    features = Features({"image": Image.Image(), "image_filename": Value("string")})
+    features = datasets.Features(
+        {
+            "image": datasets.Image(),
+            "image_filename": datasets.Value("string"),
+        }
+    )
 
     def gen():
         with tqdm(total=len(img_files)) as pbar:
