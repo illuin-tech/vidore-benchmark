@@ -22,7 +22,7 @@ class BGEM3Retriever(VisionRetriever):
 
     @property
     def use_visual_embedding(self) -> bool:
-        return True
+        return False
 
     def forward_queries(self, queries, **kwargs) -> torch.Tensor:
         output = self.model.encode(queries, max_length=512)["dense_vecs"]
