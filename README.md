@@ -84,12 +84,11 @@ vidore-benchmark retrieve-on-dataset \
 ### Retrieve the top-k documents from a collection of PDF documents
 
 ```bash
-vidore-benchmark retrieve-on-dataset \
-    --model-name vidore/colpali \
-    --query "How did the average miles per shipment for single modes change from 1997 to 2007?" \
-    --k 2 \
-    --dataset-name vidore/syntheticDocQA_dummy \
-    --split test
+vidore-benchmark retriever_on_pdfs \
+    --model-name google/siglip-so400m-patch14-384 \
+    --query "Which hour of the day had the highest overall electricity generation in 2019?" \
+    --k 5 \
+    --data-dirpath data/my_folder_with_pdf_documents/ \
 ```
 
 ### Documentation
