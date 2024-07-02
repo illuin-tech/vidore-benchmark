@@ -1,13 +1,15 @@
 # Vision Document Retrieval (ViDoRe): Benchmark
 
+[[Paper]](https://arxiv.org/abs/2407.01449)
 [[ColPali Model card]](https://huggingface.co/vidore/colpali)
-[[ColPali Training]](https://github.com/ManuelFay/retriever-training)
+[[ColPali Training]](https://github.com/ManuelFay/colpali)
 [[ViDoRe Benchmark]](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d)
 [[ViDoRe Leaderboard]](https://huggingface.co/spaces/vidore/vidore-leaderboard)
-<!-- [[Paper]]() -->
+[[Hf Space]](https://huggingface.co/spaces/manu/ColPali-demo)
 <!-- [[Hf Blog]]() -->
-<!-- [[Hf Space]]() -->
 <!-- [[Colab Example]]() -->
+
+Main contributors: [Manuel Faysse](https://github.com/ManuelFay), [Hugues Sibille](https://github.com/HuguesSib), [Tony Wu](https://github.com/tonywu71)
 
 ## Approach
 
@@ -84,12 +86,11 @@ vidore-benchmark retrieve-on-dataset \
 ### Retrieve the top-k documents from a collection of PDF documents
 
 ```bash
-vidore-benchmark retrieve-on-dataset \
-    --model-name vidore/colpali \
-    --query "How did the average miles per shipment for single modes change from 1997 to 2007?" \
-    --k 2 \
-    --dataset-name vidore/syntheticDocQA_dummy \
-    --split test
+vidore-benchmark retriever_on_pdfs \
+    --model-name google/siglip-so400m-patch14-384 \
+    --query "Which hour of the day had the highest overall electricity generation in 2019?" \
+    --k 5 \
+    --data-dirpath data/my_folder_with_pdf_documents/ \
 ```
 
 ### Documentation
@@ -145,6 +146,26 @@ def main():
 
 If you need to evaluate your own model on the ViDoRe benchmark, you can create your own instance of `VisionRetriever` to use it with the evaluation scripts in this package. You can find the detailed instructions [here](https://github.com/tonywu71/vidore-benchmark/blob/main/src/vidore_benchmark/retrievers/README.md).
 
+### Compare retrievers using the EvalManager
+
+To easily process, visualize and compare the evaluation metrics of multiple retrievers, you can use the `EvalManager` class. Assume you have a list of previously generated JSON metric files, *e.g.*:
+
+```bash
+data/metrics/
+├── bisiglip.json
+└── colpali.json
+```
+
+The data is stored in `eval_manager.data` as a multi-column DataFrame with the following columns. Use the `get_df_for_metric`, `get_df_for_dataset`, and `get_df_for_model` methods to get the subset of the data you are interested in. For instance:
+
+```python
+from vidore_benchmark.evaluation.eval_manager import EvalManager
+
+eval_manager = EvalManager.from_dir("data/metrics/")
+df = ndcg_at_5 = eval_manager.get_df_for_metric("ndcg_at_5")
+```
+
+
 ### Show the similarity maps for interpretability
 
 By superimposing the late interaction heatmap on top of the original image, we can visualize the most salient image patches with respect to each term of the query, yielding interpretable insights into model focus zones.
@@ -162,5 +183,17 @@ generate-similarity-maps \
 ## Citation
 
 **ColPali: Efficient Document Retrieval with Vision Language Models**  
-First authors: Manuel Faysse, Hugues Sibille, Tony Wu  
-Contributors: Bilel Omrani, Gautier Viaud, CELINE HUDELOT, Pierre Colombo
+- First authors: Manuel Faysse*, Hugues Sibille*, Tony Wu* (*Equal Contribution)  
+- Contributors: Bilel Omrani, Gautier Viaud, Céline Hudelot, Pierre Colombo
+
+```latex
+@misc{faysse2024colpaliefficientdocumentretrieval,
+    title={ColPali: Efficient Document Retrieval with Vision Language Models}, 
+    author={Manuel Faysse and Hugues Sibille and Tony Wu and Gautier Viaud and Céline Hudelot and Pierre Colombo},
+    year={2024},
+    eprint={2407.01449},
+    archivePrefix={arXiv},
+    primaryClass={cs.IR},
+    url={https://arxiv.org/abs/2407.01449}, 
+}
+```
