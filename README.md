@@ -1,4 +1,4 @@
-# Vision Document Retrieval (ViDoRe): Benchmark
+# Vision Document Retrieval (ViDoRe): Benchmark 👀
 
 [[Paper]](https://arxiv.org/abs/2407.01449)
 [[ColPali Model card]](https://huggingface.co/vidore/colpali)
