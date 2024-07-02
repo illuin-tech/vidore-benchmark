@@ -13,3 +13,17 @@ authors:
 title: "Vision Document Retrieval (ViDoRe): Benchmark"
 date-released: 2024-06-26
 url: "https://github.com/tonywu71/vidore-benchmark"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Faysse"
+    given-names: "Manuel"
+  - family-names: "Sibille"
+    given-names: "Hugues"
+  - family-names: "Wu"
+    given-names: "Tony"
+  doi: "arXiv.2407.01449"
+  month: 6
+  title: "ColPali: Efficient Document Retrieval with Vision Language Models"
+  year: 2024
+  url: "https://arxiv.org/abs/2407.01449"

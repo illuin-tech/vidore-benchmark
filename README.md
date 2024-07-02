@@ -1,12 +1,12 @@
 # Vision Document Retrieval (ViDoRe): Benchmark
 
+[[Paper]](https://arxiv.org/abs/2407.01449)
 [[ColPali Model card]](https://huggingface.co/vidore/colpali)
-[[ColPali Training]](https://github.com/ManuelFay/retriever-training)
+[[ColPali Training]](https://github.com/ManuelFay/colpali)
 [[ViDoRe Benchmark]](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d)
 [[ViDoRe Leaderboard]](https://huggingface.co/spaces/vidore/vidore-leaderboard)
-<!-- [[Paper]]() -->
+[[Hf Space]](https://huggingface.co/spaces/manu/ColPali-demo)
 <!-- [[Hf Blog]]() -->
-<!-- [[Hf Space]]() -->
 <!-- [[Colab Example]]() -->
 
 ## Approach
@@ -163,3 +163,15 @@ generate-similarity-maps \
 **ColPali: Efficient Document Retrieval with Vision Language Models**  
 First authors: Manuel Faysse, Hugues Sibille, Tony Wu  
 Contributors: Bilel Omrani, Gautier Viaud, CELINE HUDELOT, Pierre Colombo
+
+```latex
+@misc{faysse2024colpaliefficientdocumentretrieval,
+    title={ColPali: Efficient Document Retrieval with Vision Language Models}, 
+    author={Manuel Faysse and Hugues Sibille and Tony Wu and Gautier Viaud and Céline Hudelot and Pierre Colombo},
+    year={2024},
+    eprint={2407.01449},
+    archivePrefix={arXiv},
+    primaryClass={cs.IR},
+    url={https://arxiv.org/abs/2407.01449}, 
+}
+```
