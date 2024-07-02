@@ -9,6 +9,8 @@
 <!-- [[Hf Blog]]() -->
 <!-- [[Colab Example]]() -->
 
+Main contributors: [Manuel Faysse](https://github.com/ManuelFay), [Hugues Sibille](https://github.com/HuguesSib), [Tony Wu](https://github.com/tonywu71)
+
 ## Approach
 
 The Visual Document Retrieval Benchmark (ViDoRe), is introduced to evaluate and enhance the performance of document retrieval systems on visually rich documents across various tasks, domains, languages, and settings. It was used to evaluate the ColPali model, a VLM-powered retriever that efficiently retrieves documents based on their visual content and textual queries.
@@ -144,6 +146,10 @@ def main():
 
 If you need to evaluate your own model on the ViDoRe benchmark, you can create your own instance of `VisionRetriever` to use it with the evaluation scripts in this package. You can find the detailed instructions [here](https://github.com/tonywu71/vidore-benchmark/blob/main/src/vidore_benchmark/retrievers/README.md).
 
+### Compare retrievers using the EvalManager
+
+TODO
+
 ### Show the similarity maps for interpretability
 
 By superimposing the late interaction heatmap on top of the original image, we can visualize the most salient image patches with respect to each term of the query, yielding interpretable insights into model focus zones.
@@ -161,7 +167,7 @@ generate-similarity-maps \
 ## Citation
 
 **ColPali: Efficient Document Retrieval with Vision Language Models**  
-First authors: Manuel Faysse, Hugues Sibille, Tony Wu  
+First authors: Manuel Faysse*, Hugues Sibille*, Tony Wu* (*Equal Contribution)  
 Contributors: Bilel Omrani, Gautier Viaud, CELINE HUDELOT, Pierre Colombo
 
 ```latex
