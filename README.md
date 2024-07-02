@@ -148,7 +148,23 @@ If you need to evaluate your own model on the ViDoRe benchmark, you can create y
 
 ### Compare retrievers using the EvalManager
 
-TODO
+To easily process, visualize and compare the evaluation metrics of multiple retrievers, you can use the `EvalManager` class. Assume you have a list of previously generated JSON metric files, *e.g.*:
+
+```bash
+data/metrics/
+├── bisiglip.json
+└── colpali.json
+```
+
+The data is stored in `eval_manager.data` as a multi-column DataFrame with the following columns. Use the `get_df_for_metric`, `get_df_for_dataset`, and `get_df_for_model` methods to get the subset of the data you are interested in. For instance:
+
+```python
+from vidore_benchmark.evaluation.eval_manager import EvalManager
+
+eval_manager = EvalManager.from_dir("data/metrics/")
+df = ndcg_at_5 = eval_manager.get_df_for_metric("ndcg_at_5")
+```
+
 
 ### Show the similarity maps for interpretability
 
@@ -167,8 +183,8 @@ generate-similarity-maps \
 ## Citation
 
 **ColPali: Efficient Document Retrieval with Vision Language Models**  
-First authors: Manuel Faysse*, Hugues Sibille*, Tony Wu* (*Equal Contribution)  
-Contributors: Bilel Omrani, Gautier Viaud, CELINE HUDELOT, Pierre Colombo
+- First authors: Manuel Faysse*, Hugues Sibille*, Tony Wu* (*Equal Contribution)  
+- Contributors: Bilel Omrani, Gautier Viaud, Céline Hudelot, Pierre Colombo
 
 ```latex
 @misc{faysse2024colpaliefficientdocumentretrieval,
