@@ -22,10 +22,10 @@ class BM25Retriever(VisionRetriever):
     def use_visual_embedding(self) -> bool:
         return False
 
-    def forward_queries(self, queries, batch_size, **kwargs) -> List[torch.Tensor]:
+    def forward_queries(self, queries, batch_size: int, **kwargs) -> List[torch.Tensor]:
         raise NotImplementedError("BM25Retriever only need get_scores_bm25 method.")
 
-    def forward_documents(self, documents: List[str], batch_size, **kwargs) -> List[torch.Tensor]:
+    def forward_documents(self, documents: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
         raise NotImplementedError("BM25Retriever only need get_scores_bm25 method.")
 
     def get_scores(

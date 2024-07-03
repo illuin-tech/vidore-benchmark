@@ -77,7 +77,7 @@ class ColPaliRetriever(VisionRetriever):
         batch_query["attention_mask"] = batch_query["attention_mask"][..., self.processor.image_seq_length :]
         return batch_query
 
-    def forward_queries(self, queries: List[str], batch_size, **kwargs) -> List[torch.Tensor]:
+    def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
             queries,
             batch_size=batch_size,
@@ -93,7 +93,7 @@ class ColPaliRetriever(VisionRetriever):
 
         return qs
 
-    def forward_documents(self, documents: List[Image.Image], batch_size, **kwargs) -> List[torch.Tensor]:
+    def forward_documents(self, documents: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
             documents,
             batch_size=batch_size,

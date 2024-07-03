@@ -1,4 +1,5 @@
 from typing import List, cast
+import math
 
 import torch
 from FlagEmbedding import BGEM3FlagModel
@@ -25,7 +26,7 @@ class BGEM3Retriever(VisionRetriever):
 
     def forward_queries(self, queries, batch_size: int, **kwargs) -> List[torch.Tensor]:
         list_emb_queries: List[torch.Tensor] = []
-        for query_batch in tqdm(batched(queries, batch_size), desc="Query batch", total=len(queries) // batch_size):
+        for query_batch in tqdm(batched(queries, batch_size), desc="Query batch", total= math.ceil(len(queries) / batch_size)):
             query_batch = cast(List[str], query_batch)
             output = self.model.encode(query_batch, max_length=512)["dense_vecs"]
             query_embeddings = torch.tensor(output).to(self.device)
@@ -36,7 +37,7 @@ class BGEM3Retriever(VisionRetriever):
     def forward_documents(self, documents: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
         list_emb_documents: List[torch.Tensor] = []
         for doc_batch in tqdm(
-            batched(documents, batch_size), desc="Document batch", total=len(documents) // batch_size
+            batched(documents, batch_size), desc="Document batch", total=math.ceil(len(documents) / batch_size)
         ):
             doc_batch = cast(List[str], doc_batch)
             output = self.model.encode(doc_batch)["dense_vecs"]

@@ -4,6 +4,7 @@ import torch
 from PIL import Image
 from tqdm import tqdm
 from transformers import AutoModel, AutoProcessor
+import math
 
 from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
@@ -27,7 +28,7 @@ class SigLIPRetriever(VisionRetriever):
     def forward_queries(self, queries, batch_size: int, **kwargs) -> List[torch.Tensor]:
 
         list_emb_queries: List[torch.Tensor] = []
-        for query_batch in tqdm(batched(queries, batch_size), desc="Query batch", total=len(queries) // batch_size):
+        for query_batch in tqdm(batched(queries, batch_size), desc="Query batch", total=math.ceil(len(queries) / batch_size)):
             query_batch = cast(List[str], query_batch)
             inputs_queries = self.processor(
                 text=query_batch, return_tensors="pt", padding="max_length", truncation=True
@@ -41,7 +42,7 @@ class SigLIPRetriever(VisionRetriever):
 
         list_emb_documents: List[torch.Tensor] = []
         for doc_batch in tqdm(
-            batched(documents, batch_size), desc="Document batch", total=len(documents) // batch_size
+            batched(documents, batch_size), desc="Document batch", total=math.ceil(len(documents) / batch_size)
         ):
             doc_batch = cast(List[Image.Image], doc_batch)
             list_doc = [document.convert("RGB") for document in doc_batch if isinstance(document, Image.Image)]
