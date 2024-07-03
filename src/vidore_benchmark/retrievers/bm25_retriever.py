@@ -1,4 +1,4 @@
-from typing import Dict, List, cast
+from typing import Dict, List, cast, Tuple
 
 import numpy as np
 import torch
@@ -23,12 +23,30 @@ class BM25Retriever(VisionRetriever):
         return False
 
     def forward_queries(self, queries, **kwargs) -> torch.Tensor:
-        raise NotImplementedError("BM25Retriever only need get_scores method.")
+        raise NotImplementedError("BM25Retriever only need get_scores_bm25 method.")
 
     def forward_documents(self, documents: List[str], **kwargs) -> torch.Tensor:
-        raise NotImplementedError("BM25Retriever only need get_scores method.")
+        raise NotImplementedError("BM25Retriever only need get_scores_bm25 method.")
+
+    def get_embeddings(
+        self,
+        queries: List[str],
+        documents: List[Image.Image] | List[str],
+        batch_query: int,
+        batch_doc: int,
+        **kwargs,
+    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
+        raise NotImplementedError("BM25Retriever only need get_scores_bm25 method.")
 
     def get_scores(
+        self,
+        list_emb_queries: List[torch.Tensor],
+        list_emb_documents: List[torch.Tensor],
+        **kwargs,
+    ) -> torch.Tensor:
+        raise NotImplementedError("BM25Retriever only need get_scores_bm25 method.")
+
+    def get_scores_bm25(
         self,
         queries: List[str],
         documents: List[Image.Image] | List[str],

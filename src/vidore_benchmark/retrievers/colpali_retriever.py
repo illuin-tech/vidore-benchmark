@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, cast
+from typing import List, cast, Tuple
 
 import torch
 from dotenv import load_dotenv
@@ -108,14 +108,15 @@ class ColPaliRetriever(VisionRetriever):
             ds.extend(list(torch.unbind(embeddings_doc.to("cpu"))))
         return ds
 
-    def get_scores(
+    def get_embeddings(
         self,
         queries: List[str],
         documents: List[Image.Image] | List[str],
         batch_query: int,
         batch_doc: int,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
+
         # Sanity check: `documents` must be a list of images
         if documents and not all(isinstance(doc, Image.Image) for doc in documents):
             raise ValueError("Documents must be a list of Pillow images")
@@ -124,5 +125,12 @@ class ColPaliRetriever(VisionRetriever):
         qs = self.forward_queries(queries, bs=batch_query)
         ds = self.forward_documents(documents, bs=batch_doc)
 
-        scores = self.scorer.evaluate(qs, ds)
+        return qs, ds
+
+    def get_scores(
+        self,
+        list_emb_queries: List[torch.Tensor],
+        list_emb_documents: List[torch.Tensor],
+    ) -> torch.Tensor:
+        scores = self.scorer.evaluate(list_emb_queries, list_emb_documents)
         return scores

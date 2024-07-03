@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, cast
+from typing import List, cast, Tuple
 
 import torch
 from PIL import Image
@@ -34,14 +34,14 @@ class JinaClipRetriever(VisionRetriever):
         output = self.model.encode_image(documents)
         return torch.tensor(output).to(self.device)
 
-    def get_scores(
+    def get_embeddings(
         self,
         queries: List[str],
         documents: List[Image.Image] | List[str],
         batch_query: int,
         batch_doc: int,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
 
         # Sanity check: `documents` must be a list of images
         if documents and not all(isinstance(doc, Image.Image) for doc in documents):
@@ -59,6 +59,14 @@ class JinaClipRetriever(VisionRetriever):
             doc_batch = cast(List[Image.Image], doc_batch)
             doc_embeddings = self.forward_documents(doc_batch)
             list_emb_documents.append(doc_embeddings)
+
+        return list_emb_queries, list_emb_documents
+
+    def get_scores(
+        self,
+        list_emb_queries: List[torch.Tensor],
+        list_emb_documents: List[torch.Tensor],
+    ) -> torch.Tensor:
 
         emb_queries = torch.cat(list_emb_queries, dim=0)
         emb_documents = torch.cat(list_emb_documents, dim=0)

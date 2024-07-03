@@ -52,19 +52,42 @@ class VisionRetriever(ABC):
     @abstractmethod
     def get_scores(
         self,
+        list_emb_queries: List[torch.Tensor],
+        list_emb_documents: List[torch.Tensor],
+    ) -> torch.Tensor:
+        """
+        Get the scores between queries and documents.
+
+        Inputs:
+        - list_emb_queries: List[torch.Tensor] (n_queries, emb_dim_query)
+        - list_emb_documents: List[torch.Tensor] (n_documents, emb_dim_doc)
+
+        Output:
+        - scores: torch.Tensor (n_queries, n_documents)
+        """
+        pass
+
+    @abstractmethod
+    def get_embeddings(
+        self,
         queries: List[str],
         documents: List[Image.Image] | List[str],
         batch_query: int,
         batch_doc: int,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
         """
-        Get the similarity scores between queries and documents.
+        Get the embeddings for the queries and documents.
 
-        `documents` can be a list of:
-        - PIL images olist of image filenames
-        - filepaths (strings) of the images
-        - OCR-ed text (strings) of the images.
+        Inputs:
+        - queries: List[str]
+        - documents: List[Image.Image] | List[str]
+        - batch_query: int
+        - batch_doc: int
+
+        Outputs:
+        - emb_queries: List[torch.Tensor] (n_queries, emb_dim_query)
+        - emb_documents: List[torch.Tensor] (n_documents, emb_dim_doc)
         """
         pass
 

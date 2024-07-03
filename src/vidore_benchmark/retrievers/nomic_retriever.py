@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, cast
+from typing import List, cast, Tuple
 
 import torch
 import torch.nn.functional as F
@@ -66,13 +66,24 @@ class NomicVisionRetriever(VisionRetriever):
 
     def get_scores(
         self,
+        list_emb_queries: List[torch.Tensor],
+        list_emb_documents: List[torch.Tensor],
+    ) -> torch.Tensor:
+        emb_queries = torch.cat(list_emb_queries, dim=0)
+        emb_documents = torch.cat(list_emb_documents, dim=0)
+
+        scores = torch.einsum("bd,cd->bc", emb_queries, emb_documents)
+
+        return scores
+
+    def get_embeddings(
+        self,
         queries: List[str],
         documents: List[Image.Image] | List[str],
         batch_query: int,
         batch_doc: int,
         **kwargs,
-    ) -> torch.Tensor:
-
+    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
         # Sanity check: `documents` must be a list of images
         if documents and not all(isinstance(doc, Image.Image) for doc in documents):
             raise ValueError("Documents must be a list of Pillow images")
@@ -90,11 +101,4 @@ class NomicVisionRetriever(VisionRetriever):
             doc_embeddings = self.forward_documents(doc_batch)
             list_emb_documents.append(doc_embeddings)
 
-        emb_queries = torch.cat(list_emb_queries, dim=0)
-        emb_documents = torch.cat(list_emb_documents, dim=0)
-
-        scores = torch.einsum("bd,cd->bc", emb_queries, emb_documents)
-
-        assert scores.shape == (emb_queries.shape[0], emb_documents.shape[0])
-
-        return scores
+        return list_emb_queries, list_emb_documents

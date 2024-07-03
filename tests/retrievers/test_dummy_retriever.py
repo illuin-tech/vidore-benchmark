@@ -18,5 +18,8 @@ def test_forward_documents(dummy_retriever: DummyRetriever, document_filepaths_f
 
 
 def test_get_scores(dummy_retriever: DummyRetriever, queries_fixtures, document_filepaths_fixture):
-    scores = dummy_retriever.get_scores(queries_fixtures, document_filepaths_fixture, batch_query=1, batch_doc=1)
+    emb_query, emb_doc = dummy_retriever.get_embeddings(
+        queries_fixtures, document_filepaths_fixture, batch_query=1, batch_doc=1
+    )
+    scores = dummy_retriever.get_scores(emb_query, emb_doc)
     assert scores.shape == (len(queries_fixtures), len(document_filepaths_fixture))

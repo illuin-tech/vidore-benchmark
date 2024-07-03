@@ -1,4 +1,4 @@
-from typing import List, cast
+from typing import List, cast, Tuple
 
 import torch
 from PIL import Image
@@ -43,14 +43,14 @@ class SigLIPRetriever(VisionRetriever):
 
         return torch.tensor(ps).to(self.device)
 
-    def get_scores(
+    def get_embeddings(
         self,
         queries: List[str],
-        documents: List[str] | List[Image.Image],
+        documents: List[Image.Image] | List[str],
         batch_query: int,
         batch_doc: int,
         **kwargs,
-    ) -> Tensor:
+    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
         # Sanity check: `documents` must be a list of images
         if documents and not all(isinstance(doc, Image.Image) for doc in documents):
             raise ValueError("Documents must be a list of Pillow images")
@@ -68,11 +68,17 @@ class SigLIPRetriever(VisionRetriever):
             doc_embeddings = self.forward_documents(doc_batch)
             list_emb_documents.append(doc_embeddings)
 
+        return list_emb_queries, list_emb_documents
+
+    def get_scores(
+        self,
+        list_emb_queries: List[torch.Tensor],
+        list_emb_documents: List[torch.Tensor],
+    ) -> torch.Tensor:
+
         emb_queries = torch.cat(list_emb_queries, dim=0)
         emb_documents = torch.cat(list_emb_documents, dim=0)
 
         scores = torch.einsum("bd,cd->bc", emb_queries, emb_documents)
-
-        assert scores.shape == (emb_queries.shape[0], emb_documents.shape[0])
 
         return scores

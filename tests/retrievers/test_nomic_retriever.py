@@ -18,5 +18,6 @@ def test_forward_documents(retriever: NomicVisionRetriever, document_images_fixt
 
 
 def test_get_scores(retriever: NomicVisionRetriever, queries_fixtures, document_images_fixture):
-    scores = retriever.get_scores(queries_fixtures, document_images_fixture, batch_query=1, batch_doc=1)
+    emb_query, emb_doc = retriever.get_embeddings(queries_fixtures, document_images_fixture, batch_query=1, batch_doc=1)
+    scores = retriever.get_scores(emb_query, emb_doc)
     assert scores.shape == (len(queries_fixtures), len(document_images_fixture))

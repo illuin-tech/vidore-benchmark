@@ -1,4 +1,4 @@
-from typing import List, cast
+from typing import List, Tuple, cast
 
 import torch
 from FlagEmbedding import BGEM3FlagModel
@@ -32,15 +32,14 @@ class BGEM3Retriever(VisionRetriever):
         output = self.model.encode(documents)["dense_vecs"]
         return torch.tensor(output).to(self.device)
 
-    def get_scores(
+    def get_embeddings(
         self,
         queries: List[str],
-        documents: List[str] | List[Image.Image],
+        documents: List[Image.Image] | List[str],
         batch_query: int,
         batch_doc: int,
         **kwargs,
-    ) -> torch.Tensor:
-
+    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
         # Sanity check: `documents` must be a list of filepaths (strings)
         if documents and not all(isinstance(doc, str) for doc in documents):
             raise ValueError("Documents must be a list of filepaths (strings)")
@@ -57,6 +56,14 @@ class BGEM3Retriever(VisionRetriever):
             doc_batch = cast(List[str], doc_batch)
             doc_embeddings = self.forward_documents(doc_batch)
             list_emb_documents.append(doc_embeddings)
+
+        return list_emb_queries, list_emb_documents
+
+    def get_scores(
+        self,
+        list_emb_queries: List[torch.Tensor],
+        list_emb_documents: List[torch.Tensor],
+    ) -> torch.Tensor:
 
         emb_queries = torch.cat(list_emb_queries, dim=0)
         emb_documents = torch.cat(list_emb_documents, dim=0)

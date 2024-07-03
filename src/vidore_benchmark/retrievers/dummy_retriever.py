@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Tuple
 
 import torch
 from PIL import Image
@@ -36,13 +36,23 @@ class DummyRetriever(VisionRetriever):
     def forward_documents(self, documents: List[Image.Image], **kwargs) -> torch.Tensor:
         return torch.randn(len(documents), self.emb_dim_doc)
 
-    def get_scores(
+    def get_embeddings(
         self,
         queries: List[str],
         documents: List[Image.Image] | List[str],
         batch_query: int,
         batch_doc: int,
         **kwargs,
+    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
+
+        return (
+            [torch.randn(batch_query, self.emb_dim_query) for _ in range(len(queries) // batch_query)],
+            [torch.randn(batch_doc, self.emb_dim_doc) for _ in range(len(documents) // batch_doc)],
+        )
+
+    def get_scores(
+        self,
+        list_emb_queries: List[torch.Tensor],
+        list_emb_documents: List[torch.Tensor],
     ) -> torch.Tensor:
-        scores = torch.randn(len(queries), len(documents))
-        return scores
+        return torch.randn(len(list_emb_queries), len(list_emb_documents))
