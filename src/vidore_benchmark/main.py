@@ -87,14 +87,19 @@ def retrieve_on_dataset(
     # Load the dataset
     ds = cast(Dataset, load_dataset(dataset_name, split=split))
 
+    # Get embeddings for the queries and documents
+    emb_queries = retriever.forward_queries([query], batch_size=1)
+    emb_documents = retriever.forward_documents(
+        list(ds["image"]) if retriever.use_visual_embedding else list(ds["text_description"]), batch_size=batch_size
+    )
+
     # Get the top-k documents
     top_k = get_top_k(
         retriever,
         queries=[query],
-        documents=list(ds["image"]) if retriever.use_visual_embedding else list(ds["text_description"]),
+        emb_queries=emb_queries,
+        emb_documents=emb_documents,
         file_names=list(ds["image_filename"]),
-        batch_query=1,
-        batch_doc=batch_size,
         k=k,
     )
 
@@ -129,16 +134,18 @@ def retrieve_on_pdfs(
     print(f"Found {len(image_files)} images in the directory `{data_dirpath}`")
 
     # Generate a dataset using the images
-    dataset = generate_dataset_from_img_folder(data_dirpath)
+    ds = generate_dataset_from_img_folder(data_dirpath)
 
+    # Get embeddings for the queries and documents
+    emb_queries = retriever.forward_queries([query], batch_size=1)
+    emb_documents = retriever.forward_documents(list(ds["image"]), batch_size=batch_size)
     # Get the top-k documents
     top_k = get_top_k(
         retriever,
         queries=[query],
-        documents=list(dataset["image"]),
-        file_names=list(dataset["image_filename"]),
-        batch_query=1,
-        batch_doc=batch_size,
+        emb_queries=emb_queries,
+        emb_documents=emb_documents,
+        file_names=list(ds["image_filename"]),
         k=k,
     )
 

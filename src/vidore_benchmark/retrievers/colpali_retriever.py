@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, cast
+from typing import List, cast, Tuple
 
 import torch
 from dotenv import load_dotenv
@@ -77,10 +77,10 @@ class ColPaliRetriever(VisionRetriever):
         batch_query["attention_mask"] = batch_query["attention_mask"][..., self.processor.image_seq_length :]
         return batch_query
 
-    def forward_queries(self, queries: List[str], **kwargs) -> List[torch.Tensor]:
+    def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
             queries,
-            batch_size=kwargs.get("bs", 4),
+            batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_queries,
         )
@@ -93,10 +93,10 @@ class ColPaliRetriever(VisionRetriever):
 
         return qs
 
-    def forward_documents(self, documents: List[Image.Image], **kwargs) -> List[torch.Tensor]:
+    def forward_documents(self, documents: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
             documents,
-            batch_size=kwargs.get("bs", 4),
+            batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_images,
         )
@@ -110,19 +110,8 @@ class ColPaliRetriever(VisionRetriever):
 
     def get_scores(
         self,
-        queries: List[str],
-        documents: List[Image.Image] | List[str],
-        batch_query: int,
-        batch_doc: int,
-        **kwargs,
+        list_emb_queries: List[torch.Tensor],
+        list_emb_documents: List[torch.Tensor],
     ) -> torch.Tensor:
-        # Sanity check: `documents` must be a list of images
-        if documents and not all(isinstance(doc, Image.Image) for doc in documents):
-            raise ValueError("Documents must be a list of Pillow images")
-        documents = cast(List[Image.Image], documents)
-
-        qs = self.forward_queries(queries, bs=batch_query)
-        ds = self.forward_documents(documents, bs=batch_doc)
-
-        scores = self.scorer.evaluate(qs, ds)
+        scores = self.scorer.evaluate(list_emb_queries, list_emb_documents)
         return scores

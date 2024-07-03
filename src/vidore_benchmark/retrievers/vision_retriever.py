@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Tuple
 import torch
 from datasets import Dataset
 from mteb.evaluation.evaluators import RetrievalEvaluator
-from PIL import Image
 
 
 class VisionRetriever(ABC):
@@ -28,7 +27,7 @@ class VisionRetriever(ABC):
         pass
 
     @abstractmethod
-    def forward_queries(self, queries: Any, **kwargs) -> torch.Tensor | List[torch.Tensor]:
+    def forward_queries(self, queries: Any, batch_size: int, **kwargs) -> List[torch.Tensor]:
         """
         Forward pass the processed queries.
 
@@ -39,7 +38,7 @@ class VisionRetriever(ABC):
         pass
 
     @abstractmethod
-    def forward_documents(self, documents: Any, **kwargs) -> torch.Tensor | List[torch.Tensor]:
+    def forward_documents(self, documents: Any, batch_size: int, **kwargs) -> List[torch.Tensor]:
         """
         Forward pass the processed documents (i.e. page images).
 
@@ -52,19 +51,18 @@ class VisionRetriever(ABC):
     @abstractmethod
     def get_scores(
         self,
-        queries: List[str],
-        documents: List[Image.Image] | List[str],
-        batch_query: int,
-        batch_doc: int,
-        **kwargs,
+        list_emb_queries: List[torch.Tensor],
+        list_emb_documents: List[torch.Tensor],
     ) -> torch.Tensor:
         """
-        Get the similarity scores between queries and documents.
+        Get the scores between queries and documents.
 
-        `documents` can be a list of:
-        - PIL images olist of image filenames
-        - filepaths (strings) of the images
-        - OCR-ed text (strings) of the images.
+        Inputs:
+        - list_emb_queries: List[torch.Tensor] (n_queries, emb_dim_query)
+        - list_emb_documents: List[torch.Tensor] (n_documents, emb_dim_doc)
+
+        Output:
+        - scores: torch.Tensor (n_queries, n_documents)
         """
         pass
 

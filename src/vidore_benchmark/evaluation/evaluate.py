@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Dict, List
 
 from datasets import Dataset
-from PIL import Image
+import torch
 
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
@@ -39,9 +39,12 @@ def evaluate_dataset(
             raise ValueError("All queries are None")
 
     documents = ds[col_documents]
+    # Get the embeddings for the queries and documents - size (n_queries, emb_dim_query) and (n_documents, emb_dim_doc)
+    emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
+    emb_documents = vision_retriever.forward_documents(documents, batch_size=batch_doc)
 
     # Get the scores - size (n_queries, n_documents)
-    scores = vision_retriever.get_scores(queries, documents, batch_query=batch_query, batch_doc=batch_doc)
+    scores = vision_retriever.get_scores(emb_queries, emb_documents)
 
     # Get the relevant documents and results
     relevant_docs, results = vision_retriever.get_relevant_docs_results(ds, queries, scores)
@@ -55,10 +58,9 @@ def evaluate_dataset(
 def get_top_k(
     vision_retriever: VisionRetriever,
     queries: List[str],
-    documents: List[Image.Image] | List[str],
+    emb_queries: List[torch.Tensor],
+    emb_documents: List[torch.Tensor],
     file_names: List[str],
-    batch_query: int,
-    batch_doc: int,
     k: int,
 ) -> Dict[str, Dict[str, float]]:
     """
@@ -73,7 +75,7 @@ def get_top_k(
         ...
     }
     """
-    scores = vision_retriever.get_scores(queries, documents, batch_query=batch_query, batch_doc=batch_doc)
+    scores = vision_retriever.get_scores(emb_queries, emb_documents)
 
     passages2filename = {doc_idx: image_filename for doc_idx, image_filename in enumerate(file_names)}
 

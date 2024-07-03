@@ -4,6 +4,7 @@ from typing import List
 
 import torch
 from PIL import Image
+from torch import Tensor
 
 from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
@@ -30,19 +31,15 @@ class DummyRetriever(VisionRetriever):
     def use_visual_embedding(self) -> bool:
         return True
 
-    def forward_queries(self, queries: List[str], **kwargs) -> torch.Tensor:
-        return torch.randn(len(queries), self.emb_dim_query)
+    def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[Tensor]:
+        return [torch.randn(batch_size, self.emb_dim_query) for _ in range(len(queries) // batch_size)]
 
-    def forward_documents(self, documents: List[Image.Image], **kwargs) -> torch.Tensor:
-        return torch.randn(len(documents), self.emb_dim_doc)
+    def forward_documents(self, documents: List[Image.Image], batch_size: int, **kwargs) -> List[Tensor]:
+        return [torch.randn(batch_size, self.emb_dim_doc) for _ in range(len(documents) // batch_size)]
 
     def get_scores(
         self,
-        queries: List[str],
-        documents: List[Image.Image] | List[str],
-        batch_query: int,
-        batch_doc: int,
-        **kwargs,
+        list_emb_queries: List[torch.Tensor],
+        list_emb_documents: List[torch.Tensor],
     ) -> torch.Tensor:
-        scores = torch.randn(len(queries), len(documents))
-        return scores
+        return torch.randn(len(list_emb_queries), len(list_emb_documents))
