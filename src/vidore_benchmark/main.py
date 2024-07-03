@@ -88,12 +88,11 @@ def retrieve_on_dataset(
     ds = cast(Dataset, load_dataset(dataset_name, split=split))
 
     # Get embeddings for the queries and documents
-    emb_queries, emb_documents = retriever.get_embeddings(
-        queries=[query],
-        documents=list(ds["image"]) if retriever.use_visual_embedding else list(ds["text_description"]),
-        batch_query=1,
-        batch_doc=batch_size,
+    emb_queries = retriever.forward_queries([query], batch_size=1)
+    emb_documents = retriever.forward_documents(
+        list(ds["image"]) if retriever.use_visual_embedding else list(ds["text_description"]), batch_size=batch_size
     )
+
     # Get the top-k documents
     top_k = get_top_k(
         retriever,
@@ -138,12 +137,8 @@ def retrieve_on_pdfs(
     ds = generate_dataset_from_img_folder(data_dirpath)
 
     # Get embeddings for the queries and documents
-    emb_queries, emb_documents = retriever.get_embeddings(
-        queries=[query],
-        documents=list(ds["image"]) if retriever.use_visual_embedding else list(ds["text_description"]),
-        batch_query=1,
-        batch_doc=batch_size,
-    )
+    emb_queries = retriever.forward_queries([query], batch_size=1)
+    emb_documents = retriever.forward_documents(list(ds["image"]), batch_size=batch_size)
     # Get the top-k documents
     top_k = get_top_k(
         retriever,

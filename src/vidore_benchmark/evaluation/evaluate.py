@@ -40,9 +40,8 @@ def evaluate_dataset(
 
     documents = ds[col_documents]
     # Get the embeddings for the queries and documents - size (n_queries, emb_dim_query) and (n_documents, emb_dim_doc)
-    emb_queries, emb_documents = vision_retriever.get_embeddings(
-        queries, documents, batch_query=batch_query, batch_doc=batch_doc
-    )
+    emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
+    emb_documents = vision_retriever.forward_documents(documents, batch_size=batch_doc)
 
     # Get the scores - size (n_queries, n_documents)
     scores = vision_retriever.get_scores(emb_queries, emb_documents)

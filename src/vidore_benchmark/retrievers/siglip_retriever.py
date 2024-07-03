@@ -1,8 +1,7 @@
-from typing import List, cast, Tuple
+from typing import List, cast
 
 import torch
 from PIL import Image
-from torch._tensor import Tensor
 from tqdm import tqdm
 from transformers import AutoModel, AutoProcessor
 
@@ -25,50 +24,36 @@ class SigLIPRetriever(VisionRetriever):
     def use_visual_embedding(self) -> bool:
         return True
 
-    def forward_queries(self, queries: List[str], **kwargs) -> Tensor:
-        inputs_queries = self.processor(text=queries, return_tensors="pt", padding="max_length", truncation=True).to(
-            self.device
-        )
-        qs = self.model.get_text_features(**inputs_queries)
-
-        return torch.tensor(qs).to(self.device)
-
-    def forward_documents(self, documents: List[Image.Image] | List[str], **kwargs) -> Tensor:
-        list_doc = [document.convert("RGB") for document in documents if isinstance(document, Image.Image)]
-
-        input_image_processed = self.processor(images=list_doc, return_tensors="pt", padding=True).to(self.device)
-
-        with torch.no_grad():
-            ps = self.model.get_image_features(**input_image_processed)
-
-        return torch.tensor(ps).to(self.device)
-
-    def get_embeddings(
-        self,
-        queries: List[str],
-        documents: List[Image.Image] | List[str],
-        batch_query: int,
-        batch_doc: int,
-        **kwargs,
-    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
-        # Sanity check: `documents` must be a list of images
-        if documents and not all(isinstance(doc, Image.Image) for doc in documents):
-            raise ValueError("Documents must be a list of Pillow images")
-        documents = cast(List[Image.Image], documents)
+    def forward_queries(self, queries, batch_size: int, **kwargs) -> List[torch.Tensor]:
 
         list_emb_queries: List[torch.Tensor] = []
-        for query_batch in tqdm(batched(queries, batch_query), desc="Query batch", total=len(queries) // batch_query):
+        for query_batch in tqdm(batched(queries, batch_size), desc="Query batch", total=len(queries) // batch_size):
             query_batch = cast(List[str], query_batch)
-            query_embeddings = self.forward_queries(query_batch)
+            inputs_queries = self.processor(
+                text=query_batch, return_tensors="pt", padding="max_length", truncation=True
+            ).to(self.device)
+            qs = self.model.get_text_features(**inputs_queries)
+            query_embeddings = torch.tensor(qs).to(self.device)
             list_emb_queries.append(query_embeddings)
+        return list_emb_queries
+
+    def forward_documents(self, documents, batch_size: int, **kwargs) -> List[torch.Tensor]:
 
         list_emb_documents: List[torch.Tensor] = []
-        for doc_batch in tqdm(batched(documents, batch_doc), desc="Document batch", total=len(documents) // batch_doc):
+        for doc_batch in tqdm(
+            batched(documents, batch_size), desc="Document batch", total=len(documents) // batch_size
+        ):
             doc_batch = cast(List[Image.Image], doc_batch)
-            doc_embeddings = self.forward_documents(doc_batch)
-            list_emb_documents.append(doc_embeddings)
+            list_doc = [document.convert("RGB") for document in doc_batch if isinstance(document, Image.Image)]
 
-        return list_emb_queries, list_emb_documents
+            input_image_processed = self.processor(images=list_doc, return_tensors="pt", padding=True).to(self.device)
+
+            with torch.no_grad():
+                ps = self.model.get_image_features(**input_image_processed)
+                doc_embeddings = torch.tensor(ps).to(self.device)
+                list_emb_documents.append(doc_embeddings)
+
+        return list_emb_documents
 
     def get_scores(
         self,

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, cast, Tuple
+from typing import List, cast
 
 import torch
 import torch.nn.functional as F
@@ -43,26 +43,42 @@ class NomicVisionRetriever(VisionRetriever):
         input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
         return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
 
-    def forward_queries(self, queries: List[str], **kwargs) -> torch.Tensor:
-        query_texts = ["search_query: " + query for query in queries]
-        encoded_input = self.text_tokenizer(query_texts, padding=True, truncation=True, return_tensors="pt").to(
-            self.device
-        )
-        with torch.no_grad():
-            qs = self.text_model(**encoded_input)
-        qs = self._mean_pooling(qs, encoded_input["attention_mask"])  # type: ignore
-        qs = F.layer_norm(qs, normalized_shape=(qs.shape[1],))
-        qs = F.normalize(qs, p=2, dim=1)
+    def forward_queries(self, queries, batch_size: int, **kwargs) -> List[torch.Tensor]:
+        list_emb_queries: List[torch.Tensor] = []
+        for query_batch in tqdm(batched(queries, batch_size), desc="Query batch", total=len(queries) // batch_size):
+            query_batch = cast(List[str], query_batch)
 
-        return torch.tensor(qs).to(self.device)
+            query_texts = ["search_query: " + query for query in query_batch]
+            encoded_input = self.text_tokenizer(query_texts, padding=True, truncation=True, return_tensors="pt").to(
+                self.device
+            )
+            with torch.no_grad():
+                qs = self.text_model(**encoded_input)
+            qs = self._mean_pooling(qs, encoded_input["attention_mask"])  # type: ignore
+            qs = F.layer_norm(qs, normalized_shape=(qs.shape[1],))
+            qs = F.normalize(qs, p=2, dim=1)
 
-    def forward_documents(self, documents: List[Image.Image], **kwargs) -> torch.Tensor:
-        vision_inputs = self.processor(documents, return_tensors="pt").to(self.device)
-        with torch.no_grad():
-            ps = self.model(**vision_inputs).last_hidden_state
-            ps = F.normalize(ps[:, 0], p=2, dim=1)
+            query_embeddings = torch.tensor(qs).to(self.device)
+            list_emb_queries.append(query_embeddings)
 
-        return torch.tensor(ps).to(self.device)
+        return list_emb_queries
+
+    def forward_documents(self, documents, batch_size: int, **kwargs) -> List[torch.Tensor]:
+        list_emb_documents: List[torch.Tensor] = []
+        for doc_batch in tqdm(
+            batched(documents, batch_size), desc="Document batch", total=len(documents) // batch_size
+        ):
+            doc_batch = cast(List[Image.Image], doc_batch)
+
+            vision_inputs = self.processor(doc_batch, return_tensors="pt").to(self.device)
+            with torch.no_grad():
+                ps = self.model(**vision_inputs).last_hidden_state
+                ps = F.normalize(ps[:, 0], p=2, dim=1)
+
+            doc_embeddings = torch.tensor(ps).to(self.device)
+            list_emb_documents.append(doc_embeddings)
+
+        return list_emb_documents
 
     def get_scores(
         self,
@@ -75,30 +91,3 @@ class NomicVisionRetriever(VisionRetriever):
         scores = torch.einsum("bd,cd->bc", emb_queries, emb_documents)
 
         return scores
-
-    def get_embeddings(
-        self,
-        queries: List[str],
-        documents: List[Image.Image] | List[str],
-        batch_query: int,
-        batch_doc: int,
-        **kwargs,
-    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
-        # Sanity check: `documents` must be a list of images
-        if documents and not all(isinstance(doc, Image.Image) for doc in documents):
-            raise ValueError("Documents must be a list of Pillow images")
-        documents = cast(List[Image.Image], documents)
-
-        list_emb_queries: List[torch.Tensor] = []
-        for query_batch in tqdm(batched(queries, batch_query), desc="Query batch", total=len(queries) // batch_query):
-            query_batch = cast(List[str], query_batch)
-            query_embeddings = self.forward_queries(query_batch)
-            list_emb_queries.append(query_embeddings)
-
-        list_emb_documents: List[torch.Tensor] = []
-        for doc_batch in tqdm(batched(documents, batch_doc), desc="Document batch", total=len(documents) // batch_doc):
-            doc_batch = cast(List[Image.Image], doc_batch)
-            doc_embeddings = self.forward_documents(doc_batch)
-            list_emb_documents.append(doc_embeddings)
-
-        return list_emb_queries, list_emb_documents

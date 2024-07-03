@@ -1,8 +1,7 @@
-from typing import List, Tuple, cast
+from typing import List, cast
 
 import torch
 from FlagEmbedding import BGEM3FlagModel
-from PIL import Image
 from tqdm import tqdm
 
 from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
@@ -24,40 +23,26 @@ class BGEM3Retriever(VisionRetriever):
     def use_visual_embedding(self) -> bool:
         return False
 
-    def forward_queries(self, queries, **kwargs) -> torch.Tensor:
-        output = self.model.encode(queries, max_length=512)["dense_vecs"]
-        return torch.tensor(output).to(self.device)
-
-    def forward_documents(self, documents: List[str], **kwargs) -> torch.Tensor:
-        output = self.model.encode(documents)["dense_vecs"]
-        return torch.tensor(output).to(self.device)
-
-    def get_embeddings(
-        self,
-        queries: List[str],
-        documents: List[Image.Image] | List[str],
-        batch_query: int,
-        batch_doc: int,
-        **kwargs,
-    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
-        # Sanity check: `documents` must be a list of filepaths (strings)
-        if documents and not all(isinstance(doc, str) for doc in documents):
-            raise ValueError("Documents must be a list of filepaths (strings)")
-        documents = cast(List[str], documents)
-
+    def forward_queries(self, queries, batch_size: int, **kwargs) -> List[torch.Tensor]:
         list_emb_queries: List[torch.Tensor] = []
-        for query_batch in tqdm(batched(queries, batch_query), desc="Query batch", total=len(queries) // batch_query):
+        for query_batch in tqdm(batched(queries, batch_size), desc="Query batch", total=len(queries) // batch_size):
             query_batch = cast(List[str], query_batch)
-            query_embeddings = self.forward_queries(query_batch)
+            output = self.model.encode(query_batch, max_length=512)["dense_vecs"]
+            query_embeddings = torch.tensor(output).to(self.device)
             list_emb_queries.append(query_embeddings)
 
-        list_emb_documents: List[torch.Tensor] = []
-        for doc_batch in tqdm(batched(documents, batch_doc), desc="Document batch", total=len(documents) // batch_doc):
-            doc_batch = cast(List[str], doc_batch)
-            doc_embeddings = self.forward_documents(doc_batch)
-            list_emb_documents.append(doc_embeddings)
+        return list_emb_queries
 
-        return list_emb_queries, list_emb_documents
+    def forward_documents(self, documents: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
+        list_emb_documents: List[torch.Tensor] = []
+        for doc_batch in tqdm(
+            batched(documents, batch_size), desc="Document batch", total=len(documents) // batch_size
+        ):
+            doc_batch = cast(List[str], doc_batch)
+            output = self.model.encode(doc_batch)["dense_vecs"]
+            doc_embeddings = torch.tensor(output).to(self.device)
+            list_emb_documents.append(doc_embeddings)
+        return list_emb_documents
 
     def get_scores(
         self,

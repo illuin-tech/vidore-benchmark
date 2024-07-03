@@ -77,10 +77,10 @@ class ColPaliRetriever(VisionRetriever):
         batch_query["attention_mask"] = batch_query["attention_mask"][..., self.processor.image_seq_length :]
         return batch_query
 
-    def forward_queries(self, queries: List[str], **kwargs) -> List[torch.Tensor]:
+    def forward_queries(self, queries: List[str], batch_size, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
             queries,
-            batch_size=kwargs.get("bs", 4),
+            batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_queries,
         )
@@ -93,10 +93,10 @@ class ColPaliRetriever(VisionRetriever):
 
         return qs
 
-    def forward_documents(self, documents: List[Image.Image], **kwargs) -> List[torch.Tensor]:
+    def forward_documents(self, documents: List[Image.Image], batch_size, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
             documents,
-            batch_size=kwargs.get("bs", 4),
+            batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_images,
         )
@@ -107,25 +107,6 @@ class ColPaliRetriever(VisionRetriever):
                 embeddings_doc = self.model(**batch_doc)
             ds.extend(list(torch.unbind(embeddings_doc.to("cpu"))))
         return ds
-
-    def get_embeddings(
-        self,
-        queries: List[str],
-        documents: List[Image.Image] | List[str],
-        batch_query: int,
-        batch_doc: int,
-        **kwargs,
-    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
-
-        # Sanity check: `documents` must be a list of images
-        if documents and not all(isinstance(doc, Image.Image) for doc in documents):
-            raise ValueError("Documents must be a list of Pillow images")
-        documents = cast(List[Image.Image], documents)
-
-        qs = self.forward_queries(queries, bs=batch_query)
-        ds = self.forward_documents(documents, bs=batch_doc)
-
-        return qs, ds
 
     def get_scores(
         self,

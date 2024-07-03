@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Tuple
 import torch
 from datasets import Dataset
 from mteb.evaluation.evaluators import RetrievalEvaluator
-from PIL import Image
 
 
 class VisionRetriever(ABC):
@@ -28,7 +27,7 @@ class VisionRetriever(ABC):
         pass
 
     @abstractmethod
-    def forward_queries(self, queries: Any, **kwargs) -> torch.Tensor | List[torch.Tensor]:
+    def forward_queries(self, queries: Any, batch_size: int, **kwargs) -> List[torch.Tensor]:
         """
         Forward pass the processed queries.
 
@@ -39,7 +38,7 @@ class VisionRetriever(ABC):
         pass
 
     @abstractmethod
-    def forward_documents(self, documents: Any, **kwargs) -> torch.Tensor | List[torch.Tensor]:
+    def forward_documents(self, documents: Any, batch_size: int, **kwargs) -> List[torch.Tensor]:
         """
         Forward pass the processed documents (i.e. page images).
 
@@ -64,30 +63,6 @@ class VisionRetriever(ABC):
 
         Output:
         - scores: torch.Tensor (n_queries, n_documents)
-        """
-        pass
-
-    @abstractmethod
-    def get_embeddings(
-        self,
-        queries: List[str],
-        documents: List[Image.Image] | List[str],
-        batch_query: int,
-        batch_doc: int,
-        **kwargs,
-    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
-        """
-        Get the embeddings for the queries and documents.
-
-        Inputs:
-        - queries: List[str]
-        - documents: List[Image.Image] | List[str]
-        - batch_query: int
-        - batch_doc: int
-
-        Outputs:
-        - emb_queries: List[torch.Tensor] (n_queries, emb_dim_query)
-        - emb_documents: List[torch.Tensor] (n_documents, emb_dim_doc)
         """
         pass
 

@@ -8,18 +8,17 @@ def retriever():
 
 
 def test_forward_queries(retriever: BGEM3Retriever, queries_fixtures):
-    embeddings_queries = retriever.forward_queries(queries_fixtures)
-    assert embeddings_queries.shape == (len(queries_fixtures), retriever.emb_dim_query)
+    embeddings_queries = retriever.forward_queries(queries_fixtures, batch_size=1)
+    assert len(embeddings_queries) == len(queries_fixtures)
 
 
 def test_forward_documents(retriever: BGEM3Retriever, document_ocr_text_fixture):
-    embeddings_docs = retriever.forward_documents(document_ocr_text_fixture)
-    assert embeddings_docs.shape == (len(document_ocr_text_fixture), retriever.emb_dim_doc)
+    embeddings_docs = retriever.forward_documents(document_ocr_text_fixture, batch_size=1)
+    assert len(embeddings_docs) == len(document_ocr_text_fixture)
 
 
 def test_get_scores(retriever: BGEM3Retriever, queries_fixtures, document_ocr_text_fixture):
-    emb_query, emb_doc = retriever.get_embeddings(
-        queries_fixtures, document_ocr_text_fixture, batch_query=1, batch_doc=1
-    )
+    emb_query = retriever.forward_queries(queries_fixtures, batch_size=1)
+    emb_doc = retriever.forward_documents(document_ocr_text_fixture, batch_size=1)
     scores = retriever.get_scores(emb_query, emb_doc)
     assert scores.shape == (len(queries_fixtures), len(document_ocr_text_fixture))
