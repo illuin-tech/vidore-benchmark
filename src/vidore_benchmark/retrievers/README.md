@@ -6,4 +6,4 @@
 - Add decorator `@register_vision_retriever({{my_vision_retriever}})`
 - Import your class to the `vidore_benchmark/retrievers/__init__.py` file
 
-You can look at the [`DummyRegister`](https://github.com/tonywu71/vidore-benchmark/blob/main/src/vidore_benchmark/retrievers/dummy_retriever.py) for a simple example.
+You can look at the [`DummyRegister`](https://github.com/illuin-tech/vidore-benchmark/blob/main/src/vidore_benchmark/retrievers/dummy_retriever.py) for a simple example.

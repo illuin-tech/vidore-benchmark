@@ -12,7 +12,7 @@ authors:
   email: "tony.wu@illuin.tech"
 title: "Vision Document Retrieval (ViDoRe): Benchmark"
 date-released: 2024-06-26
-url: "https://github.com/tonywu71/vidore-benchmark"
+url: "https://github.com/illuin-tech/vidore-benchmark"
 preferred-citation:
   type: article
   authors:
