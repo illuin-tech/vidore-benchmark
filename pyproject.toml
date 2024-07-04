@@ -7,12 +7,12 @@ packages = ["src/vidore_benchmark"]
 
 [project]
 name = "vidore_benchmark"
-version = "1.0.1"
+version = "2.0.0"
 description = "Visual Document Retrieval: Benchmark"
 authors = [
+    { name = "Tony Wu", email = "tony.wu@illuin.tech" },
     { name = "Manuel Faysse", email = "manuel.faysse@illuin.tech" },
     { name = "Hugues Sibille", email = "hugues.sibille@illuin.tech" },
-    { name = "Tony Wu", email = "tony.wu@illuin.tech" },
 ]
 readme = "README.md"
 requires-python = ">=3.9"
@@ -89,7 +89,7 @@ baselines = [
 ]
 
 [project.urls]
-homepage = "https://github.com/tonywu71/vidore-benchmark"
+homepage = "https://github.com/illuin-tech/vidore-benchmark"
 
 [project.scripts]
 vidore-benchmark = "vidore_benchmark.main:app"
