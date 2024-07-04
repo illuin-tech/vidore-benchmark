@@ -45,7 +45,7 @@ pip install -r requirements.txt
 
 ## Available retrievers
 
-The list of available retrievers can be found [here](https://github.com/tonywu71/vidore-benchmark/tree/main/src/vidore_benchmark/retrievers). Read [this section](###Implement-your-own-retriever) to learn how to create, use, and evaluate your own retriever.
+The list of available retrievers can be found [here](https://github.com/illuin-tech/vidore-benchmark/tree/main/src/vidore_benchmark/retrievers). Read [this section](###Implement-your-own-retriever) to learn how to create, use, and evaluate your own retriever.
 
 ## Command-line usage
 
@@ -144,7 +144,7 @@ def main():
 
 ### Implement your own retriever
 
-If you need to evaluate your own model on the ViDoRe benchmark, you can create your own instance of `VisionRetriever` to use it with the evaluation scripts in this package. You can find the detailed instructions [here](https://github.com/tonywu71/vidore-benchmark/blob/main/src/vidore_benchmark/retrievers/README.md).
+If you need to evaluate your own model on the ViDoRe benchmark, you can create your own instance of `VisionRetriever` to use it with the evaluation scripts in this package. You can find the detailed instructions [here](https://github.com/illuin-tech/vidore-benchmark/blob/main/src/vidore_benchmark/retrievers/README.md).
 
 ### Compare retrievers using the EvalManager
 
@@ -170,7 +170,7 @@ df = ndcg_at_5 = eval_manager.get_df_for_metric("ndcg_at_5")
 
 By superimposing the late interaction heatmap on top of the original image, we can visualize the most salient image patches with respect to each term of the query, yielding interpretable insights into model focus zones.
 
-You can generate similarity maps using the `generate-similarity-maps`. For instance, you can reproduce the similarity maps from the paper by downloading the images from the [`data/interpretability_examples`](https://github.com/tonywu71/vidore-benchmark/tree/main/data/interpretability_examples) folder and running the following command:
+You can generate similarity maps using the `generate-similarity-maps`. For instance, you can reproduce the similarity maps from the paper by downloading the images from the [`data/interpretability_examples`](https://github.com/illuin-tech/vidore-benchmark/tree/main/data/interpretability_examples) folder and running the following command:
 
 ```bash
 generate-similarity-maps \
@@ -188,12 +188,12 @@ generate-similarity-maps \
 
 ```latex
 @misc{faysse2024colpaliefficientdocumentretrieval,
-    title={ColPali: Efficient Document Retrieval with Vision Language Models}, 
-    author={Manuel Faysse and Hugues Sibille and Tony Wu and Gautier Viaud and Céline Hudelot and Pierre Colombo},
-    year={2024},
-    eprint={2407.01449},
-    archivePrefix={arXiv},
-    primaryClass={cs.IR},
-    url={https://arxiv.org/abs/2407.01449}, 
+      title={ColPali: Efficient Document Retrieval with Vision Language Models}, 
+      author={Manuel Faysse and Hugues Sibille and Tony Wu and Bilel Omrani and Gautier Viaud and Céline Hudelot and Pierre Colombo},
+      year={2024},
+      eprint={2407.01449},
+      archivePrefix={arXiv},
+      primaryClass={cs.IR},
+      url={https://arxiv.org/abs/2407.01449}, 
 }
 ```

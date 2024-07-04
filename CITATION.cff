@@ -12,7 +12,7 @@ authors:
   email: "tony.wu@illuin.tech"
 title: "Vision Document Retrieval (ViDoRe): Benchmark"
 date-released: 2024-06-26
-url: "https://github.com/tonywu71/vidore-benchmark"
+url: "https://github.com/illuin-tech/vidore-benchmark"
 preferred-citation:
   type: article
   authors:
@@ -22,6 +22,14 @@ preferred-citation:
     given-names: "Hugues"
   - family-names: "Wu"
     given-names: "Tony"
+  - family-names: "Omrani"
+    given-names: "Bilel"
+  - family-names: "Viaud"
+    given-names: "Gautier"
+  - family-names: "Hudelot"
+    given-names: "Céline"
+  - family-names: "Colombo"
+    given-names: "Pierre"
   doi: "arXiv.2407.01449"
   month: 6
   title: "ColPali: Efficient Document Retrieval with Vision Language Models"
