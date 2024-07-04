@@ -188,12 +188,12 @@ generate-similarity-maps \
 
 ```latex
 @misc{faysse2024colpaliefficientdocumentretrieval,
-    title={ColPali: Efficient Document Retrieval with Vision Language Models}, 
-    author={Manuel Faysse and Hugues Sibille and Tony Wu and Gautier Viaud and Céline Hudelot and Pierre Colombo},
-    year={2024},
-    eprint={2407.01449},
-    archivePrefix={arXiv},
-    primaryClass={cs.IR},
-    url={https://arxiv.org/abs/2407.01449}, 
+      title={ColPali: Efficient Document Retrieval with Vision Language Models}, 
+      author={Manuel Faysse and Hugues Sibille and Tony Wu and Bilel Omrani and Gautier Viaud and Céline Hudelot and Pierre Colombo},
+      year={2024},
+      eprint={2407.01449},
+      archivePrefix={arXiv},
+      primaryClass={cs.IR},
+      url={https://arxiv.org/abs/2407.01449}, 
 }
 ```
