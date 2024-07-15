@@ -6,7 +6,7 @@
 [[ViDoRe Benchmark]](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d)
 [[ViDoRe Leaderboard]](https://huggingface.co/spaces/vidore/vidore-leaderboard)
 [[Hf Space]](https://huggingface.co/spaces/manu/ColPali-demo)
-<!-- [[Hf Blog]]() -->
+[[Hf Blog]](https://huggingface.co/blog/manu/colpali)
 <!-- [[Colab Example]]() -->
 
 Main contributors: [Manuel Faysse](https://github.com/ManuelFay), [Hugues Sibille](https://github.com/HuguesSib), [Tony Wu](https://github.com/tonywu71)
