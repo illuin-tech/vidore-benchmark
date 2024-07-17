@@ -28,7 +28,7 @@ def evaluate_retriever(
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
     batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 4,
     batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
-    batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = None,
+    batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
     collection_name: Annotated[Optional[str], typer.Option(help="Collection name to use for evaluation")] = None,
 ):
     """
@@ -153,6 +153,7 @@ def retrieve_on_pdfs(
     # Get embeddings for the queries and documents
     emb_queries = retriever.forward_queries([query], batch_size=1)
     emb_documents = retriever.forward_documents(list(ds["image"]), batch_size=batch_size)
+
     # Get the top-k documents
     top_k = get_top_k(
         retriever,
