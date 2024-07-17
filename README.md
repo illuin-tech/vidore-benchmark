@@ -57,26 +57,36 @@ can evaluate the ColPali model on the ViDoRe benchmark to reproduce the results 
 ```bash
 vidore-benchmark evaluate-retriever \
     --model-name vidore/colpali \
-    --collection-name "vidore/vidore-**benchmark**-667173f98e70a1c0fa4db00d" \
+    --collection-name "vidore/vidore-benchmark-667173f98e70a1c0fa4db00d" \
     --split test
 ```
 
 **Note:** You should get a warning about some non-initialized weights. This is a known issue in ColPali and will
 cause the metrics to be slightly different from the ones reported in the paper. We are working on fixing this issue.
 
-Alternatively, you can evaluate your model on a single dataset:
+Alternatively, you can evaluate your model on a single dataset. If your retriver uses visual embeddings, you can use any dataset path from the [ViDoRe Benchmark](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d) collection, e.g.:
 
 ```bash
 vidore-benchmark evaluate-retriever \
     --model-name vidore/colpali \
-    --dataset-name vidore/syntheticDocQA_dummy
+    --dataset-name vidore/docvqa_test_subsampled
 ```
+
+If you want to evaluate a retriever that relies on pure-text retrieval (no visual embeddings), you should use the datasets from the [ViDoRe Chunk OCR (baseline)](https://huggingface.co/collections/vidore/vidore-chunk-ocr-baseline-666acce88c294ef415548a56) instead:
+
+```bash
+vidore-benchmark evaluate-retriever \
+    --model-name BAAI/bge-m3 \
+    --dataset-name vidore/docvqa_test_subsampled_tesseract
+```
+
+Both scripts will generate one particular JSON file in `outputs/{model_name_all_metrics.json}`. Follow the instructions on the [ViDoRe Leaderboard](https://huggingface.co/spaces/vidore/vidore-leaderboard) to compare your model with the others.
 
 ### Retrieve the top-k documents from a HuggingFace dataset
 
 ```bash
 vidore-benchmark retrieve-on-dataset \
-    --model-name BAAI/bge-m3 \
+    --model-name vidore/colpali \
     --query "Which hour of the day had the highest overall electricity generation in 2019?" \
     --k 5 \
     --dataset-name vidore/syntheticDocQA_energy_test \
@@ -90,7 +100,7 @@ vidore-benchmark retriever_on_pdfs \
     --model-name google/siglip-so400m-patch14-384 \
     --query "Which hour of the day had the highest overall electricity generation in 2019?" \
     --k 5 \
-    --data-dirpath data/my_folder_with_pdf_documents/ \
+    --data-dirpath data/my_folder_with_pdf_documents/
 ```
 
 ### Documentation
@@ -162,7 +172,7 @@ The data is stored in `eval_manager.data` as a multi-column DataFrame with the f
 from vidore_benchmark.evaluation.eval_manager import EvalManager
 
 eval_manager = EvalManager.from_dir("data/metrics/")
-df = ndcg_at_5 = eval_manager.get_df_for_metric("ndcg_at_5")
+df = eval_manager.get_df_for_metric("ndcg_at_5")
 ```
 
 
