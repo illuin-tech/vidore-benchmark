@@ -110,7 +110,12 @@ class VisionRetriever(ABC):
 
         return relevant_docs, results
 
-    def compute_metrics(self, relevant_docs, results, **kwargs):
+    def compute_metrics(
+        self,
+        relevant_docs: Any,
+        results: Any,
+        **kwargs,
+    ):
         """
         Compute the MTEB metrics.
 
