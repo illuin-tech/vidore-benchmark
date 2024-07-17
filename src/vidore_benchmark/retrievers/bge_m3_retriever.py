@@ -1,5 +1,5 @@
 import math
-from typing import List, cast
+from typing import List, Optional, cast
 
 import torch
 from FlagEmbedding import BGEM3FlagModel
@@ -34,7 +34,8 @@ class BGEM3Retriever(VisionRetriever):
             batched(queries, batch_size), desc="Query batch", total=math.ceil(len(queries) / batch_size)
         ):
             query_batch = cast(List[str], query_batch)
-            output = self.model.encode(query_batch, max_length=512)["dense_vecs"]
+            with torch.no_grad():
+                output = self.model.encode(query_batch, max_length=512)["dense_vecs"]
             query_embeddings = torch.tensor(output).to(self.device)
             list_emb_queries.append(query_embeddings)
 
@@ -46,7 +47,8 @@ class BGEM3Retriever(VisionRetriever):
             batched(documents, batch_size), desc="Document batch", total=math.ceil(len(documents) / batch_size)
         ):
             doc_batch = cast(List[str], doc_batch)
-            output = self.model.encode(doc_batch)["dense_vecs"]
+            with torch.no_grad():
+                output = self.model.encode(doc_batch)["dense_vecs"]
             doc_embeddings = torch.tensor(output).to(self.device)
             list_emb_documents.append(doc_embeddings)
         return list_emb_documents
@@ -55,6 +57,7 @@ class BGEM3Retriever(VisionRetriever):
         self,
         list_emb_queries: List[torch.Tensor],
         list_emb_documents: List[torch.Tensor],
+        batch_size: Optional[int] = None,
     ) -> torch.Tensor:
         emb_queries = torch.cat(list_emb_queries, dim=0)  # (num_queries, emb_dim_query)
         emb_documents = torch.cat(list_emb_documents, dim=0)  # (num_docs, emb_dim_doc)

@@ -1,5 +1,5 @@
 import math
-from typing import List, cast
+from typing import List, Optional, cast
 
 import torch
 from PIL import Image
@@ -40,7 +40,6 @@ class SigLIPRetriever(VisionRetriever):
         return list_emb_queries
 
     def forward_documents(self, documents, batch_size: int, **kwargs) -> List[torch.Tensor]:
-
         list_emb_documents: List[torch.Tensor] = []
         for doc_batch in tqdm(
             batched(documents, batch_size), desc="Document batch", total=math.ceil(len(documents) / batch_size)
@@ -61,11 +60,9 @@ class SigLIPRetriever(VisionRetriever):
         self,
         list_emb_queries: List[torch.Tensor],
         list_emb_documents: List[torch.Tensor],
+        batch_size: Optional[int] = None,
     ) -> torch.Tensor:
-
         emb_queries = torch.cat(list_emb_queries, dim=0)
         emb_documents = torch.cat(list_emb_documents, dim=0)
-
         scores = torch.einsum("bd,cd->bc", emb_queries, emb_documents)
-
         return scores

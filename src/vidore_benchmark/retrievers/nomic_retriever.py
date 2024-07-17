@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import List, cast
+from typing import List, Optional, cast
 
 import torch
 import torch.nn.functional as F
@@ -87,6 +87,7 @@ class NomicVisionRetriever(VisionRetriever):
         self,
         list_emb_queries: List[torch.Tensor],
         list_emb_documents: List[torch.Tensor],
+        batch_size: Optional[int] = None,
     ) -> torch.Tensor:
         emb_queries = torch.cat(list_emb_queries, dim=0)
         emb_documents = torch.cat(list_emb_documents, dim=0)

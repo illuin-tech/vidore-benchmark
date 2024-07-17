@@ -1,4 +1,4 @@
-from typing import Dict, List, cast
+from typing import Dict, List, Optional, cast
 
 import numpy as np
 import torch
@@ -32,6 +32,7 @@ class BM25Retriever(VisionRetriever):
         self,
         list_emb_queries: List[torch.Tensor],
         list_emb_documents: List[torch.Tensor],
+        batch_size: Optional[int] = None,
         **kwargs,
     ) -> torch.Tensor:
         raise NotImplementedError("BM25Retriever only need get_scores_bm25 method.")

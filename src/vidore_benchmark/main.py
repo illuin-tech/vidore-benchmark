@@ -28,6 +28,7 @@ def evaluate_retriever(
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
     batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 4,
     batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
+    batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = None,
     collection_name: Annotated[Optional[str], typer.Option(help="Collection name to use for evaluation")] = None,
 ):
     """
@@ -52,7 +53,13 @@ def evaluate_retriever(
 
     if dataset_name is not None:
         dataset = cast(Dataset, load_dataset(dataset_name, split=split))
-        metrics = evaluate_dataset(retriever, dataset, batch_query=batch_query, batch_doc=batch_doc)
+        metrics = evaluate_dataset(
+            retriever,
+            dataset,
+            batch_query=batch_query,
+            batch_doc=batch_doc,
+            batch_score=batch_score,
+        )
         log_metrics(metrics, dataset_name, log_file=str(savepath))
         print(f"NDCG@5 for {model_name} on {dataset_name}: {metrics['ndcg_at_5']}")
     elif collection_name is not None:
@@ -61,7 +68,13 @@ def evaluate_retriever(
         for dataset_item in datasets:
             print(f"\n---------------------------\nEvaluating {dataset_item.item_id}")
             dataset = cast(Dataset, load_dataset(dataset_item.item_id, split=split))
-            metrics = evaluate_dataset(retriever, dataset, batch_query=batch_query, batch_doc=batch_doc)
+            metrics = evaluate_dataset(
+                retriever,
+                dataset,
+                batch_query=batch_query,
+                batch_doc=batch_doc,
+                batch_score=batch_score,
+            )
             log_metrics(metrics, dataset_item.item_id, log_file=str(savepath))
             print(f"Metrics saved to `{savepath}`")
             print(f"NDCG@5 for {model_name} on {dataset_item.item_id}: {metrics['ndcg_at_5']}")

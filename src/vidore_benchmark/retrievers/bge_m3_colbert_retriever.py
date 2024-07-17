@@ -1,5 +1,5 @@
 import math
-from typing import List, cast
+from typing import List, Optional, cast
 
 import torch
 from FlagEmbedding import BGEM3FlagModel
@@ -35,13 +35,14 @@ class BGEM3ColbertRetriever(VisionRetriever):
             batched(queries, batch_size), desc="Query batch", total=math.ceil(len(queries) / batch_size)
         ):
             query_batch = cast(List[str], query_batch)
-            output = self.model.encode(
-                query_batch,
-                max_length=512,
-                return_dense=False,
-                return_sparse=False,
-                return_colbert_vecs=True,
-            )["colbert_vecs"]
+            with torch.no_grad():
+                output = self.model.encode(
+                    query_batch,
+                    max_length=512,
+                    return_dense=False,
+                    return_sparse=False,
+                    return_colbert_vecs=True,
+                )["colbert_vecs"]
             list_emb_queries.extend([torch.Tensor(elt) for elt in output])
         return list_emb_queries
 
@@ -51,13 +52,14 @@ class BGEM3ColbertRetriever(VisionRetriever):
             batched(documents, batch_size), desc="Document batch", total=math.ceil(len(documents) / batch_size)
         ):
             doc_batch = cast(List[str], doc_batch)
-            output = self.model.encode(
-                doc_batch,
-                max_length=512,
-                return_dense=False,
-                return_sparse=False,
-                return_colbert_vecs=True,
-            )["colbert_vecs"]
+            with torch.no_grad():
+                output = self.model.encode(
+                    doc_batch,
+                    max_length=512,
+                    return_dense=False,
+                    return_sparse=False,
+                    return_colbert_vecs=True,
+                )["colbert_vecs"]
             list_emb_documents.extend([torch.Tensor(elt) for elt in output])
         return list_emb_documents
 
@@ -65,6 +67,9 @@ class BGEM3ColbertRetriever(VisionRetriever):
         self,
         list_emb_queries: List[torch.Tensor],
         list_emb_documents: List[torch.Tensor],
+        batch_size: Optional[int] = 4,
     ) -> torch.Tensor:
-        scores = get_colbert_similarity(list_emb_queries, list_emb_documents)
+        if batch_size is None:
+            raise ValueError("The batch size must be specified for the ColBERT scoring.")
+        scores = get_colbert_similarity(list_emb_queries, list_emb_documents, batch_size=batch_size)
         return scores

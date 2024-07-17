@@ -6,7 +6,7 @@ import torch
 def get_colbert_similarity(
     emb_queries: List[torch.Tensor],
     emb_documents: List[torch.Tensor],
-    batch_size: int = 128,
+    batch_size: int,
 ) -> torch.Tensor:
     """
     Evaluate the similarity scores using the ColBERT scoring function.

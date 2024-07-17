@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 from datasets import Dataset
@@ -53,6 +53,7 @@ class VisionRetriever(ABC):
         self,
         list_emb_queries: List[torch.Tensor],
         list_emb_documents: List[torch.Tensor],
+        batch_size: Optional[int] = None,
     ) -> torch.Tensor:
         """
         Get the scores between queries and documents.
@@ -60,6 +61,7 @@ class VisionRetriever(ABC):
         Inputs:
         - list_emb_queries: List[torch.Tensor] (n_queries, emb_dim_query)
         - list_emb_documents: List[torch.Tensor] (n_documents, emb_dim_doc)
+        - batch_size: Optional[int]
 
         Output:
         - scores: torch.Tensor (n_queries, n_documents)

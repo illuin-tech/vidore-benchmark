@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Optional
 
 import torch
 from PIL import Image
@@ -41,5 +41,6 @@ class DummyRetriever(VisionRetriever):
         self,
         list_emb_queries: List[torch.Tensor],
         list_emb_documents: List[torch.Tensor],
+        batch_size: Optional[int] = None,
     ) -> torch.Tensor:
         return torch.randn(len(list_emb_queries), len(list_emb_documents))
