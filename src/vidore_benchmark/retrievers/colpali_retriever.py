@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, cast, Tuple
+from typing import List, cast
 
 import torch
 from dotenv import load_dotenv

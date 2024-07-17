@@ -64,8 +64,9 @@ def evaluate_retriever(
             metrics = evaluate_dataset(retriever, dataset, batch_query=batch_query, batch_doc=batch_doc)
             log_metrics(metrics, dataset_item.item_id, log_file=str(savepath))
             print(f"Metrics saved to `{savepath}`")
-
             print(f"NDCG@5 for {model_name} on {dataset_item.item_id}: {metrics['ndcg_at_5']}")
+    else:
+        raise ValueError("Please provide a dataset name or collection name.")
 
 
 @app.command()

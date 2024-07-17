@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import List, cast
 import math
+from typing import List, cast
 
 import torch
 from PIL import Image
@@ -29,7 +29,9 @@ class JinaClipRetriever(VisionRetriever):
 
     def forward_queries(self, queries, batch_size: int, **kwargs) -> List[torch.Tensor]:
         list_emb_queries: List[torch.Tensor] = []
-        for query_batch in tqdm(batched(queries, batch_size), desc="Query batch", total=math.ceil(len(queries) / batch_size)):
+        for query_batch in tqdm(
+            batched(queries, batch_size), desc="Query batch", total=math.ceil(len(queries) / batch_size)
+        ):
             query_batch = cast(List[str], query_batch)
             output = self.model.encode_text(query_batch)
             query_embeddings = torch.tensor(output).to(self.device)

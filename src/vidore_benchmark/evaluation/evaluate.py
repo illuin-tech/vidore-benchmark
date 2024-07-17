@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Dict, List
 
-from datasets import Dataset
 import torch
+from datasets import Dataset
 
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
