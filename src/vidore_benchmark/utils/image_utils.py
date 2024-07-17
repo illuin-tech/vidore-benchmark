@@ -76,7 +76,7 @@ def shorten_image_path(image_path: str) -> str:
     """
     full_path = Path(image_path)
     enclosing_dir = full_path.parent.parent
-    return full_path.relative_to(enclosing_dir).as_posix()
+    return str(full_path.relative_to(enclosing_dir))
 
 
 def generate_dataset_from_img_folder(path_to_folder: str) -> IterableDataset:
