@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Annotated, Optional, cast
 
@@ -10,7 +11,6 @@ from vidore_benchmark.evaluation.evaluate import evaluate_dataset, get_top_k
 from vidore_benchmark.retrievers.utils.load_retriever import load_vision_retriever_from_registry
 from vidore_benchmark.utils.constants import OUTPUT_DIR
 from vidore_benchmark.utils.image_utils import generate_dataset_from_img_folder
-from vidore_benchmark.utils.log_utils import log_metrics
 from vidore_benchmark.utils.pdf_utils import convert_all_pdfs_to_images
 
 load_dotenv(override=True)
@@ -28,6 +28,7 @@ def evaluate_retriever(
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
     batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 4,
     batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
+    batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
     collection_name: Annotated[Optional[str], typer.Option(help="Collection name to use for evaluation")] = None,
 ):
     """
@@ -47,25 +48,57 @@ def evaluate_retriever(
     # Load the dataset
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    savepath = OUTPUT_DIR / f"{model_name.replace('/', '_')}_metrics.json"
-    metrics = {}
-
     if dataset_name is not None:
         dataset = cast(Dataset, load_dataset(dataset_name, split=split))
-        metrics = evaluate_dataset(retriever, dataset, batch_query=batch_query, batch_doc=batch_doc)
-        log_metrics(metrics, dataset_name, log_file=str(savepath))
+        metrics = {
+            dataset_name: evaluate_dataset(
+                retriever,
+                dataset,
+                batch_query=batch_query,
+                batch_doc=batch_doc,
+                batch_score=batch_score,
+            )
+        }
+        savepath = OUTPUT_DIR / f"{model_name.replace('/', '_')}_metrics.json"
+        with open(str(savepath), "w", encoding="utf-8") as f:
+            json.dump(metrics, f)
         print(f"NDCG@5 for {model_name} on {dataset_name}: {metrics['ndcg_at_5']}")
+
     elif collection_name is not None:
         collection = huggingface_hub.get_collection(collection_name)
         datasets = collection.items
+
+        metrics_all = {}
+        savedir = OUTPUT_DIR / model_name.replace("/", "_")
+        savedir.mkdir(parents=True, exist_ok=True)
+
         for dataset_item in datasets:
             print(f"\n---------------------------\nEvaluating {dataset_item.item_id}")
             dataset = cast(Dataset, load_dataset(dataset_item.item_id, split=split))
-            metrics = evaluate_dataset(retriever, dataset, batch_query=batch_query, batch_doc=batch_doc)
-            log_metrics(metrics, dataset_item.item_id, log_file=str(savepath))
-            print(f"Metrics saved to `{savepath}`")
+            metrics = {
+                dataset_item.item_id: evaluate_dataset(
+                    retriever,
+                    dataset,
+                    batch_query=batch_query,
+                    batch_doc=batch_doc,
+                    batch_score=batch_score,
+                )
+            }
+            metrics_all.update(metrics)
 
-            print(f"NDCG@5 for {model_name} on {dataset_item.item_id}: {metrics['ndcg_at_5']}")
+            savepath = savedir / f"{dataset_item.item_id.replace('/', '_')}_metrics.json"
+            with open(str(savepath), "w", encoding="utf-8") as f:
+                json.dump(metrics, f)
+            print(f"Metrics saved to `{savepath}`")
+            print(f"NDCG@5 for {model_name} on {dataset_item.item_id}: {metrics[dataset_item.item_id]['ndcg_at_5']}")
+
+        savepath_all = OUTPUT_DIR / f"{model_name.replace('/', '_')}_all_metrics.json"
+        with open(str(savepath_all), "w", encoding="utf-8") as f:
+            json.dump(metrics_all, f)
+        print(f"Concatenated metrics saved to `{savepath_all}`")
+
+    else:
+        raise ValueError("Please provide a dataset name or collection name.")
 
 
 @app.command()
@@ -139,6 +172,7 @@ def retrieve_on_pdfs(
     # Get embeddings for the queries and documents
     emb_queries = retriever.forward_queries([query], batch_size=1)
     emb_documents = retriever.forward_documents(list(ds["image"]), batch_size=batch_size)
+
     # Get the top-k documents
     top_k = get_top_k(
         retriever,

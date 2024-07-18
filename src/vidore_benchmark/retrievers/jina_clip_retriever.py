@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import List, cast
 import math
+from typing import List, Optional, cast
 
 import torch
 from PIL import Image
@@ -29,9 +29,12 @@ class JinaClipRetriever(VisionRetriever):
 
     def forward_queries(self, queries, batch_size: int, **kwargs) -> List[torch.Tensor]:
         list_emb_queries: List[torch.Tensor] = []
-        for query_batch in tqdm(batched(queries, batch_size), desc="Query batch", total=math.ceil(len(queries) / batch_size)):
+        for query_batch in tqdm(
+            batched(queries, batch_size), desc="Query batch", total=math.ceil(len(queries) / batch_size)
+        ):
             query_batch = cast(List[str], query_batch)
-            output = self.model.encode_text(query_batch)
+            with torch.no_grad():
+                output = self.model.encode_text(query_batch)
             query_embeddings = torch.tensor(output).to(self.device)
             list_emb_queries.append(query_embeddings)
 
@@ -44,7 +47,8 @@ class JinaClipRetriever(VisionRetriever):
             batched(documents, batch_size), desc="Document batch", total=math.ceil(len(documents) / batch_size)
         ):
             doc_batch = cast(List[Image.Image], doc_batch)
-            output = self.model.encode_image(doc_batch)
+            with torch.no_grad():
+                output = self.model.encode_image(doc_batch)
             doc_embeddings = torch.tensor(output).to(self.device)
             list_emb_documents.append(doc_embeddings)
         return list_emb_documents
@@ -53,11 +57,9 @@ class JinaClipRetriever(VisionRetriever):
         self,
         list_emb_queries: List[torch.Tensor],
         list_emb_documents: List[torch.Tensor],
+        batch_size: Optional[int] = None,
     ) -> torch.Tensor:
-
         emb_queries = torch.cat(list_emb_queries, dim=0)
         emb_documents = torch.cat(list_emb_documents, dim=0)
-
         scores = torch.einsum("bd,cd->bc", emb_queries, emb_documents)
-
         return scores

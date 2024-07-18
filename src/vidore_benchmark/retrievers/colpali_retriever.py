@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, cast, Tuple
+from typing import List, Optional, cast
 
 import torch
 from dotenv import load_dotenv
@@ -112,6 +112,9 @@ class ColPaliRetriever(VisionRetriever):
         self,
         list_emb_queries: List[torch.Tensor],
         list_emb_documents: List[torch.Tensor],
+        batch_size: Optional[int] = 128,
     ) -> torch.Tensor:
-        scores = self.scorer.evaluate(list_emb_queries, list_emb_documents)
+        if batch_size is None:
+            raise ValueError("`batch_size` must be provided for ColPaliRetriever's scoring")
+        scores = self.scorer.evaluate(list_emb_queries, list_emb_documents, batch_size)
         return scores

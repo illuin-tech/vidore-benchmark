@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import List, cast
 import math
+from typing import List, Optional, cast
 
 import torch
 import torch.nn.functional as F
@@ -46,7 +46,9 @@ class NomicVisionRetriever(VisionRetriever):
 
     def forward_queries(self, queries, batch_size: int, **kwargs) -> List[torch.Tensor]:
         list_emb_queries: List[torch.Tensor] = []
-        for query_batch in tqdm(batched(queries, batch_size), desc="Query batch", total=math.ceil(len(queries) / batch_size)):
+        for query_batch in tqdm(
+            batched(queries, batch_size), desc="Query batch", total=math.ceil(len(queries) / batch_size)
+        ):
             query_batch = cast(List[str], query_batch)
 
             query_texts = ["search_query: " + query for query in query_batch]
@@ -85,6 +87,7 @@ class NomicVisionRetriever(VisionRetriever):
         self,
         list_emb_queries: List[torch.Tensor],
         list_emb_documents: List[torch.Tensor],
+        batch_size: Optional[int] = None,
     ) -> torch.Tensor:
         emb_queries = torch.cat(list_emb_queries, dim=0)
         emb_documents = torch.cat(list_emb_documents, dim=0)

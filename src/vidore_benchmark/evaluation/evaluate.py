@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-from datasets import Dataset
 import torch
+from datasets import Dataset
 
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
@@ -13,6 +13,7 @@ def evaluate_dataset(
     ds: Dataset,
     batch_query: int,
     batch_doc: int,
+    batch_score: Optional[int] = None,
 ) -> Dict[str, float]:
     """
     Evaluate the model on a given dataset using the MTEB metrics.
@@ -21,7 +22,8 @@ def evaluate_dataset(
     - query: the query text
     - image_filename: the filename of the image
     - image: the image (PIL.Image) if `use_visual_embedding` is True
-    - text_description: the text description (i.e. the page caption or the text chunks) if `use_visual_embedding` is False
+    - text_description: the text description (i.e. the page caption or the text chunks) if
+        `use_visual_embedding` is False
     """
 
     # Dataset: sanity check
@@ -31,25 +33,25 @@ def evaluate_dataset(
     if not all(col in ds.column_names for col in required_columns):
         raise ValueError(f"Dataset should contain the following columns: {required_columns}")
 
-    # Remove None queries and duplicates
+    # Remove `None` queries (i.e. pages for which no question was generated) and duplicates
     queries = list(set(ds["query"]))
     if None in queries:
         queries.remove(None)
         if len(queries) == 0:
             raise ValueError("All queries are None")
-
     documents = ds[col_documents]
-    # Get the embeddings for the queries and documents - size (n_queries, emb_dim_query) and (n_documents, emb_dim_doc)
+
+    # Get the embeddings for the queries and documents
     emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
     emb_documents = vision_retriever.forward_documents(documents, batch_size=batch_doc)
 
-    # Get the scores - size (n_queries, n_documents)
-    scores = vision_retriever.get_scores(emb_queries, emb_documents)
+    # Get the similarity scores
+    scores = vision_retriever.get_scores(emb_queries, emb_documents, batch_size=batch_score)
 
     # Get the relevant documents and results
     relevant_docs, results = vision_retriever.get_relevant_docs_results(ds, queries, scores)
 
-    # compute MTEB metrics
+    # Compute the MTEB metrics
     metrics = vision_retriever.compute_metrics(relevant_docs, results)
 
     return metrics
@@ -76,10 +78,9 @@ def get_top_k(
     }
     """
     scores = vision_retriever.get_scores(emb_queries, emb_documents)
-
     passages2filename = {doc_idx: image_filename for doc_idx, image_filename in enumerate(file_names)}
-
     results = {}
+
     for query, score_per_query in zip(queries, scores):
         for docidx, score in enumerate(score_per_query):
             filename = passages2filename[docidx]

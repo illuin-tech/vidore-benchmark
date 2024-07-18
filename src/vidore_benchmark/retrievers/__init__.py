@@ -3,6 +3,10 @@ try:
 except ImportError:
     pass
 try:
+    from .bge_m3_colbert_retriever import BGEM3ColbertRetriever
+except ImportError:
+    pass
+try:
     from .bm25_retriever import BM25Retriever
 except ImportError:
     pass
