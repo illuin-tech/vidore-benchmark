@@ -1,8 +1,10 @@
+from typing import Type
+
 from vidore_benchmark.retrievers.utils.register_retriever import VISION_RETRIEVER_REGISTRY
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
 
-def load_vision_retriever_from_registry(model_name: str, *args, **kwargs) -> VisionRetriever:
+def load_vision_retriever_from_registry(model_name: str) -> Type[VisionRetriever]:
     """
     Create a vision retriever instance based on the associated model name.
 
@@ -18,5 +20,4 @@ def load_vision_retriever_from_registry(model_name: str, *args, **kwargs) -> Vis
         raise ValueError(
             f"Unknown model name `{model_name}`. Available models: {list(VISION_RETRIEVER_REGISTRY.keys())}"
         )
-
-    return retriever_class()
+    return retriever_class

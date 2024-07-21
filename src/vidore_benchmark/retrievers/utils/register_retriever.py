@@ -1,8 +1,8 @@
-from typing import Dict
+from typing import Dict, Type
 
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
-VISION_RETRIEVER_REGISTRY: Dict[str, VisionRetriever] = {}
+VISION_RETRIEVER_REGISTRY: Dict[str, Type[VisionRetriever]] = {}
 
 
 def register_vision_retriever(model_name: str):

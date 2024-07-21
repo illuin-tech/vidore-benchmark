@@ -43,7 +43,7 @@ def evaluate_retriever(
         raise ValueError("Please provide only one of dataset name or collection name")
 
     # Create the vision retriever
-    retriever = load_vision_retriever_from_registry(model_name)
+    retriever = load_vision_retriever_from_registry(model_name)()
 
     # Load the dataset
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -115,7 +115,7 @@ def retrieve_on_dataset(
     """
 
     # Create the vision retriever
-    retriever = load_vision_retriever_from_registry(model_name)
+    retriever = load_vision_retriever_from_registry(model_name)()
 
     # Load the dataset
     ds = cast(Dataset, load_dataset(dataset_name, split=split))
@@ -159,7 +159,7 @@ def retrieve_on_pdfs(
     assert Path(data_dirpath).is_dir(), f"Invalid data directory: `{data_dirpath}`"
 
     # Create the vision retriever
-    retriever = load_vision_retriever_from_registry(model_name)
+    retriever = load_vision_retriever_from_registry(model_name)()
 
     # Convert the PDFs to a collection of images
     convert_all_pdfs_to_images(data_dirpath)
