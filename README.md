@@ -141,6 +141,7 @@ from dotenv import load_dotenv
 from vidore_benchmark.evaluation.evaluate import evaluate_dataset
 from vidore_benchmark.retrievers.jina_clip_retriever import JinaClipRetriever
 
+load_dotenv(override=True)
 
 def main():
     """
