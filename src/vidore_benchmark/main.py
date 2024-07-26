@@ -108,7 +108,8 @@ def retrieve_on_dataset(
     k: Annotated[int, typer.Option(help="Number of documents to retrieve")],
     dataset_name: Annotated[str, typer.Option(help="HuggingFace Hub dataset name")],
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
-    batch_size: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
+    batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
+    batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
 ):
     """
     Retrieve the top-k documents according to the given query.
@@ -123,7 +124,8 @@ def retrieve_on_dataset(
     # Get embeddings for the queries and documents
     emb_queries = retriever.forward_queries([query], batch_size=1)
     emb_documents = retriever.forward_documents(
-        list(ds["image"]) if retriever.use_visual_embedding else list(ds["text_description"]), batch_size=batch_size
+        list(ds["image"]) if retriever.use_visual_embedding else list(ds["text_description"]),
+        batch_size=batch_doc,
     )
 
     # Get the top-k documents
@@ -134,6 +136,7 @@ def retrieve_on_dataset(
         emb_documents=emb_documents,
         file_names=list(ds["image_filename"]),
         k=k,
+        batch_score=batch_score,
     )
 
     print(f"Top-{k} documents for the query '{query}':")
@@ -149,7 +152,8 @@ def retrieve_on_pdfs(
     data_dirpath: Annotated[
         str, typer.Option(help="Path to the folder containing the PDFs to use as the retrieval corpus")
     ],
-    batch_size: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
+    batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
+    batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
 ):
     """
     This script is used to ask a query and retrieve the top-k documents from a given folder containing PDFs.
@@ -171,7 +175,10 @@ def retrieve_on_pdfs(
 
     # Get embeddings for the queries and documents
     emb_queries = retriever.forward_queries([query], batch_size=1)
-    emb_documents = retriever.forward_documents(list(ds["image"]), batch_size=batch_size)
+    emb_documents = retriever.forward_documents(
+        list(ds["image"]),
+        batch_size=batch_doc,
+    )
 
     # Get the top-k documents
     top_k = get_top_k(
@@ -181,6 +188,7 @@ def retrieve_on_pdfs(
         emb_documents=emb_documents,
         file_names=list(ds["image_filename"]),
         k=k,
+        batch_score=batch_score,
     )
 
     print(f"Top-{k} documents for the query '{query}':")

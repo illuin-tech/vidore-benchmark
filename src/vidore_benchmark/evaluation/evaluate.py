@@ -64,6 +64,7 @@ def get_top_k(
     emb_documents: List[torch.Tensor],
     file_names: List[str],
     k: int,
+    batch_score: Optional[int] = None,
 ) -> Dict[str, Dict[str, float]]:
     """
     Get the top-k documents for a given query.
@@ -77,7 +78,7 @@ def get_top_k(
         ...
     }
     """
-    scores = vision_retriever.get_scores(emb_queries, emb_documents)
+    scores = vision_retriever.get_scores(emb_queries, emb_documents, batch_size=batch_score)
     passages2filename = {doc_idx: image_filename for doc_idx, image_filename in enumerate(file_names)}
     results = {}
 
