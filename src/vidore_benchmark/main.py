@@ -62,7 +62,7 @@ def evaluate_retriever(
         savepath = OUTPUT_DIR / f"{model_name.replace('/', '_')}_metrics.json"
         with open(str(savepath), "w", encoding="utf-8") as f:
             json.dump(metrics, f)
-        print(f"NDCG@5 for {model_name} on {dataset_name}: {metrics['ndcg_at_5']}")
+        print(f"NDCG@5 for {model_name} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
 
     elif collection_name is not None:
         collection = huggingface_hub.get_collection(collection_name)
