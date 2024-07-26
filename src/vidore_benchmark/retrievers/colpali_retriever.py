@@ -21,7 +21,8 @@ load_dotenv(override=True)
 @register_vision_retriever("vidore/colpali")
 class ColPaliRetriever(VisionRetriever):
     """
-    ColPali Retriever that implements the model from "ColPali: Efficient Document Retrieval with Vision Language Models".
+    ColPali Retriever that implements the model from "ColPali: Efficient Document Retrieval
+    with Vision Language Models".
     """
 
     def __init__(self, device: str = "auto"):
@@ -85,7 +86,7 @@ class ColPaliRetriever(VisionRetriever):
             collate_fn=self.process_queries,
         )
         qs = []
-        for batch_query in tqdm(dataloader):
+        for batch_query in tqdm(dataloader, desc="Forward pass queries..."):
             with torch.no_grad():
                 batch_query = {k: v.to(self.device) for k, v in batch_query.items()}
                 embeddings_query = self.model(**batch_query)
@@ -101,7 +102,7 @@ class ColPaliRetriever(VisionRetriever):
             collate_fn=self.process_images,
         )
         ds = []
-        for batch_doc in tqdm(dataloader):
+        for batch_doc in tqdm(dataloader, desc="Forward pass documents..."):
             with torch.no_grad():
                 batch_doc = {k: v.to(self.device) for k, v in batch_doc.items()}
                 embeddings_doc = self.model(**batch_doc)
