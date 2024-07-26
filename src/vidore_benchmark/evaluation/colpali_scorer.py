@@ -30,12 +30,7 @@ class ColPaliScorer:
         else:
             scores = self.evaluate_biencoder(qs, ps)
 
-        assert scores.shape[0] == len(qs)
-
-        arg_score = scores.argmax(dim=1)
-        accuracy = (arg_score == torch.arange(scores.shape[0], device=scores.device)).sum().item() / scores.shape[0]
-        print(arg_score)
-        print(f"Top 1 Accuracy (verif): {accuracy}")
+        assert scores.shape[0] == len(qs), f"Expected {len(qs)} scores, got {scores.shape[0]}"
 
         scores = scores.to(torch.float32).cpu().numpy()
         return scores
