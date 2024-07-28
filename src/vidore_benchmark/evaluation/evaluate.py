@@ -5,7 +5,9 @@ from typing import Dict, List, Optional
 
 import torch
 from datasets import Dataset
+from tqdm import tqdm
 
+from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
 
@@ -15,6 +17,7 @@ def evaluate_dataset(
     batch_query: int,
     batch_doc: int,
     batch_score: Optional[int] = None,
+    embedding_pooler: Optional[BaseEmbeddingPooler] = None,
 ) -> Dict[str, float]:
     """
     Evaluate the model on a given dataset using the MTEB metrics.
@@ -45,6 +48,11 @@ def evaluate_dataset(
     # Get the embeddings for the queries and documents
     emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
     emb_documents = vision_retriever.forward_documents(documents, batch_size=batch_doc)
+
+    if embedding_pooler is not None:
+        for idx, emb_document in tqdm(enumerate(emb_documents), total=len(emb_documents), desc="Pooling embeddings..."):
+            emb_document, _ = embedding_pooler.pool_embeddings(emb_document)
+            emb_documents[idx] = emb_document
 
     # Get the similarity scores
     scores = vision_retriever.get_scores(emb_queries, emb_documents, batch_size=batch_score)
