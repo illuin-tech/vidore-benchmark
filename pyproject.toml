@@ -59,7 +59,7 @@ all-retrievers = [
     "vidore-benchmark[bge-m3]",
     "vidore-benchmark[bm25]",
     "vidore-benchmark[jina-clip]",
-    "vidore-benchmark[sliglip]",
+    "vidore-benchmark[siglip]",
 ]
 
 interpretability = ["matplotlib>=3.9.0,<4.0.0", "seaborn>=0.13.2,<1.0.0"]
