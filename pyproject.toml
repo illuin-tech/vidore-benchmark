@@ -7,7 +7,7 @@ packages = ["src/vidore_benchmark"]
 
 [project]
 name = "vidore_benchmark"
-version = "2.2.1"
+version = "3.0.0"
 description = "Visual Document Retrieval: Benchmark"
 authors = [
     { name = "Tony Wu", email = "tony.wu@illuin.tech" },
@@ -56,15 +56,19 @@ jina-clip = ["timm>=1.0.7,<2.0.0"]
 sentence-transformers = ["sentence-transformers>=3.0.1,<4.0.0"]
 siglip = ["protobuf>=4.25.3,<5.0.0"]
 all-retrievers = [
-    "rank-bm25>=0.2.2,<1.0.0",
-    "FlagEmbedding>=1.2.10,<2.0.0",
-    "timm>=1.0.7,<2.0.0",
-    "nltk>=3.8.1,<4.0.0",
-    "sentence-transformers>=3.0.1,<4.0.0",
-    "protobuf>=4.25.3,<5.0.0",
+    "vidore-benchmark[bge-m3]",
+    "vidore-benchmark[bm25]",
+    "vidore-benchmark[jina-clip]",
+    "vidore-benchmark[sliglip]",
 ]
 
 interpretability = ["matplotlib>=3.9.0,<4.0.0", "seaborn>=0.13.2,<1.0.0"]
+
+all = [
+    "vidore-benchmark[all-retrievers]",
+    "vidore-benchmark[dev]",
+    "vidore-benchmark[interpretability]",
+]
 
 baselines = [
     "accelerate==0.30.1",
