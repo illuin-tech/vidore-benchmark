@@ -86,10 +86,19 @@ class VisionRetriever(ABC):
         - scores: torch.Tensor (n_queries, n_documents)
 
         Outputs:
-        - relevant_docs: Dict[str, float] (document -> 1) for each query (i.e. only one relevant document per query)
-        - results: Dict[str, Dict[str, float]] (query -> {document: score}) for each query
+        - relevant_docs: Dict[str, float]
+        {
+            "query_0": {"doc_0": 1},
+            "query_1": {"doc_1": 1},
+            ...
+        }
+        - results: Dict[str, Dict[str, float]] with shape:
+        {
+            "query_0": {"doc_i": 19.125, "doc_1": 18.75, ...},
+            "query_1": {"doc_j": 17.25, "doc_1": 16.75, ...},
+            ...
+        }
         """
-
         relevant_docs = {}
         results = {}
 

@@ -141,6 +141,7 @@ from dotenv import load_dotenv
 from vidore_benchmark.evaluation.evaluate import evaluate_dataset
 from vidore_benchmark.retrievers.jina_clip_retriever import JinaClipRetriever
 
+load_dotenv(override=True)
 
 def main():
     """
@@ -180,7 +181,7 @@ df = eval_manager.get_df_for_metric("ndcg_at_5")
 
 By superimposing the late interaction heatmap on top of the original image, we can visualize the most salient image patches with respect to each term of the query, yielding interpretable insights into model focus zones.
 
-You can generate similarity maps using the `generate-similarity-maps`. For instance, you can reproduce the similarity maps from the paper by downloading the images from the [`data/interpretability_examples`](https://github.com/illuin-tech/vidore-benchmark/tree/main/data/interpretability_examples) folder and running the following command:
+You can generate similarity maps using the `generate-similarity-maps`. For instance, you can reproduce the similarity maps from the paper using the images from [`data/interpretability_examples`](https://github.com/illuin-tech/vidore-benchmark/tree/main/data/interpretability_examples) and by running the following command. You can also feed multiple documents and queries at once to generate multiple similarity maps.
 
 ```bash
 generate-similarity-maps \
@@ -193,6 +194,7 @@ generate-similarity-maps \
 ## Citation
 
 **ColPali: Efficient Document Retrieval with Vision Language Models**  
+
 - First authors: Manuel Faysse*, Hugues Sibille*, Tony Wu* (*Equal Contribution)  
 - Contributors: Bilel Omrani, Gautier Viaud, Céline Hudelot, Pierre Colombo
 

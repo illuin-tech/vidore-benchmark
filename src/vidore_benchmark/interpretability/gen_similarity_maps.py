@@ -1,10 +1,12 @@
 import pprint
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Tuple
+from typing import Dict, Tuple
 from uuid import uuid4
 
 import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 import torch
 from einops import rearrange
 from PIL import Image
@@ -100,6 +102,8 @@ def gen_and_save_similarity_map_per_token(
     pprint.pprint(text_tokens)
     print("\n")
 
+    max_sim_scores_per_token: Dict[str, float] = {}
+
     for token_idx in trange(1, n_tokens - 1, desc="Iterating over tokens..."):  # exclude the <bos> and the "\n" tokens
         if kind == "patches":
             fig, axis = plot_similarity_patches(
@@ -110,8 +114,14 @@ def gen_and_save_similarity_map_per_token(
                 figsize=figsize,
                 style=style,
             )
+            max_sim_score = similarity_map[0, token_idx, :, :].max().item()
+            max_sim_scores_per_token[f"{token_idx}: {text_tokens[token_idx]}"] = max_sim_score
             if add_title:
-                fig.suptitle(f"Token #{token_idx}: `{text_tokens[token_idx]}`", color="white", fontsize=14)
+                fig.suptitle(
+                    f"Token #{token_idx}: `{text_tokens[token_idx]}`. MaxSim score: {max_sim_score:.2f}",
+                    color="white",
+                    fontsize=14,
+                )
         elif kind == "heatmap":
             fig, ax = plot_similarity_heatmap(
                 input_image_square,
@@ -121,14 +131,32 @@ def gen_and_save_similarity_map_per_token(
                 figsize=figsize,
                 style=style,
             )
+            max_sim_score = similarity_map[0, token_idx, :, :].max().item()
+            max_sim_scores_per_token[f"{token_idx}: {text_tokens[token_idx]}"] = max_sim_score
             if add_title:
-                ax.set_title(f"Token #{token_idx}: `{text_tokens[token_idx]}`", fontsize=14)
+                ax.set_title(
+                    f"Token #{token_idx}: `{text_tokens[token_idx]}`. MaxSim score: {max_sim_score:.2f}",
+                    fontsize=14,
+                )
         else:
             raise ValueError(f"Invalid `kind` input: {kind}. Supported values are: {SUPPORTED_PLOT_KINDS}")
 
         savepath = savedir / f"token_{token_idx}.png"
         fig.savefig(savepath, dpi=300, bbox_inches="tight")
         print(f"Saved attention map for token {token_idx} (`{text_tokens[token_idx]}`) to `{savepath}`.\n")
+        plt.close(fig)
+
+    # Plot and save the max similarity scores per token
+    with sns.axes_style("darkgrid"):
+        savepath = savedir / "max_sim_scores_per_token.png"
+        fig, ax = plt.subplots(figsize=(1 * len(max_sim_scores_per_token), 5))
+        ser = pd.Series(max_sim_scores_per_token)
+        ser.plot.bar(ax=ax)
+        ax.set_xlabel("Token")
+        ax.set_ylabel("Score")
+        ax.set_title("Max similarity score across all patches", fontsize=14)
+        fig.savefig(savepath, dpi=300, bbox_inches="tight")
+        print(f"Saved max similarity scores per token to `{savepath}`.\n")
         plt.close(fig)
 
     return

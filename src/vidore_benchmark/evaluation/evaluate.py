@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import OrderedDict
 from typing import Dict, List, Optional
 
 import torch
@@ -64,7 +65,8 @@ def get_top_k(
     emb_documents: List[torch.Tensor],
     file_names: List[str],
     k: int,
-) -> Dict[str, Dict[str, float]]:
+    batch_score: Optional[int] = None,
+) -> Dict[str, OrderedDict[str, float]]:
     """
     Get the top-k documents for a given query.
 
@@ -77,24 +79,24 @@ def get_top_k(
         ...
     }
     """
-    scores = vision_retriever.get_scores(emb_queries, emb_documents)
+    scores = vision_retriever.get_scores(emb_queries, emb_documents, batch_size=batch_score)
     passages2filename = {doc_idx: image_filename for doc_idx, image_filename in enumerate(file_names)}
-    results = {}
+    query_to_score = {}
 
     for query, score_per_query in zip(queries, scores):
         for docidx, score in enumerate(score_per_query):
             filename = passages2filename[docidx]
             score_passage = float(score.item())
 
-            if query in results:
-                results[query][filename] = max(results[query].get(filename, 0), score_passage)
+            if query in query_to_score:
+                query_to_score[query][filename] = max(query_to_score[query].get(filename, 0), score_passage)
             else:
-                results[query] = {filename: score_passage}
+                query_to_score[query] = {filename: score_passage}
 
-        # Sort the results by score for each query
-        results[query] = dict(sorted(results[query].items(), key=lambda item: item[1], reverse=True))
+    # Get the top-k documents
+    for query in query_to_score:
+        query_to_score[query] = OrderedDict(
+            sorted(query_to_score[query].items(), key=lambda item: item[1], reverse=True)[:k]
+        )
 
-        # Get the top-k documents
-        results[query] = dict(list(results[query].items())[:k])
-
-    return results
+    return query_to_score
