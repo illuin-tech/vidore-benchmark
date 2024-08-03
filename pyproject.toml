@@ -70,6 +70,8 @@ all = [
     "vidore-benchmark[interpretability]",
 ]
 
+skypilot = ["skypilot==0.6.1,<1.0.0"]
+
 baselines = [
     "accelerate==0.30.1",
     "datasets==2.19.1",
