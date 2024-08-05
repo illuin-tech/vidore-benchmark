@@ -20,7 +20,7 @@ def plot_similarity_patches(
     Plot patches of a square image.
     Set `style` to "dark_background" if your image has a light background.
     """
-    MAX_OPACITY = 255
+    max_opacity = 255
 
     # Get the number of patches
     if image_resolution % patch_size != 0:
@@ -57,7 +57,7 @@ def plot_similarity_patches(
                 patch = img_array[i * patch_size : (i + 1) * patch_size, j * patch_size : (j + 1) * patch_size, :]
                 # Set the opacity of the patch
                 if similarity_map is not None:
-                    patch[:, :, -1] = round(similarity_map[i, j] * MAX_OPACITY)
+                    patch[:, :, -1] = round(similarity_map[i, j] * max_opacity)
                 axis[i, j].imshow(patch)
                 axis[i, j].axis("off")
 

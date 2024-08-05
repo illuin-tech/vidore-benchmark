@@ -51,7 +51,7 @@ class HierarchicalEmbeddingPooler(BaseEmbeddingPooler):
         similarities = torch.mm(p_embeddings, p_embeddings.t()).to(torch.float32)
         similarities = 1 - similarities.cpu().numpy()
 
-        Z = linkage(similarities, metric="euclidean", method="ward")
+        Z = linkage(similarities, metric="euclidean", method="ward")  # noqa: N806
         max_clusters = max(token_length // self.pool_factor, 1)
         cluster_labels = fcluster(Z, t=max_clusters, criterion="maxclust")
 

@@ -4,7 +4,7 @@ import math
 from typing import List, Optional, cast
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from PIL import Image
 from torch import Tensor
 from tqdm import tqdm
