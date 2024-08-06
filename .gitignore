@@ -2,7 +2,10 @@
 .DS_Store
 .env
 logs/
-data/
+data/**
+!data/interpretability_examples/
+!data/interpretability_examples/**
+experiments/
 outputs/
 
 # Byte-compiled / optimized / DLL files

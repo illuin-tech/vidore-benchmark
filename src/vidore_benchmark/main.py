@@ -7,6 +7,7 @@ import typer
 from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
 
+from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
 from vidore_benchmark.evaluation.evaluate import evaluate_dataset, get_top_k
 from vidore_benchmark.retrievers.utils.load_retriever import load_vision_retriever_from_registry
 from vidore_benchmark.utils.constants import OUTPUT_DIR
@@ -30,6 +31,8 @@ def evaluate_retriever(
     batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
     batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
     collection_name: Annotated[Optional[str], typer.Option(help="Collection name to use for evaluation")] = None,
+    use_token_pooling: Annotated[bool, typer.Option(help="Whether to use token pooling for text embeddings")] = False,
+    pool_factor: Annotated[int, typer.Option(help="Pooling factor for hierarchical token pooling")] = 3,
 ):
     """
     Evaluate the retriever on the given dataset or collection.
@@ -48,6 +51,9 @@ def evaluate_retriever(
     # Load the dataset
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
+    # Get the pooling strategy
+    embedding_pooler = HierarchicalEmbeddingPooler(pool_factor) if use_token_pooling else None
+
     if dataset_name is not None:
         dataset = cast(Dataset, load_dataset(dataset_name, split=split))
         metrics = {
@@ -57,11 +63,18 @@ def evaluate_retriever(
                 batch_query=batch_query,
                 batch_doc=batch_doc,
                 batch_score=batch_score,
+                embedding_pooler=embedding_pooler,
             )
         }
-        savepath = OUTPUT_DIR / f"{model_name.replace('/', '_')}_metrics.json"
+
+        if use_token_pooling:
+            savepath = OUTPUT_DIR / f"{model_name.replace('/', '_')}_metrics_pool_factor_{pool_factor}.json"
+        else:
+            savepath = OUTPUT_DIR / f"{model_name.replace('/', '_')}_metrics.json"
+
         with open(str(savepath), "w", encoding="utf-8") as f:
             json.dump(metrics, f)
+
         print(f"NDCG@5 for {model_name} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
 
     elif collection_name is not None:
@@ -82,19 +95,30 @@ def evaluate_retriever(
                     batch_query=batch_query,
                     batch_doc=batch_doc,
                     batch_score=batch_score,
+                    embedding_pooler=embedding_pooler,
                 )
             }
             metrics_all.update(metrics)
 
-            savepath = savedir / f"{dataset_item.item_id.replace('/', '_')}_metrics.json"
+            if use_token_pooling:
+                savepath = savedir / f"{dataset_item.item_id.replace('/', '_')}_metrics_pool_factor_{pool_factor}.json"
+            else:
+                savepath = savedir / f"{dataset_item.item_id.replace('/', '_')}_metrics.json"
+
             with open(str(savepath), "w", encoding="utf-8") as f:
                 json.dump(metrics, f)
+
             print(f"Metrics saved to `{savepath}`")
             print(f"NDCG@5 for {model_name} on {dataset_item.item_id}: {metrics[dataset_item.item_id]['ndcg_at_5']}")
 
-        savepath_all = OUTPUT_DIR / f"{model_name.replace('/', '_')}_all_metrics.json"
+        if use_token_pooling:
+            savepath_all = OUTPUT_DIR / f"{model_name.replace('/', '_')}_all_metrics_pool_factor_{pool_factor}.json"
+        else:
+            savepath_all = OUTPUT_DIR / f"{model_name.replace('/', '_')}_all_metrics.json"
+
         with open(str(savepath_all), "w", encoding="utf-8") as f:
             json.dump(metrics_all, f)
+
         print(f"Concatenated metrics saved to `{savepath_all}`")
 
     else:

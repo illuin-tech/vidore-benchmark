@@ -70,6 +70,8 @@ all = [
     "vidore-benchmark[interpretability]",
 ]
 
+skypilot = ["skypilot==0.6.1,<1.0.0"]
+
 baselines = [
     "accelerate==0.30.1",
     "datasets==2.19.1",
@@ -103,4 +105,8 @@ generate-similarity-maps = "vidore_benchmark.generate_similarity_maps:app"
 line-length = 120
 
 [tool.ruff]
+select = ["E", "F", "W", "I", "N"]
 line-length = 120
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
