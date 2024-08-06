@@ -7,6 +7,7 @@ import torch
 from datasets import Dataset
 from tqdm import tqdm
 
+from vidore_benchmark.compression.quantization import BaseEmbeddingQuantizer
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
@@ -17,6 +18,7 @@ def evaluate_dataset(
     batch_query: int,
     batch_doc: int,
     batch_score: Optional[int] = None,
+    embedding_quantizer: Optional[BaseEmbeddingQuantizer] = None,
     embedding_pooler: Optional[BaseEmbeddingPooler] = None,
 ) -> Dict[str, float]:
     """
@@ -48,6 +50,15 @@ def evaluate_dataset(
     # Get the embeddings for the queries and documents
     emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
     emb_documents = vision_retriever.forward_documents(documents, batch_size=batch_doc)
+
+    if embedding_quantizer is not None:
+        emb_queries_batched = embedding_quantizer.quantize(torch.stack(emb_queries))
+        emb_queries = list(torch.unbind(emb_queries_batched))
+        del emb_queries_batched
+
+        emb_documents_batched = embedding_quantizer.quantize(torch.stack(emb_documents))
+        emb_documents = list(torch.unbind(emb_documents_batched))
+        del emb_documents_batched
 
     if embedding_pooler is not None:
         for idx, emb_document in tqdm(enumerate(emb_documents), total=len(emb_documents), desc="Pooling embeddings..."):

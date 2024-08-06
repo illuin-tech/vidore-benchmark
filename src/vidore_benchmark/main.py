@@ -7,6 +7,7 @@ import typer
 from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
 
+from vidore_benchmark.compression.quantization import EmbeddingBinarizer
 from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
 from vidore_benchmark.evaluation.evaluate import evaluate_dataset, get_top_k
 from vidore_benchmark.retrievers.utils.load_retriever import load_vision_retriever_from_registry
@@ -31,6 +32,7 @@ def evaluate_retriever(
     batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
     batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
     collection_name: Annotated[Optional[str], typer.Option(help="Collection name to use for evaluation")] = None,
+    quantization: Annotated[Optional[str], typer.Option(help="Quantization method to use for embeddings")] = None,
     use_token_pooling: Annotated[bool, typer.Option(help="Whether to use token pooling for text embeddings")] = False,
     pool_factor: Annotated[int, typer.Option(help="Pooling factor for hierarchical token pooling")] = 3,
 ):
@@ -51,6 +53,14 @@ def evaluate_retriever(
     # Load the dataset
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
+    # Get the quantization strategy
+    if quantization == "binarize":
+        embedding_quantizer = EmbeddingBinarizer()
+    elif quantization is None:
+        embedding_quantizer = None
+    else:
+        raise ValueError(f"Invalid quantization method: {quantization}")
+
     # Get the pooling strategy
     embedding_pooler = HierarchicalEmbeddingPooler(pool_factor) if use_token_pooling else None
 
@@ -63,6 +73,7 @@ def evaluate_retriever(
                 batch_query=batch_query,
                 batch_doc=batch_doc,
                 batch_score=batch_score,
+                embedding_quantizer=embedding_quantizer,
                 embedding_pooler=embedding_pooler,
             )
         }
@@ -95,6 +106,7 @@ def evaluate_retriever(
                     batch_query=batch_query,
                     batch_doc=batch_doc,
                     batch_score=batch_score,
+                    embedding_quantizer=embedding_quantizer,
                     embedding_pooler=embedding_pooler,
                 )
             }
