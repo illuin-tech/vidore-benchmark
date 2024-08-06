@@ -45,7 +45,7 @@ pip install -r requirements-dev.txt
 
 ## Available retrievers
 
-The list of available retrievers can be found [here](https://github.com/illuin-tech/vidore-benchmark/tree/main/src/vidore_benchmark/retrievers). Read [this section](###Implement-your-own-retriever) to learn how to create, use, and evaluate your own retriever.
+The list of available retrievers can be found [here](https://github.com/illuin-tech/vidore-benchmark/tree/main/src/vidore_benchmark/retrievers). Read [this section](### Implement-your-own-retriever) to learn how to create, use, and evaluate your own retriever.
 
 ## Command-line usage
 
@@ -69,7 +69,8 @@ Alternatively, you can evaluate your model on a single dataset. If your retriver
 ```bash
 vidore-benchmark evaluate-retriever \
     --model-name vidore/colpali \
-    --dataset-name vidore/docvqa_test_subsampled
+    --dataset-name vidore/docvqa_test_subsampled \
+    --split test
 ```
 
 If you want to evaluate a retriever that relies on pure-text retrieval (no visual embeddings), you should use the datasets from the [ViDoRe Chunk OCR (baseline)](https://huggingface.co/collections/vidore/vidore-chunk-ocr-baseline-666acce88c294ef415548a56) instead:
@@ -77,10 +78,22 @@ If you want to evaluate a retriever that relies on pure-text retrieval (no visua
 ```bash
 vidore-benchmark evaluate-retriever \
     --model-name BAAI/bge-m3 \
-    --dataset-name vidore/docvqa_test_subsampled_tesseract
+    --dataset-name vidore/docvqa_test_subsampled_tesseract \
+    --split test
 ```
 
 Both scripts will generate one particular JSON file in `outputs/{model_name_all_metrics.json}`. Follow the instructions on the [ViDoRe Leaderboard](https://huggingface.co/spaces/vidore/vidore-leaderboard) to compare your model with the others.
+
+Finally, you can use token pooling to reduce the length of the document embeddings. In production, this will significantly reduce the memory footprint of the retriever, thus reducing costs and increasing speed. You can use the `--use-token-pooling` flag to enable this feature:
+
+```bash
+vidore-benchmark evaluate-retriever \
+    --model-name vidore/colpali \
+    --dataset-name vidore/docvqa_test_subsampled \
+    --split test \
+    --use-token-pooling \
+    --pool-factor 3
+```
 
 ### Retrieve the top-k documents from a HuggingFace dataset
 
