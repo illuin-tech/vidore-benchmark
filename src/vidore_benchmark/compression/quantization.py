@@ -52,8 +52,12 @@ class EmbeddingBinarizer(BaseEmbeddingQuantizer):
         # This ensures that each int8 only contains bits from a single token.
         emb_padded = self.pad_last_dim_to_multiple_of_8(embeddings)
 
-        batch_size, seq_length, dim = emb_padded.shape
+        batch_size, *intermediate_dims, dim = emb_padded.shape
+        assert dim % 8 == 0, "The last dimension of the embeddings should be a multiple of 8."
+        packed_dim = dim // 8
+
         emb_binarized = quantize_embeddings(
             emb_padded.to(torch.float16).reshape(batch_size, -1), precision="binary"
-        ).reshape(batch_size, seq_length, dim // 8)
-        return torch.Tensor(emb_binarized, device=embeddings.device)
+        ).reshape(batch_size, *intermediate_dims, packed_dim)
+
+        return torch.tensor(emb_binarized, device=embeddings.device, dtype=torch.int8)
