@@ -28,6 +28,7 @@ In his blog ["A little pooling goes a long way for multi-vector representations"
 ## Methodology
 
 Notes:
+
 - ColPali outputs document embeddings with length 32*32=1024 patches + 6 memory tokens = 1030 tokens.
 
 To run/reproduce the experiments, follow these steps:
@@ -35,56 +36,9 @@ To run/reproduce the experiments, follow these steps:
 1. Checkout to the branch `2024-08-06_impact_of_pool_factor_on_retrieval`
 
 ```bash
-python experiments/2024-08-06_impact_of_pool_factor_on_retrieval/main.py \
-    --model-name vidore/colpali \
-    --pool-factors 1 \
-    --pool-factors 2 \
-    --pool-factors 3 \
-    --pool-factors 4 \
-    --pool-factors 5 \
-    --pool-factors 6 \
-    --pool-factors 7 \
-    --pool-factors 8 \
-    --pool-factors 9 \
-    --pool-factors 10 \
-    --pool-factors 20 \
-    --pool-factors 30 \
-    --dataset-name vidore/docvqa_test_subsampled \
-    --split test
-
-python experiments/2024-08-06_impact_of_pool_factor_on_retrieval/main.py \
-    --model-name vidore/colpali \
-    --pool-factors 1 \
-    --pool-factors 2 \
-    --pool-factors 3 \
-    --pool-factors 4 \
-    --pool-factors 5 \
-    --pool-factors 6 \
-    --pool-factors 7 \
-    --pool-factors 8 \
-    --pool-factors 9 \
-    --pool-factors 10 \
-    --pool-factors 20 \
-    --pool-factors 30 \
-    --dataset-name vidore/syntheticDocQA_energy_test \
-    --split test
-
-python experiments/2024-08-06_impact_of_pool_factor_on_retrieval/main.py \
-    --model-name vidore/colpali \
-    --pool-factors 1 \
-    --pool-factors 2 \
-    --pool-factors 3 \
-    --pool-factors 4 \
-    --pool-factors 5 \
-    --pool-factors 6 \
-    --pool-factors 7 \
-    --pool-factors 8 \
-    --pool-factors 9 \
-    --pool-factors 10 \
-    --pool-factors 20 \
-    --pool-factors 30 \
-    --dataset-name vidore/shiftproject_test \
-    --split test
+mkdir -p logs/
+nohup ./experiments/2024-08-06_impact_of_pool_factor_on_retrieval/run.sh \
+    > logs/2024-08-06_impact_of_pool_factor_on_retrieval.log 2>&1 &
 ```
 
 ## Results
@@ -93,6 +47,6 @@ python experiments/2024-08-06_impact_of_pool_factor_on_retrieval/main.py \
 
 ### Interpretation of the clustering of the document embeddings
 
-There are no clear clusters in the document embeddings.
+There are no clear clusters in the document embeddings. {{TODO: insert a few visualized clusteded patches here}}
 
 ## Discussion

@@ -48,7 +48,9 @@ class HierarchicalEmbeddingPooler(BaseEmbeddingPooler):
         if token_length == 1:
             raise ValueError("The input tensor must have more than one token.")
 
-        similarities = torch.mm(p_embeddings, p_embeddings.t()).to(torch.float32)
+        similarities = torch.mm(p_embeddings, p_embeddings.t())
+        if similarities.dtype == torch.bfloat16:
+            similarities = similarities.to(torch.float16)
         similarities = 1 - similarities.cpu().numpy()
 
         Z = linkage(similarities, metric="euclidean", method="ward")  # noqa: N806
@@ -57,12 +59,16 @@ class HierarchicalEmbeddingPooler(BaseEmbeddingPooler):
 
         cluster_id_to_indices: Dict[int, torch.Tensor] = {}
 
-        for cluster_id in range(1, max_clusters + 1):
-            cluster_indices = torch.where(torch.tensor(cluster_labels == cluster_id, device=self.device))[0]
-            cluster_id_to_indices[cluster_id] = cluster_indices
-            if cluster_indices.numel() > 0:
-                pooled_embedding = p_embeddings[cluster_indices].mean(dim=0)
-                pooled_embeddings.append(pooled_embedding)
+        with torch.no_grad():
+            for cluster_id in range(1, max_clusters + 1):
+                cluster_indices = torch.where(torch.tensor(cluster_labels == cluster_id, device=self.device))[0]
+                cluster_id_to_indices[cluster_id] = cluster_indices
+                
+                if cluster_indices.numel() > 0:
+                    pooled_embedding = p_embeddings[cluster_indices].mean(dim=0)
+                    pooled_embedding = torch.nn.functional.normalize(pooled_embedding, p=2, dim=-1)
+                    pooled_embeddings.append(pooled_embedding)
+                    
+            pooled_embeddings = torch.stack(pooled_embeddings, dim=0)
 
-        pooled_embeddings = torch.stack(pooled_embeddings, dim=0)
         return pooled_embeddings, cluster_id_to_indices
