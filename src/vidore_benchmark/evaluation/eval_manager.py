@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, ClassVar, Dict, Optional
+from typing import Any, ClassVar, Dict, List, Optional
 
 import pandas as pd
 
@@ -53,7 +53,17 @@ class EvalManager:
         if not datapath.is_file():
             raise FileNotFoundError(f"{path} is not a file")
         data = {}
-        data[datapath.stem] = pd.read_json(datapath).T.stack()  # pylint: disable=no-member
+        data[datapath.stem] = pd.read_json(datapath).T.stack()
+        return EvalManager.from_dict(data)
+
+    @staticmethod
+    def from_multiple_json(paths: List[str] | List[Path]) -> EvalManager:
+        data = {}
+        for path in paths:
+            datapath = Path(path)
+            if not datapath.is_file():
+                raise FileNotFoundError(f"{path} is not a file")
+            data[datapath.stem] = pd.read_json(datapath).T.stack()
         return EvalManager.from_dict(data)
 
     @staticmethod
@@ -64,12 +74,7 @@ class EvalManager:
 
         eval_files = list(datadir_.glob("*.json"))
 
-        data = {}
-
-        for filepath in eval_files:
-            data[filepath.stem] = pd.read_json(filepath).T.stack()  # pylint: disable=no-member
-
-        return EvalManager.from_dict(data)
+        return EvalManager.from_multiple_json(eval_files)
 
     @staticmethod
     def from_csv(path: str | Path) -> EvalManager:
