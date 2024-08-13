@@ -45,7 +45,7 @@ pip install -r requirements-dev.txt
 
 ## Available retrievers
 
-The list of available retrievers can be found [here](https://github.com/illuin-tech/vidore-benchmark/tree/main/src/vidore_benchmark/retrievers). Read [this section](### Implement-your-own-retriever) to learn how to create, use, and evaluate your own retriever.
+The list of available retrievers can be found [here](https://github.com/illuin-tech/vidore-benchmark/tree/main/src/vidore_benchmark/retrievers). Read [this section](###Implement-your-own-retriever) to learn how to create, use, and evaluate your own retriever.
 
 ## Command-line usage
 
