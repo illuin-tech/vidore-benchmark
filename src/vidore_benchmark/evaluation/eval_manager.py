@@ -57,7 +57,7 @@ class EvalManager:
         return EvalManager.from_dict(data)
 
     @staticmethod
-    def from_multiple_json(paths: List[str | Path]) -> EvalManager:
+    def from_multiple_json(paths: List[str] | List[Path]) -> EvalManager:
         data = {}
         for path in paths:
             datapath = Path(path)
