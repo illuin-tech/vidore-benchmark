@@ -109,19 +109,26 @@ def run_experiment(
 
     for pool_factor in pool_factors:
         metrics = {dataset_name: pool_factor_to_metrics[pool_factor]}
-        savepath_metrics = OUTPUT_DIR / f"{model_name.replace('/', '_')}" / f"{dataset_name}_metrics_pool_factor_{pool_factor}.json"
+        savepath_metrics = (
+            OUTPUT_DIR
+            / f"{model_name.replace('/', '_')}"
+            / f"{dataset_name.replace('/', '_')}_metrics_pool_factor_{pool_factor}.json"
+        )
         savepath_metrics.parent.mkdir(parents=True, exist_ok=True)
         with open(str(savepath_metrics), "w", encoding="utf-8") as f:
             json.dump(metrics, f)
     print(f"Metrics saved in `{OUTPUT_DIR}`")
 
-    savepath_latencies = OUTPUT_DIR / f"{model_name.replace('/', '_')}" / f"{dataset_name}_scoring_latencies.json"
+    savepath_latencies = (
+        OUTPUT_DIR / f"{model_name.replace('/', '_')}" / f"{dataset_name.replace('/', '_')}_scoring_latencies.json"
+    )
     savepath_latencies.parent.mkdir(parents=True, exist_ok=True)
     with open(str(savepath_latencies), "w", encoding="utf-8") as f:
         json.dump(pool_factor_to_scoring_latency, f)
     print(f"Scoring latencies saved in `{savepath_latencies}`")
 
     print("Done!")
+
 
 if __name__ == "__main__":
     app()
