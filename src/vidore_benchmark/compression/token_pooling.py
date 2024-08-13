@@ -63,12 +63,12 @@ class HierarchicalEmbeddingPooler(BaseEmbeddingPooler):
             for cluster_id in range(1, max_clusters + 1):
                 cluster_indices = torch.where(torch.tensor(cluster_labels == cluster_id, device=self.device))[0]
                 cluster_id_to_indices[cluster_id] = cluster_indices
-                
+
                 if cluster_indices.numel() > 0:
                     pooled_embedding = p_embeddings[cluster_indices].mean(dim=0)
                     pooled_embedding = torch.nn.functional.normalize(pooled_embedding, p=2, dim=-1)
                     pooled_embeddings.append(pooled_embedding)
-                    
+
             pooled_embeddings = torch.stack(pooled_embeddings, dim=0)
 
         return pooled_embeddings, cluster_id_to_indices
