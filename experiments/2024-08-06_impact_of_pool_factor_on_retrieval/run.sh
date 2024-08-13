@@ -6,12 +6,12 @@ datasets=(
     "vidore/docvqa_test_subsampled"
     "vidore/infovqa_test_subsampled"
     "vidore/tabfquad_test_subsampled"
-    "vidore/tatdqa_test"
+    # "vidore/tatdqa_test"
     "vidore/shiftproject_test"
-    "vidore/syntheticDocQA_artificial_intelligence_test"
+    # "vidore/syntheticDocQA_artificial_intelligence_test"
     "vidore/syntheticDocQA_energy_test"
-    "vidore/syntheticDocQA_government_reports_test"
-    "vidore/syntheticDocQA_healthcare_industry_test"
+    # "vidore/syntheticDocQA_government_reports_test"
+    # "vidore/syntheticDocQA_healthcare_industry_test"
 )
 
 # Loop through each dataset
