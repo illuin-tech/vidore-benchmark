@@ -44,21 +44,28 @@ class ColPaliScorer:
         """
         Evaluate the similarity scores using the ColBERT scoring function.
         """
-        scores = []
+        scores: List[torch.Tensor] = []
         for i in range(0, len(qs), batch_size):
-            scores_batch = []
-            qs_batch = torch.nn.utils.rnn.pad_sequence(qs[i : i + batch_size], batch_first=True, padding_value=0).to(
-                self.device
-            )
+            scores_batch: List[torch.Tensor] = []
+
+            qs_batch = torch.nn.utils.rnn.pad_sequence(
+                qs[i : i + batch_size],
+                batch_first=True,
+                padding_value=0,
+            ).to(self.device)
+
             for j in range(0, len(ps), batch_size):
                 ps_batch = torch.nn.utils.rnn.pad_sequence(
-                    ps[j : j + batch_size], batch_first=True, padding_value=0
+                    ps[j : j + batch_size],
+                    batch_first=True,
+                    padding_value=0,
                 ).to(self.device)
-                scores_batch.append(torch.einsum("bnd,csd->bcns", qs_batch, ps_batch).max(dim=3)[0].sum(dim=2))
-            scores_batch = torch.cat(scores_batch, dim=1).cpu()
-            scores.append(scores_batch)
-        scores = torch.cat(scores, dim=0)
-        return scores
+
+                torch.einsum("bnd,csd->bcns", qs_batch, ps_batch).max(dim=3)[0].sum(dim=2)
+
+            scores.append(torch.cat(scores_batch, dim=1).cpu())
+
+        return torch.cat(scores, dim=0)
 
     def evaluate_biencoder(self, qs: List[torch.Tensor], ps: List[torch.Tensor]) -> torch.Tensor:
         """
