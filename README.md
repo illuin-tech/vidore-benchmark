@@ -84,7 +84,23 @@ vidore-benchmark evaluate-retriever \
 
 Both scripts will generate one particular JSON file in `outputs/{model_name_all_metrics.json}`. Follow the instructions on the [ViDoRe Leaderboard](https://huggingface.co/spaces/vidore/vidore-leaderboard) to compare your model with the others.
 
-Finally, you can use token pooling to reduce the length of the document embeddings. In production, this will significantly reduce the memory footprint of the retriever, thus reducing costs and increasing speed. You can use the `--use-token-pooling` flag to enable this feature:
+### Evaluate a retriever using embedding compression techniques
+
+#### Binarization
+
+Binarization (or binary quantization) converts the float32 values in an embedding into 1-bit values, leading to a 32x decrease in memory and storage requirements. See [this HuggingFace blog post]((https://huggingface.co/blog/embedding-quantization#binary-quantization).) for more information on binarization. To apply binarization on your retriever, you can use the `--quantization binarize` flag:
+
+```bash
+vidore-benchmark evaluate-retriever \
+    --model-name vidore/colpali \
+    --dataset-name vidore/docvqa_test_subsampled \
+    --split test \
+    --quantization binarize
+```
+
+#### Token pooling
+
+You can use token pooling to reduce the length of the document embeddings. In production, this will significantly reduce the memory footprint of the retriever, thus reducing costs and increasing speed. You can use the `--use-token-pooling` flag to enable this feature:
 
 ```bash
 vidore-benchmark evaluate-retriever \
