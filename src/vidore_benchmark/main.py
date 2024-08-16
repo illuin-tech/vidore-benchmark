@@ -3,14 +3,16 @@ from pathlib import Path
 from typing import Annotated, Optional, cast
 
 import huggingface_hub
+import numpy as np
 import typer
 from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
 from loguru import logger
 
-from vidore_benchmark.compression.quantization import EmbeddingBinarizer
+from vidore_benchmark.compression.quantization import EmbeddingBinarizer, EmbeddingInt8Quantizer
 from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
 from vidore_benchmark.evaluation.evaluate import evaluate_dataset, get_top_k
+from vidore_benchmark.retrievers.colpali_retriever import ColPaliRetriever
 from vidore_benchmark.retrievers.utils.load_retriever import load_vision_retriever_from_registry
 from vidore_benchmark.utils.constants import OUTPUT_DIR
 from vidore_benchmark.utils.image_utils import generate_dataset_from_img_folder
@@ -58,12 +60,16 @@ def evaluate_retriever(
     # Create the vision retriever
     retriever = load_vision_retriever_from_registry(model_name)()
 
-    # Load the dataset
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
     # Get the quantization strategy
     if quantization == "binarize":
         embedding_quantizer = EmbeddingBinarizer()
+    elif quantization == "int8":
+        if isinstance(retriever, ColPaliRetriever):
+            # ColPali's embeddings are L2-normalized so they are in the range [-1, 1]
+            naive_ranges = np.array([[-1.0, 1.0]] * retriever.emb_dim_doc).T
+        else:
+            raise NotImplementedError("Int8 quantization is only supported for ColPali retriever.")
+        embedding_quantizer = EmbeddingInt8Quantizer(ranges=naive_ranges)
     elif quantization is None:
         embedding_quantizer = None
     else:
@@ -72,6 +78,10 @@ def evaluate_retriever(
     # Get the pooling strategy
     embedding_pooler = HierarchicalEmbeddingPooler(pool_factor) if use_token_pooling else None
 
+    # Create the output directory if it doesn't exist
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Load the dataset
     if dataset_name is not None:
         dataset = cast(Dataset, load_dataset(dataset_name, split=split))
         metrics = {
