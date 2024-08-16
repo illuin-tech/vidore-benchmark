@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import List, Optional, cast
+from typing import List, Optional, TypeVar, cast
 
 import torch
 from dotenv import load_dotenv
 from loguru import logger
 from PIL import Image
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 from transformers import AutoProcessor
 
@@ -16,7 +16,19 @@ from vidore_benchmark.retrievers.utils.register_retriever import register_vision
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
+T = TypeVar("T")
 load_dotenv(override=True)
+
+
+class ListDataset(Dataset[T]):
+    def __init__(self, elements: List[T]):
+        self.elements = elements
+
+    def __len__(self) -> int:
+        return len(self.elements)
+
+    def __getitem__(self, idx: int) -> T:
+        return self.elements[idx]
 
 
 @register_vision_retriever("vidore/colpali")
@@ -89,7 +101,7 @@ class ColPaliRetriever(VisionRetriever):
 
     def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
-            queries,
+            dataset=ListDataset[str](queries),
             batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_queries,
@@ -106,7 +118,7 @@ class ColPaliRetriever(VisionRetriever):
 
     def forward_documents(self, documents: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
-            documents,
+            dataset=ListDataset[Image.Image](documents),
             batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_images,
@@ -117,8 +129,7 @@ class ColPaliRetriever(VisionRetriever):
             with torch.no_grad():
                 batch_doc = {k: v.to(self.device) for k, v in batch_doc.items()}
                 embeddings_doc = self.model(**batch_doc)
-            ds.extend(list(torch.unbind(embeddings_doc.to("cpu"))))
-
+            ds.extend(list(torch.unbind(embeddings_doc)))
         return ds
 
     def get_scores(
