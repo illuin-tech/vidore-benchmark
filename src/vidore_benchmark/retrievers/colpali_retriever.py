@@ -34,7 +34,7 @@ class ColPaliRetriever(VisionRetriever):
             ColPali.from_pretrained("google/paligemma-3b-mix-448", torch_dtype=torch.bfloat16, device_map=device),
         ).eval()
         self.model.load_adapter(model_name)
-        self.scorer = ColPaliScorer(is_multi_vector=True)
+        self.scorer = ColPaliScorer(is_multi_vector=True, device=self.device)
         self.processor = AutoProcessor.from_pretrained(model_name)
         self.emb_dim_query = 128
         self.emb_dim_doc = 128

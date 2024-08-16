@@ -7,6 +7,7 @@ import torch
 from datasets import Dataset
 from tqdm import tqdm
 
+from vidore_benchmark.compression.quantization import BaseEmbeddingQuantizer
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
@@ -17,6 +18,7 @@ def evaluate_dataset(
     batch_query: int,
     batch_doc: int,
     batch_score: Optional[int] = None,
+    embedding_quantizer: Optional[BaseEmbeddingQuantizer] = None,
     embedding_pooler: Optional[BaseEmbeddingPooler] = None,
 ) -> Dict[str, float]:
     """
@@ -48,6 +50,14 @@ def evaluate_dataset(
     # Get the embeddings for the queries and documents
     emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
     emb_documents = vision_retriever.forward_documents(documents, batch_size=batch_doc)
+
+    if embedding_quantizer is not None:
+        # NOTE: Cannot use batched quantization because the sequence lengths can be different.
+        # HOTFIX: CUDA doesn't support int8 operations, so we convert the pooled embeddings back to bfloat16
+        emb_queries = [embedding_quantizer.quantize(emb_query).to(torch.bfloat16) for emb_query in emb_queries]
+        emb_documents = [
+            embedding_quantizer.quantize(emb_document).to(torch.bfloat16) for emb_document in emb_documents
+        ]
 
     if embedding_pooler is not None:
         for idx, emb_document in tqdm(enumerate(emb_documents), total=len(emb_documents), desc="Pooling embeddings..."):
