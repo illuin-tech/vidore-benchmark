@@ -100,7 +100,7 @@ class ColPaliRetriever(VisionRetriever):
             with torch.no_grad():
                 batch_query = {k: v.to(self.device) for k, v in batch_query.items()}
                 embeddings_query = self.model(**batch_query)
-                qs.extend(list(torch.unbind(embeddings_query.to("cpu"))))
+                qs.extend(list(torch.unbind(embeddings_query)))
 
         return qs
 
