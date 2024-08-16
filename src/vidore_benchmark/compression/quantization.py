@@ -20,7 +20,7 @@ class BaseEmbeddingQuantizer(ABC):
 
 class EmbeddingBinarizer(BaseEmbeddingQuantizer):
     """
-    Embedding quantizer that binarizes the embeddings.
+    Embedding quantizer that binarizes the embeddings and packs them into 8-bit integers.
     """
 
     @staticmethod
