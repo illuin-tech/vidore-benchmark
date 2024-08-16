@@ -61,7 +61,13 @@ class ColPaliScorer:
                     padding_value=0,
                 ).to(self.device)
 
-                torch.einsum("bnd,csd->bcns", qs_batch, ps_batch).max(dim=3)[0].sum(dim=2)
+                if ps_batch.dtype == torch.int8 and qs_batch.dtype == torch.int8:
+                    # NOTE: Prevent int8 overflow by casting to int16.
+                    scores_batch.append(
+                        torch.einsum("bnd,csd->bcns", qs_batch, ps_batch).max(dim=3)[0].sum(dim=2, dtype=torch.int16)
+                    )
+                else:
+                    scores_batch.append(torch.einsum("bnd,csd->bcns", qs_batch, ps_batch).max(dim=3)[0].sum(dim=2))
 
             scores.append(torch.cat(scores_batch, dim=1).cpu())
 
