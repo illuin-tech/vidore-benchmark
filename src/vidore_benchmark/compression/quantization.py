@@ -4,8 +4,6 @@ from abc import ABC, abstractmethod
 import torch
 from sentence_transformers import quantize_embeddings
 
-from vidore_benchmark.utils.torch_utils import get_torch_device
-
 
 class BaseEmbeddingQuantizer(ABC):
     """
@@ -24,9 +22,6 @@ class EmbeddingBinarizer(BaseEmbeddingQuantizer):
     """
     Embedding quantizer that binarizes the embeddings.
     """
-
-    def __init__(self, device: str = "auto"):
-        self.device = get_torch_device(device)
 
     @staticmethod
     def pad_last_dim_to_multiple_of_8(x: torch.Tensor) -> torch.Tensor:
