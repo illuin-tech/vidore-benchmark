@@ -53,9 +53,9 @@ def evaluate_dataset(
 
     if embedding_quantizer is not None:
         # NOTE: Cannot use batched quantization because the sequence lengths can be different.
-        # HOTFIX: CUDA doesn't support int8 operations, so we convert the pooled embeddings back to bfloat16
-        emb_queries = [embedding_quantizer.quantize(emb_query) for emb_query in emb_queries]
-        emb_documents = [embedding_quantizer.quantize(emb_document) for emb_document in emb_documents]
+        # HOTFIX: CUDA doesn't support int8 operations, so we need to move the embeddings to CPU.
+        emb_queries = [embedding_quantizer.quantize(emb_query.to("cpu")) for emb_query in emb_queries]
+        emb_documents = [embedding_quantizer.quantize(emb_document.to("cpu")) for emb_document in emb_documents]
 
     if embedding_pooler is not None:
         for idx, emb_document in tqdm(enumerate(emb_documents), total=len(emb_documents), desc="Pooling embeddings..."):
