@@ -46,6 +46,16 @@ class ColPaliScorer:
         Evaluate the similarity scores using the ColBERT scoring function.
         """
         scores: List[torch.Tensor] = []
+        if not qs:
+            raise ValueError("No queries provided.")
+        if not ps:
+            raise ValueError("No passages provided.")
+
+        if qs[0].dtype != ps[0].dtype:
+            raise ValueError("Queries and passages must have the same dtype.")
+
+        is_dtype_int8 = ps[0].dtype == torch.int8 and qs[0].dtype == torch.int8
+
         for i in range(0, len(qs), batch_size):
             scores_batch: List[torch.Tensor] = []
 
@@ -53,22 +63,38 @@ class ColPaliScorer:
                 qs[i : i + batch_size],
                 batch_first=True,
                 padding_value=0,
-            ).to(self.device)
+            )
 
             for j in range(0, len(ps), batch_size):
                 ps_batch = torch.nn.utils.rnn.pad_sequence(
                     ps[j : j + batch_size],
                     batch_first=True,
                     padding_value=0,
-                ).to(self.device)
+                )
 
-                if ps_batch.dtype == torch.int8 and qs_batch.dtype == torch.int8:
-                    # NOTE: Prevent int8 overflow by casting to int16.
+                if is_dtype_int8:
+                    # NOTE: CUDA does not support int8 operations, so we need to move the
+                    # tensors to the CPU for the MaxSim operation.
                     scores_batch.append(
-                        torch.einsum("bnd,csd->bcns", qs_batch, ps_batch).max(dim=3)[0].sum(dim=2, dtype=torch.int16)
+                        torch.einsum(
+                            "bnd,csd->bcns",
+                            qs_batch.to("cpu"),
+                            ps_batch.to("cpu"),
+                        )
+                        .max(dim=3)[0]
+                        .sum(dim=2, dtype=torch.int16)  # prevent int8 overflow
+                        .to(self.device)
                     )
                 else:
-                    scores_batch.append(torch.einsum("bnd,csd->bcns", qs_batch, ps_batch).max(dim=3)[0].sum(dim=2))
+                    scores_batch.append(
+                        torch.einsum(
+                            "bnd,csd->bcns",
+                            qs_batch.to(self.device),
+                            ps_batch.to(self.device),
+                        )
+                        .max(dim=3)[0]
+                        .sum(dim=2)
+                    )
 
             scores.append(torch.cat(scores_batch, dim=1).cpu())
 
