@@ -24,7 +24,7 @@ class ColPaliScorer:
         self.mteb_evaluator = RetrievalEvaluator()
         self.device = get_torch_device(device)
 
-    def evaluate(self, qs: List[torch.Tensor], ps: List[torch.Tensor], batch_size: int):
+    def evaluate(self, qs: List[torch.Tensor], ps: List[torch.Tensor], batch_size: int) -> torch.Tensor:
         if self.is_multi_vector:
             scores = self.evaluate_colbert(qs, ps, batch_size)
         else:
@@ -34,7 +34,7 @@ class ColPaliScorer:
 
         if scores.dtype in [torch.float16, torch.bfloat16]:
             scores = scores.to(torch.float32)
-        return scores.cpu().numpy()
+        return scores
 
     def evaluate_colbert(
         self,
