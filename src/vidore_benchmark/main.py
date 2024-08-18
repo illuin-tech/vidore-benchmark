@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 from typing import Annotated, Optional, cast
 
@@ -13,6 +14,7 @@ from vidore_benchmark.evaluation.evaluate import evaluate_dataset, get_top_k
 from vidore_benchmark.retrievers.utils.load_retriever import load_vision_retriever_from_registry
 from vidore_benchmark.utils.constants import OUTPUT_DIR
 from vidore_benchmark.utils.image_utils import generate_dataset_from_img_folder
+from vidore_benchmark.utils.logging_utils import setup_logging
 from vidore_benchmark.utils.pdf_utils import convert_all_pdfs_to_images
 
 load_dotenv(override=True)
@@ -21,6 +23,12 @@ app = typer.Typer(
     help="CLI for evaluating retrievers on the ViDoRe benchmark.",
     no_args_is_help=True,
 )
+
+
+@app.callback()
+def main(log_level: Annotated[str, typer.Option("--log", help="Logging level")] = "warning"):
+    setup_logging(log_level)
+    print(log_level)
 
 
 @app.command()
@@ -40,6 +48,8 @@ def evaluate_retriever(
     Evaluate the retriever on the given dataset or collection.
     The metrics are saved to a JSON file.
     """
+
+    logging.info(f"Evaluating retriever `{model_name}`")
 
     # Sanity check
     if dataset_name is None and collection_name is None:
@@ -86,6 +96,7 @@ def evaluate_retriever(
         with open(str(savepath), "w", encoding="utf-8") as f:
             json.dump(metrics, f)
 
+        print(f"Metrics saved to `{savepath}`")
         print(f"NDCG@5 for {model_name} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
 
     elif collection_name is not None:
@@ -136,6 +147,8 @@ def evaluate_retriever(
     else:
         raise ValueError("Please provide a dataset name or collection name.")
 
+    print("Done.")
+
 
 @app.command()
 def retrieve_on_dataset(
@@ -179,6 +192,8 @@ def retrieve_on_dataset(
     for document, score in top_k[query].items():
         print(f"- Document `{document}` (score = {score})")
 
+    print("Done.")
+
 
 @app.command()
 def retrieve_on_pdfs(
@@ -196,7 +211,8 @@ def retrieve_on_pdfs(
     The PDFs will be converted to a dataset of image pages and then used for retrieval.
     """
 
-    assert Path(data_dirpath).is_dir(), f"Invalid data directory: `{data_dirpath}`"
+    if not Path(data_dirpath).is_dir():
+        raise FileNotFoundError(f"Invalid data directory: `{data_dirpath}`")
 
     # Create the vision retriever
     retriever = load_vision_retriever_from_registry(model_name)()
@@ -231,6 +247,8 @@ def retrieve_on_pdfs(
 
     for document, score in top_k[query].items():  # type: ignore
         print(f"Document: {document}, Score: {score}")
+
+    print("Done.")
 
 
 if __name__ == "__main__":

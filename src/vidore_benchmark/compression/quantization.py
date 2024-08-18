@@ -1,3 +1,4 @@
+import logging
 import math
 from abc import ABC, abstractmethod
 
@@ -5,6 +6,8 @@ import torch
 from sentence_transformers import quantize_embeddings
 
 from vidore_benchmark.utils.torch_utils import get_torch_device
+
+logger = logging.getLogger(__name__)
 
 
 class BaseEmbeddingQuantizer(ABC):

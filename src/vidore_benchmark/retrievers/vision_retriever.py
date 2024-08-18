@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 from datasets import Dataset
 from mteb.evaluation.evaluators import RetrievalEvaluator
+
+logger = logging.getLogger(__name__)
 
 
 class VisionRetriever(ABC):
@@ -130,7 +133,9 @@ class VisionRetriever(ABC):
 
         NOTE: Override this method if the retriever has a different evaluation metric.
         """
+
         mteb_evaluator = RetrievalEvaluator()
+
         ndcg, _map, recall, precision, naucs = mteb_evaluator.evaluate(
             relevant_docs,
             results,

@@ -1,10 +1,13 @@
 import glob
+import logging
 import os
 import random
 from pathlib import Path
 
 from pdf2image import convert_from_path
 from tqdm import tqdm
+
+logger = logging.getLogger(__name__)
 
 
 def convert_pdf_to_images(pdf_file: str, save_folder: str) -> None:
@@ -21,7 +24,9 @@ def convert_pdf_to_images(pdf_file: str, save_folder: str) -> None:
     for i, image in enumerate(images):
         if not os.path.exists(save_folder):
             os.makedirs(save_folder)
-        image.save(os.path.join(save_folder, f"page_{i+1}.jpg"), "JPEG")
+        savepath = os.path.join(save_folder, f"page_{i+1}.jpg")
+        image.save(savepath, "JPEG")
+        logger.debug("Saved image to `%s`", savepath)
 
     return
 
@@ -53,11 +58,11 @@ def convert_all_pdfs_to_images(path_to_folder: str, n_samples: int = 0) -> None:
     pdf_files = glob.glob(os.path.join(path_to_folder, "*.pdf"))
 
     if (n_samples == 0) or (len(pdf_files) <= n_samples):
-        print(f"Taking all pdf files in {path_to_folder}")
+        logger.info(f"Taking all pdf files in `{path_to_folder}`")
         sampled_files.extend(pdf_files)
 
     else:
-        print(f"Taking {n_samples} pdf files in {path_to_folder}")
+        logger.info(f"Taking {n_samples} pdf files in `{path_to_folder}`")
         sampled_files.extend(random.sample(pdf_files, n_samples))
 
     pdf_files = [str(file) for file in sampled_files]
@@ -70,12 +75,17 @@ def convert_all_pdfs_to_images(path_to_folder: str, n_samples: int = 0) -> None:
         with tqdm(total=len(pdf_files)) as pbar:
             for pdf_file in pdf_files:
                 pbar.set_description(f"Processing {pdf_file}")
-                save_folder = os.path.join("pages_extracted", *Path(pdf_file).parts[-2:])
-                if not os.path.exists(os.path.join(path_to_folder, save_folder)):
+                relative_save_folder = os.path.join("pages_extracted", *Path(pdf_file).parts[-2:])
+                if not os.path.exists(os.path.join(path_to_folder, relative_save_folder)):
                     try:
-                        convert_pdf_to_images(pdf_file, os.path.join(path_to_folder, save_folder))
+                        save_folder = os.path.join(path_to_folder, relative_save_folder)
+                        convert_pdf_to_images(
+                            pdf_file,
+                            save_folder=save_folder,
+                        )
+                        logger.info("Converted `%s` to images in `%s`", pdf_file, save_folder)
                     except Exception as e:
-                        print(f"Error converting {pdf_file}: {e}")
+                        logger.warning("Error converting `%s` to images: %s", pdf_file, e)
                         f.write(pdf_file)
                         f.write("\n")
                 pbar.update(1)

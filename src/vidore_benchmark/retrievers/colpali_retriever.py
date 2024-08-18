@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import List, Optional, cast
 
 import torch
@@ -15,6 +16,8 @@ from vidore_benchmark.retrievers.utils.register_retriever import register_vision
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
+logger = logging.getLogger(__name__)
+
 load_dotenv(override=True)
 
 
@@ -27,15 +30,23 @@ class ColPaliRetriever(VisionRetriever):
 
     def __init__(self, device: str = "auto"):
         super().__init__()
-        model_name = "vidore/colpali"
+        model_name = "google/paligemma-3b-mix-448"
+        adapter_name = "vidore/colpali"
+
         self.device = get_torch_device(device)
+        logger.info(f"Using device: {self.device}")
+
         self.model = cast(
             ColPali,
-            ColPali.from_pretrained("google/paligemma-3b-mix-448", torch_dtype=torch.bfloat16, device_map=device),
+            ColPali.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map=device),
         ).eval()
-        self.model.load_adapter(model_name)
+        logger.info(f"Loaded ColPali model (non-trained weights) from `{model_name}`")
+
+        self.model.load_adapter(adapter_name)
+        logger.info(f"Loaded ColPali adapter from `{adapter_name}`")
+
         self.scorer = ColPaliScorer(is_multi_vector=True, device=self.device)
-        self.processor = AutoProcessor.from_pretrained(model_name)
+        self.processor = AutoProcessor.from_pretrained(adapter_name)
         self.emb_dim_query = 128
         self.emb_dim_doc = 128
 
@@ -85,6 +96,7 @@ class ColPaliRetriever(VisionRetriever):
             shuffle=False,
             collate_fn=self.process_queries,
         )
+
         qs = []
         for batch_query in tqdm(dataloader, desc="Forward pass queries..."):
             with torch.no_grad():
@@ -101,12 +113,14 @@ class ColPaliRetriever(VisionRetriever):
             shuffle=False,
             collate_fn=self.process_images,
         )
+
         ds = []
         for batch_doc in tqdm(dataloader, desc="Forward pass documents..."):
             with torch.no_grad():
                 batch_doc = {k: v.to(self.device) for k, v in batch_doc.items()}
                 embeddings_doc = self.model(**batch_doc)
             ds.extend(list(torch.unbind(embeddings_doc.to("cpu"))))
+
         return ds
 
     def get_scores(
