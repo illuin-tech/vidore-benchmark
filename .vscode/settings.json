@@ -2,6 +2,7 @@
   "conventionalCommits.scopes": [
     "compression",
     "dataset",
+    "experiments",
     "models",
     "retrievers",
     "scripts"

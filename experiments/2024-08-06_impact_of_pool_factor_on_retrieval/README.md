@@ -10,7 +10,7 @@ ColPali achieves strong retrieval performances on document retrieval tasks (see 
 
 However, your multi-vector embeddings scale linearly in size withe number of tokens! A direct consequence of having larger embeddings is longer indexing and search time. This is where indexing helps: we will approximate our embeddings to make everything go faster. To improve ColBERT, researchers have experimented with ColBERTv2  and Performance-optimized Late Interaction Driver (PLAID) and managed to use centroid and compression tricks to build a multi-step retrieval pipeline that is both efficient and accurate. While PLAID seems great on paper, because it’s centroid-based, it’s not tractable to create (C), update (U), nor to delete (D) a document from the vector store (or else, how would you update the centroids after each operation?). Hierarchical Navigable Small Worlds (HNSW) is fully CRUD but doesn’t scale well.
 
-In his blog ["A little pooling goes a long way for multi-vector representations"](https://www.answer.ai/posts/colbert-pooling.html), Benjamin Clavié proposes a simple but effective to a similar problem with ColBERT: to simply reduce the sequence length of the multi-vector embedding using pooling. Thus our problematic:
+In his blog post [*"A little pooling goes a long way for multi-vector representations"*](https://www.answer.ai/posts/colbert-pooling.html) (2024), Benjamin Clavié proposes a simple but effective to a similar problem with ColBERT: to simply reduce the sequence length of the multi-vector embedding using pooling. Thus our problematic:
 
 > Can we use token pooling to reduce the size of our embeddings and improve the retrieval performance and latency of ColPali?
 
