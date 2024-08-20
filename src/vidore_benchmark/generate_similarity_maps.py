@@ -3,6 +3,7 @@ from typing import Annotated, List, cast
 
 import typer
 from dotenv import load_dotenv
+from loguru import logger
 from PIL import Image
 
 from vidore_benchmark.interpretability.colpali_processor import ColPaliProcessor
@@ -23,6 +24,7 @@ app = typer.Typer(
 
 @app.callback()
 def main(log_level: Annotated[str, typer.Option("--log", help="Logging level")] = "warning"):
+    logger.enable("vidore_benchmark")
     setup_logging(log_level)
 
 

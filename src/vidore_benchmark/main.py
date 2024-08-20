@@ -1,5 +1,4 @@
 import json
-import logging
 from pathlib import Path
 from typing import Annotated, Optional, cast
 
@@ -7,6 +6,7 @@ import huggingface_hub
 import typer
 from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
+from loguru import logger
 
 from vidore_benchmark.compression.quantization import EmbeddingBinarizer
 from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
@@ -27,8 +27,8 @@ app = typer.Typer(
 
 @app.callback()
 def main(log_level: Annotated[str, typer.Option("--log", help="Logging level")] = "warning"):
+    logger.enable("vidore_benchmark")
     setup_logging(log_level)
-    print(log_level)
 
 
 @app.command()
@@ -48,8 +48,6 @@ def evaluate_retriever(
     Evaluate the retriever on the given dataset or collection.
     The metrics are saved to a JSON file.
     """
-
-    logging.info(f"Evaluating retriever `{model_name}`")
 
     # Sanity check
     if dataset_name is None and collection_name is None:

@@ -1,13 +1,11 @@
 import glob
-import logging
 import os
 import random
 from pathlib import Path
 
+from loguru import logger
 from pdf2image import convert_from_path
 from tqdm import tqdm
-
-logger = logging.getLogger(__name__)
 
 
 def convert_pdf_to_images(pdf_file: str, save_folder: str) -> None:
