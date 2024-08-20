@@ -7,7 +7,6 @@
 [[ViDoRe Leaderboard]](https://huggingface.co/spaces/vidore/vidore-leaderboard)
 [[Hf Space]](https://huggingface.co/spaces/manu/ColPali-demo)
 [[Hf Blog]](https://huggingface.co/blog/manu/colpali)
-<!-- [[Colab Example]]() -->
 
 Main contributors: [Manuel Faysse](https://github.com/ManuelFay), [Hugues Sibille](https://github.com/HuguesSib), [Tony Wu](https://github.com/tonywu71)
 
@@ -86,7 +85,7 @@ Both scripts will generate one particular JSON file in `outputs/{model_name_all_
 
 ### Evaluate a retriever using embedding compression techniques
 
-#### Binarization
+<!-- #### Binarization
 
 Binarization (or binary quantization) converts the float32 values in an embedding into 1-bit values, leading to a 32x decrease in memory and storage requirements. See [this HuggingFace blog post]((https://huggingface.co/blog/embedding-quantization#binary-quantization).) for more information on binarization. To apply binarization on your retriever, you can use the `--quantization binarize` flag:
 
@@ -96,7 +95,7 @@ vidore-benchmark evaluate-retriever \
     --dataset-name vidore/docvqa_test_subsampled \
     --split test \
     --quantization binarize
-```
+``` -->
 
 #### Token pooling
 
