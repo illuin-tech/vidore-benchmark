@@ -61,7 +61,7 @@ To run/reproduce the experiments, follow these steps:
 
 - As expected, the retrieval performance decreases with the pool factor *in general*.
 - `vidore/shifproject_test` is a clear outlier here. As a reminder, the Shift dataset is a collection of environmental reports in French. It is the most text-dense corpus in ViDoRe. Thus, retrieval performance is mainly due to the OCR capabilities of the mode. We believe pooling merges important patches of text, hence loosing signal about the text semantics.
-- The optimal pool factor is around 3 with a relative compression of $1 - \frac{1}{4} = 75 \%$ while keeping $\approx 97 \%$ of the original retriever performance.
+- The optimal pool factor is around 3: we reduced the total number of vectors by $1 - \frac{1}{3} \approx 66.7\%$ while keeping $\approx 97.8\%$ of the original retriever performance.
 
 ### Latencies
 
