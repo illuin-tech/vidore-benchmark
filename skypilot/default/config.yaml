@@ -57,10 +57,10 @@ setup: |
   # =================================================================
 
   # -------------- Aliases --------------
-  alias fzfenv="printenv | fzf | pbcopy"
+  alias fzfenv="printenv | fzf"
+  alias fzfpip="pip freeze | fzf"
   alias cvenv="python -m venv .venv"
   alias avenv="source .venv/bin/activate"
-  alias fzfpip="pip freeze | fzf | pbcopy"
   alias gl="git log --oneline --graph --decorate"
 
   if [ -f ~/.bash_aliases ]; then

@@ -1,8 +1,4 @@
-import logging
-
 import torch
-
-logger = logging.getLogger(__name__)
 
 EPSILON = 1e-10
 

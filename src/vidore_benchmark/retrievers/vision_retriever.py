@@ -130,7 +130,9 @@ class VisionRetriever(ABC):
 
         NOTE: Override this method if the retriever has a different evaluation metric.
         """
+
         mteb_evaluator = RetrievalEvaluator()
+
         ndcg, _map, recall, precision, naucs = mteb_evaluator.evaluate(
             relevant_docs,
             results,

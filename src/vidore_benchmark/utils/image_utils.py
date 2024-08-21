@@ -9,6 +9,7 @@ from typing import cast
 
 import datasets
 from datasets import Dataset
+from loguru import logger
 from PIL import Image
 from torch.utils.data import IterableDataset
 from tqdm import tqdm
@@ -25,6 +26,7 @@ def scale_image(image: Image.Image, new_height: int = 1024) -> Image.Image:
 
     # Resize the image
     scaled_image = image.resize((new_width, new_height))
+    logger.debug("Resized image to %d * %d", new_width, new_height)
 
     return scaled_image
 
@@ -48,6 +50,7 @@ def scale_to_max_dimension(image: Image.Image, max_dimension: int = 1024) -> Ima
 
     # Resize the image
     scaled_image = image.resize((new_width, new_height))
+    logger.debug("Resized image to %d * %d", new_width, new_height)
 
     return scaled_image
 

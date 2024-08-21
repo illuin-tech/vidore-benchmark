@@ -3,12 +3,14 @@ from typing import Annotated, List, cast
 
 import typer
 from dotenv import load_dotenv
+from loguru import logger
 from PIL import Image
 
 from vidore_benchmark.interpretability.colpali_processor import ColPaliProcessor
 from vidore_benchmark.interpretability.gen_similarity_maps import gen_and_save_similarity_map_per_token
 from vidore_benchmark.models.colpali_model import ColPali
 from vidore_benchmark.utils.constants import OUTPUT_DIR
+from vidore_benchmark.utils.logging_utils import setup_logging
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
 load_dotenv(override=True)
@@ -18,6 +20,12 @@ app = typer.Typer(
     help="CLI for generating similarity maps for ColPali.",
     no_args_is_help=True,
 )
+
+
+@app.callback()
+def main(log_level: Annotated[str, typer.Option("--log", help="Logging level")] = "warning"):
+    logger.enable("vidore_benchmark")
+    setup_logging(log_level)
 
 
 @app.command()
@@ -34,7 +42,8 @@ def generate_similarity_maps(
     # Sanity checks
     assert len(documents) == len(queries), "The number of documents and queries must be the same."
     for document in documents:
-        assert document.is_file(), f"File not found: `{document}`"
+        if not document.is_file():
+            raise FileNotFoundError(f"File not found: `{document}`")
 
     device = get_torch_device(device)
 
@@ -45,7 +54,6 @@ def generate_similarity_maps(
     model = cast(ColPali, ColPali.from_pretrained(model_path, device_map=device))
 
     # Load the Lora adapter into the model
-    # Note:`add_adapter` is used to create a new adapter while `load_adapter` is used to load an existing adapter
     model.load_adapter(lora_path, adapter_name="colpali", device_map=device)
     if model.active_adapters() != ["colpali"]:
         raise ValueError(f"Incorrect adapters loaded: {model.active_adapters()}")
@@ -54,8 +62,6 @@ def generate_similarity_maps(
     # Load the processor
     processor = ColPaliProcessor.from_pretrained(model_path)
     print("Loaded custom processor.\n")
-
-    assert all([img_filepath.is_file() for img_filepath in documents])
 
     images = [Image.open(img_filepath) for img_filepath in documents]
 

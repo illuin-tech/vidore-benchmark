@@ -34,7 +34,7 @@ class HierarchicalEmbeddingPooler(BaseEmbeddingPooler):
         Return the pooled embeddings and the mapping from cluster id to token indices.
 
         Input:
-        - p_embeddings: tensor of shape (token_length, embedding_dim)
+        - embeddings: tensor of shape (token_length, embedding_dim)
         Output:
         - pooled_embeddings: tensor of shape (num_clusters, embedding_dim)
 
