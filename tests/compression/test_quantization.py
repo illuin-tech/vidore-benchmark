@@ -56,13 +56,13 @@ def test_quantize_batched_embeddings(embedding_binarizer):
     embeddings = torch.randn(2, 3, 8)
     quantized = embedding_binarizer.quantize(embeddings)
     assert quantized.shape == (2, 3, 1)
-    assert quantized.dtype == torch.float32
+    assert quantized.dtype == torch.int8
 
     # Test with embeddings that need padding
     embeddings = torch.randn(2, 3, 5)
     quantized = embedding_binarizer.quantize(embeddings)
     assert quantized.shape == (2, 3, 1)
-    assert quantized.dtype == torch.float32
+    assert quantized.dtype == torch.int8
 
 
 def test_quantize_values(embedding_binarizer):

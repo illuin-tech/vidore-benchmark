@@ -21,7 +21,7 @@ def sample_embeddings() -> torch.Tensor:
 def test_hierarchical_embedding_pooler_initialization():
     pooler = HierarchicalEmbeddingPooler(pool_factor=2, device="cpu")
     assert pooler.pool_factor == 2
-    assert pooler.device == torch.device("cpu")
+    assert pooler.device == "cpu"
 
 
 def test_hierarchical_embedding_pooler_output_shape(sample_embeddings: torch.Tensor):
