@@ -1,12 +1,14 @@
 # Vision Document Retrieval (ViDoRe): Benchmark 👀
 
-[[Paper]](https://arxiv.org/abs/2407.01449)
-[[ColPali Model card]](https://huggingface.co/vidore/colpali)
-[[ColPali Training]](https://github.com/ManuelFay/colpali)
+[![arXiv](https://img.shields.io/badge/arXiv-2407.01449-b31b1b.svg?style=for-the-badge)](https://arxiv.org/abs/2407.01449)
+[![GitHub](https://img.shields.io/badge/ColPali_(training)-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/illuin-tech/colpali)
+[![Hugging Face](https://img.shields.io/badge/Vidore_Hf_Space-FFD21E?style=for-the-badge&logo=huggingface&logoColor=000)](https://huggingface.co/vidore)
+
+[[Model card]](https://huggingface.co/vidore/colpali)
 [[ViDoRe Benchmark]](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d)
 [[ViDoRe Leaderboard]](https://huggingface.co/spaces/vidore/vidore-leaderboard)
-[[Hf Space]](https://huggingface.co/spaces/manu/ColPali-demo)
-[[Hf Blog]](https://huggingface.co/blog/manu/colpali)
+[[Demo]](https://huggingface.co/spaces/manu/ColPali-demo)
+[[Blog Post]](https://huggingface.co/blog/manu/colpali)
 
 Main contributors: [Manuel Faysse](https://github.com/ManuelFay), [Hugues Sibille](https://github.com/HuguesSib), [Tony Wu](https://github.com/tonywu71)
 
