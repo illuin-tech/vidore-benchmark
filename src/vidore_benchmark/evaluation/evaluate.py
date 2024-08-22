@@ -7,7 +7,7 @@ import torch
 from datasets import Dataset
 from tqdm import tqdm
 
-from vidore_benchmark.compression.quantization import BaseEmbeddingQuantizer
+from vidore_benchmark.compression.quantization.embedding_binarizer import BaseEmbeddingQuantizer
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
