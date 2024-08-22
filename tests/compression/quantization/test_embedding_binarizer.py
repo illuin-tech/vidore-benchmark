@@ -2,23 +2,21 @@ import math
 
 import pytest
 import torch
-from vidore_benchmark.compression.quantization import EmbeddingBinarizer
-from vidore_benchmark.utils.torch_utils import get_torch_device
+from vidore_benchmark.compression.quantization.embedding_binarizer import EmbeddingBinarizer
 
 
 @pytest.fixture
 def embedding_binarizer():
-    return EmbeddingBinarizer(device="cpu")
+    return EmbeddingBinarizer()
 
 
 def test_embedding_binarizer_initialization():
-    binarizer = EmbeddingBinarizer(device="cpu")
+    binarizer = EmbeddingBinarizer()
     assert isinstance(binarizer, EmbeddingBinarizer)
-    assert binarizer.device == get_torch_device("cpu")
 
 
 def test_pad_last_dim_to_multiple_of_8_on_2d_vector():
-    binarizer = EmbeddingBinarizer(device="cpu")
+    binarizer = EmbeddingBinarizer()
 
     # Test when padding is not needed
     x = torch.randn(2, 8)
@@ -35,7 +33,7 @@ def test_pad_last_dim_to_multiple_of_8_on_2d_vector():
 
 
 def test_pad_last_dim_to_multiple_of_8_on_3d_vector():
-    binarizer = EmbeddingBinarizer(device="cpu")
+    binarizer = EmbeddingBinarizer()
 
     # Test when padding is not needed
     x = torch.randn(2, 3, 8)
@@ -66,11 +64,10 @@ def test_quantize_batched_embeddings(embedding_binarizer):
 
 
 def test_quantize_values(embedding_binarizer):
-    # Create a simple embedding tensor with known values
     embeddings = torch.tensor(
         [
             [
-                [1.0, 2.0, -1, -1.0],  # should get thresholded to [1, 1, 0, 0, 0, 0, 0, 0]
+                [1.0, 2.0, -1.0, -1.0],  # should get thresholded to [1, 1, 0, 0, 0, 0, 0, 0]
             ]
         ],
         dtype=torch.float32,
