@@ -1,4 +1,5 @@
 import math
+import warnings
 from abc import ABC, abstractmethod
 from typing import Optional
 
@@ -42,6 +43,11 @@ class EmbeddingBinarizer(BaseEmbeddingQuantizer):
         1. each element is thresholded to 0 if it is less than 0, and 1 otherwise.
         2. the thresholded embeddings are packed into 8-bit integers.
         """
+        warnings.warn(
+            "EmbeddingBinarizer is experimental and may change in the future.",
+            UserWarning,
+        )
+
         # NOTE: We pad the last dimension of the embeddings to be a multiple of 8
         # because the quantize_embeddings function takes a 2D tensor as input and pack
         # the bits into 8-bit integers (int8). To make our 3D tensors compatible, we
@@ -96,6 +102,11 @@ class EmbeddingInt8Quantizer(BaseEmbeddingQuantizer):
         """
         Quantize the input embeddings to 8-bit integers.
         """
+        warnings.warn(
+            "EmbeddingInt8Quantizer is experimental and may change in the future.",
+            UserWarning,
+        )
+
         if self.ranges is None and self.calibration_embeddings is None:
             raise ValueError("Ranges and calibration embeddings must be set before quantizing embeddings.")
         if self.ranges is not None and self.calibration_embeddings is not None:
