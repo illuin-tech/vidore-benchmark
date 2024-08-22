@@ -1,6 +1,5 @@
 from typing import Type
 
-
 from vidore_benchmark.retrievers.utils.register_retriever import VISION_RETRIEVER_REGISTRY
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
