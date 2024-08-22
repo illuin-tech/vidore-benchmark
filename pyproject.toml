@@ -1,14 +1,17 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/vidore_benchmark"]
 
 [project]
 name = "vidore_benchmark"
-version = "3.2.0"
-description = "Visual Document Retrieval: Benchmark"
+dynamic = ["version"]
+description = "Visual Document Retrieval (ViDoRe): Benchmark"
 authors = [
     { name = "Tony Wu", email = "tony.wu@illuin.tech" },
     { name = "Manuel Faysse", email = "manuel.faysse@illuin.tech" },
