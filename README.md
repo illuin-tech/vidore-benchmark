@@ -92,7 +92,7 @@ Both scripts will generate one particular JSON file in `outputs/{model_name_all_
 
 <!-- #### Binarization
 
-Binarization (or binary quantization) converts the float32 values in an embedding into 1-bit values, leading to a 32x decrease in memory and storage requirements. See [this HuggingFace blog post]((https://huggingface.co/blog/embedding-quantization#binary-quantization).) for more information on binarization. To apply binarization on your retriever, you can use the `--quantization binarize` flag:
+Binarization (or binary quantization) converts the float32 values in an embedding into 1-bit values, leading to a 32x decrease in memory and storage requirements. See [this HuggingFace blog post]((https://huggingface.co/blog/embedding-quantization#binary-quantization).) for more information on binarization. To apply binarization on your embeddings, you can use the `--quantization binarize` flag:
 
 ```bash
 vidore-benchmark evaluate-retriever \
@@ -101,6 +101,18 @@ vidore-benchmark evaluate-retriever \
     --split test \
     --quantization binarize
 ``` -->
+
+#### Int8 quantization
+
+Int8 quantization maps the continuous float32 value range to a discrete set of int8 values, capable of representing 256 distinct levels (ranging from -128 to 127). The mapping bins are computed using the minimum and maximum values for each embedding dimension. See [this HuggingFace blog post]((https://huggingface.co/blog/embedding-quantization#scalar-int8-quantization).) for more information on int8 quantization. To apply int8 quantization on your embeddings, you can use the `--quantization int8` flag:
+
+```bash
+vidore-benchmark evaluate-retriever \
+    --model-name vidore/colpali \
+    --dataset-name vidore/docvqa_test_subsampled \
+    --split test \
+    --quantization int8
+```
 
 #### Token pooling
 
