@@ -1,4 +1,5 @@
 import pytest
+
 from vidore_benchmark.retrievers.siglip_retriever import SigLIPRetriever
 
 

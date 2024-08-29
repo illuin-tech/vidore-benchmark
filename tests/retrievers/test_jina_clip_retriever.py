@@ -1,4 +1,5 @@
 import pytest
+
 from vidore_benchmark.retrievers.jina_clip_retriever import JinaClipRetriever
 
 

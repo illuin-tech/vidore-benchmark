@@ -1,4 +1,5 @@
 import pytest
+
 from vidore_benchmark.retrievers.bge_m3_colbert_retriever import BGEM3ColbertRetriever
 
 

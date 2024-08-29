@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import torch
+
 from vidore_benchmark.compression.quantization.embedding_int8_quantizer import EmbeddingInt8Quantizer
 
 EMBEDDING_DIM = 8
