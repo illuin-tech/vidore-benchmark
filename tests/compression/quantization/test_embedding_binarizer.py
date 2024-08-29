@@ -2,6 +2,7 @@ import math
 
 import pytest
 import torch
+
 from vidore_benchmark.compression.quantization.embedding_binarizer import EmbeddingBinarizer
 
 

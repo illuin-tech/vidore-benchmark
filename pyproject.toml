@@ -30,6 +30,7 @@ classifiers = [
 
 dependencies = [
     "datasets>=2.15.0,<3.0.0",
+    "colpali-engine==0.2.0",
     "einops>=0.8.0,<1.0.0",
     "GPUtil>=1.4.0,<2.0.0",
     "loguru>=0.7.0,<1.0.0",
@@ -40,6 +41,7 @@ dependencies = [
     "pillow>=9.2.0,<11.0.0",
     "python-dotenv>=1.0.1,<2.0.0",
     "sentencepiece>=0.2.0,<1.0.0",
+    "sentence-transformers>=3.0.1,<4.0.0",
     "torch>=2.0.0,<3.0.0",
     "transformers>=4.41.1,<5.0.0",
     "typer>=0.12.3,<1.0.0",
@@ -57,7 +59,6 @@ dev = [
 bge-m3 = ["FlagEmbedding>=1.2.10,<2.0.0"]
 bm25 = ["nltk>=3.8.1,<4.0.0", "rank-bm25>=0.2.2,<1.0.0"]
 jina-clip = ["timm>=1.0.7,<2.0.0"]
-sentence-transformers = ["sentence-transformers>=3.0.1,<4.0.0"]
 siglip = ["protobuf>=4.25.3,<5.0.0"]
 all-retrievers = [
     "vidore-benchmark[bge-m3]",
@@ -75,28 +76,6 @@ all = [
 ]
 
 skypilot = ["skypilot==0.6.1,<1.0.0"]
-
-baselines = [
-    "accelerate==0.30.1",
-    "datasets==2.19.1",
-    "einops==0.8.0",
-    "FlagEmbedding==1.2.10",
-    "GPUtil==1.4.0",
-    "mteb>=1.12.47",
-    "nltk==3.8.1",
-    "numpy==1.26.4",
-    "pdf2image==1.17.0",
-    "peft==0.11.1",
-    "pillow==10.3.0",
-    "protobuf==4.25.3",
-    "pytesseract==0.3.10",
-    "python-dotenv==1.0.1",
-    "rank-bm25==0.2.2",
-    "sentence-transformers==3.0.1",
-    "sentencepiece==0.2.0",
-    "torch==2.2.2",
-    "transformers==4.41.1",
-]
 
 [project.urls]
 homepage = "https://github.com/illuin-tech/vidore-benchmark"

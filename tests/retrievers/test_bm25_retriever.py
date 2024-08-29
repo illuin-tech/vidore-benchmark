@@ -1,4 +1,5 @@
 import pytest
+
 from vidore_benchmark.retrievers.bm25_retriever import BM25Retriever
 
 

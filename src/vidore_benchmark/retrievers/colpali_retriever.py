@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import List, Optional, TypeVar, cast
 
 import torch
+from colpali_engine.models.paligemma_colbert_architecture import ColPali
 from dotenv import load_dotenv
 from loguru import logger
 from PIL import Image
@@ -11,7 +12,6 @@ from tqdm import tqdm
 from transformers import AutoProcessor
 
 from vidore_benchmark.evaluation.colpali_scorer import ColPaliScorer
-from vidore_benchmark.models.colpali_model import ColPali
 from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.torch_utils import get_torch_device
@@ -38,10 +38,13 @@ class ColPaliRetriever(VisionRetriever):
     with Vision Language Models".
     """
 
-    def __init__(self, device: str = "auto"):
+    def __init__(
+        self,
+        adapter_name: str = "vidore/colpali-v1.2",
+        device: str = "auto",
+    ):
         super().__init__()
-        model_name = "google/paligemma-3b-mix-448"
-        adapter_name = "vidore/colpali"
+        model_name = "vidore/colpaligemma-3b-pt-448-base"
 
         self.device = get_torch_device(device)
         logger.info(f"Using device: {self.device}")

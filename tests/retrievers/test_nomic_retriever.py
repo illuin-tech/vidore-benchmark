@@ -1,4 +1,5 @@
 import pytest
+
 from vidore_benchmark.retrievers.nomic_retriever import NomicVisionRetriever
 
 

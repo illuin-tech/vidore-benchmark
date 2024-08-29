@@ -1,4 +1,5 @@
 import pytest
+
 from vidore_benchmark.retrievers.bge_m3_retriever import BGEM3Retriever
 
 
