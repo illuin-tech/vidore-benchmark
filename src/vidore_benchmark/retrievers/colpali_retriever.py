@@ -38,10 +38,13 @@ class ColPaliRetriever(VisionRetriever):
     with Vision Language Models".
     """
 
-    def __init__(self, device: str = "auto"):
+    def __init__(
+        self,
+        adapter_name: str = "vidore/colpali-v1.2",
+        device: str = "auto",
+    ):
         super().__init__()
-        model_name = "google/paligemma-3b-mix-448"
-        adapter_name = "vidore/colpali"
+        model_name = "vidore/colpaligemma-3b-pt-448-base"
 
         self.device = get_torch_device(device)
         logger.info(f"Using device: {self.device}")
