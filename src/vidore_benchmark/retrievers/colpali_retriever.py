@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import List, Optional, TypeVar, cast
 
 import torch
+from colpali_engine.models.paligemma_colbert_architecture import ColPali
 from dotenv import load_dotenv
 from loguru import logger
 from PIL import Image
@@ -11,7 +12,6 @@ from tqdm import tqdm
 from transformers import AutoProcessor
 
 from vidore_benchmark.evaluation.colpali_scorer import ColPaliScorer
-from vidore_benchmark.models.colpali_model import ColPali
 from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.torch_utils import get_torch_device
