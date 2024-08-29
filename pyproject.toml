@@ -76,28 +76,6 @@ all = [
 
 skypilot = ["skypilot==0.6.1,<1.0.0"]
 
-baselines = [
-    "accelerate==0.30.1",
-    "datasets==2.19.1",
-    "einops==0.8.0",
-    "FlagEmbedding==1.2.10",
-    "GPUtil==1.4.0",
-    "mteb>=1.12.47",
-    "nltk==3.8.1",
-    "numpy==1.26.4",
-    "pdf2image==1.17.0",
-    "peft==0.11.1",
-    "pillow==10.3.0",
-    "protobuf==4.25.3",
-    "pytesseract==0.3.10",
-    "python-dotenv==1.0.1",
-    "rank-bm25==0.2.2",
-    "sentence-transformers==3.0.1",
-    "sentencepiece==0.2.0",
-    "torch==2.2.2",
-    "transformers==4.41.1",
-]
-
 [project.urls]
 homepage = "https://github.com/illuin-tech/vidore-benchmark"
 

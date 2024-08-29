@@ -41,7 +41,7 @@ Or if you want to evaluate all the off-the-shelf retrievers:
 pip install "vidore-benchmark[all-retrievers]"
 ```
 
-Finally, if you are willing to reproduce the results from the ColPali paper, you can use the `requirements-dev.txt` file to install the dependencies used at test time:
+Finally, if you are willing to reproduce the results from the ColPali paper, you should clone the repository, checkout to the `3.3.0` tag or below, and use the `requirements-dev.txt` file to install the dependencies used at test time:
 
 ```bash
 pip install -r requirements-dev.txt
