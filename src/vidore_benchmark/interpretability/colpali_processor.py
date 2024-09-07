@@ -92,7 +92,9 @@ class ColPaliProcessor:
                 raise ValueError("text must be a string or a list of strings.")
 
         batch_output = self.tokenizer(
-            text, padding=padding, return_tensors=return_tensors, add_special_tokens=add_special_tokens
+            text,
+            padding=padding,
+            return_tensors=return_tensors,
         )
 
         return ColPaliTextInput(
