@@ -32,8 +32,8 @@ class EvalManager:
     def __str__(self) -> str:
         return self.data.__str__()
 
-    @staticmethod
-    def from_dict(data: Dict[Any, Any]) -> EvalManager:
+    @classmethod
+    def from_dict(cls, data: Dict[Any, Any]):
         """
         Load evaluation results from a dictionary.
 
@@ -45,45 +45,45 @@ class EvalManager:
 
         """
         df = pd.DataFrame.from_dict(data, orient="index")
-        return EvalManager(df)
+        return cls(df)
 
-    @staticmethod
-    def from_json(path: str | Path) -> EvalManager:
+    @classmethod
+    def from_json(cls, path: str | Path):
         datapath = Path(path)
         if not datapath.is_file():
             raise FileNotFoundError(f"{path} is not a file")
         data = {}
         data[datapath.stem] = pd.read_json(datapath).T.stack()
-        return EvalManager.from_dict(data)
+        return cls.from_dict(data)
 
-    @staticmethod
-    def from_multiple_json(paths: List[str] | List[Path]) -> EvalManager:
+    @classmethod
+    def from_multiple_json(cls, paths: List[str] | List[Path]):
         data = {}
         for path in paths:
             datapath = Path(path)
             if not datapath.is_file():
                 raise FileNotFoundError(f"{path} is not a file")
             data[datapath.stem] = pd.read_json(datapath).T.stack()
-        return EvalManager.from_dict(data)
+        return cls.from_dict(data)
 
-    @staticmethod
-    def from_dir(datadir: str | Path) -> EvalManager:
+    @classmethod
+    def from_dir(cls, datadir: str | Path):
         datadir_ = Path(datadir)
         if not datadir_.is_dir():
             raise FileNotFoundError(f"{datadir} is not a directory")
 
         eval_files = list(datadir_.glob("*.json"))
 
-        return EvalManager.from_multiple_json(eval_files)
+        return cls.from_multiple_json(eval_files)
 
-    @staticmethod
-    def from_csv(path: str | Path) -> EvalManager:
+    @classmethod
+    def from_csv(cls, path: str | Path):
         """
         Load evaluation results from a CSV file.
         """
         try:
             df = pd.read_csv(path, index_col=0, header=[0, 1])
-            return EvalManager(df)
+            return cls(df)
         except Exception as e:
             print(f"Error loading {path}: {e}")
             raise e
