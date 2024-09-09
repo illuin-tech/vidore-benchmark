@@ -41,7 +41,7 @@ class ColPaliRetriever(VisionRetriever):
     def __init__(
         self,
         adapter_name: str = "vidore/colpali-v1.2",
-        model_name: str = "vidore/colpaligemma-3b-pt-448-base"
+        model_name: str = "vidore/colpaligemma-3b-pt-448-base",
         device: str = "auto",
     ):
         super().__init__()
