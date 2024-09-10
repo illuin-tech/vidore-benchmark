@@ -31,7 +31,7 @@ classifiers = [
 
 dependencies = [
     "datasets>=2.15.0,<3.0.0",
-    "colpali-engine==0.2.0",
+    "colpali-engine==0.2.2",
     "einops>=0.8.0,<1.0.0",
     "GPUtil>=1.4.0,<2.0.0",
     "loguru>=0.7.0,<1.0.0",
