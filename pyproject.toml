@@ -78,12 +78,16 @@ homepage = "https://github.com/illuin-tech/vidore-benchmark"
 vidore-benchmark = "vidore_benchmark.main:app"
 generate-similarity-maps = "vidore_benchmark.generate_similarity_maps:app"
 
-[tool.black]
-line-length = 120
+[tool.pytest.ini_options]
+filterwarnings = ["ignore::Warning"]
+markers = ["slow: marks test as slow"]
+testpaths = ["tests"]
 
 [tool.ruff]
-select = ["E", "F", "W", "I", "N"]
 line-length = 120
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N"]
+
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
