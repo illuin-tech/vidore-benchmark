@@ -11,12 +11,13 @@ packages = ["src/vidore_benchmark"]
 [project]
 name = "vidore_benchmark"
 dynamic = ["version"]
-description = "Visual Document Retrieval (ViDoRe): Benchmark"
+description = "Vision Document Retrieval (ViDoRe): Benchmark. Evaluation code for the ColPali paper."
 authors = [
     { name = "Tony Wu", email = "tony.wu@illuin.tech" },
     { name = "Manuel Faysse", email = "manuel.faysse@illuin.tech" },
     { name = "Hugues Sibille", email = "hugues.sibille@illuin.tech" },
 ]
+maintainers = [{ name = "Tony Wu", email = "tony.wu@illuin.tech" }]
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
