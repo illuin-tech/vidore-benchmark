@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, cast
+from typing import List, Union, cast
 
 import torch
 from PIL import Image
@@ -50,7 +50,7 @@ class ColPaliImageInput:
     pixel_values: torch.Tensor
     attention_mask: torch.Tensor
 
-    def to(self, device: str | torch.device) -> ColPaliImageInput:
+    def to(self, device: Union[str, torch.device]) -> ColPaliImageInput:
         return ColPaliImageInput(
             input_ids=self.input_ids.to(device),
             pixel_values=self.pixel_values.to(device),
@@ -73,7 +73,7 @@ class ColPaliProcessor:
 
     def process_text(
         self,
-        text: str | List[str],
+        text: Union[str, List[str]],
         padding: str = "longest",
         return_tensors: str = "pt",
         add_special_tokens: bool = True,
@@ -104,7 +104,7 @@ class ColPaliProcessor:
 
     def process_image(
         self,
-        image: Image.Image | List[Image.Image],
+        image: Union[Image.Image, List[Image.Image]],
         padding: str = "longest",
         do_convert_rgb: bool = True,
         return_tensors: str = "pt",

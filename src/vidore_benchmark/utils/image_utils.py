@@ -5,7 +5,7 @@ Utility functions for working with images.
 import base64
 import io
 from pathlib import Path
-from typing import cast
+from typing import Union, cast
 
 import datasets
 from datasets import Dataset
@@ -55,7 +55,7 @@ def scale_to_max_dimension(image: Image.Image, max_dimension: int = 1024) -> Ima
     return scaled_image
 
 
-def get_base64_image(img: str | Image.Image, add_url_prefix: bool = True) -> str:
+def get_base64_image(img: Union[str, Image.Image], add_url_prefix: bool = True) -> str:
     """
     Convert an image (from a filepath or a PIL.Image object) to a JPEG-base64 string.
     """

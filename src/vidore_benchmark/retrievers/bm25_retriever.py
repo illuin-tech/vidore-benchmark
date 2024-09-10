@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, cast
+from typing import Dict, List, Optional, Union, cast
 
 import numpy as np
 import torch
@@ -40,12 +40,11 @@ class BM25Retriever(VisionRetriever):
     def get_scores_bm25(
         self,
         queries: List[str],
-        documents: List[Image.Image] | List[str],
+        documents: Union[List[Image.Image], List[str]],
         batch_query: int,
         batch_doc: int,
         **kwargs,
     ) -> torch.Tensor:
-
         # Sanity check: `documents` must be a list of filepaths (strings)
         if documents and not all(isinstance(doc, str) for doc in documents):
             raise ValueError("Documents must be a list of filepaths (strings)")

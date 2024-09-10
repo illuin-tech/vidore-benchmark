@@ -1,13 +1,14 @@
 import pprint
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple, Union
 from uuid import uuid4
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import torch
+from colpali_engine.models import ColPali
 from einops import rearrange
 from PIL import Image
 from tqdm import trange
@@ -16,7 +17,6 @@ from vidore_benchmark.interpretability.colpali_processor import ColPaliProcessor
 from vidore_benchmark.interpretability.plot_utils import plot_similarity_heatmap, plot_similarity_patches
 from vidore_benchmark.interpretability.torch_utils import normalize_similarity_map_per_query_token
 from vidore_benchmark.interpretability.vit_configs import VIT_CONFIG
-from vidore_benchmark.models.colpali_model import ColPali
 from vidore_benchmark.utils.constants import OUTPUT_DIR
 
 SUPPORTED_PLOT_KINDS = ["patches", "heatmap"]
@@ -39,7 +39,7 @@ def gen_and_save_similarity_map_per_token(
     figsize: Tuple[int, int] = (8, 8),
     add_title: bool = True,
     style: str = "dark_background",
-    savedir: str | Path | None = None,
+    savedir: Optional[Union[str, Path]] = None,
 ) -> None:
     """
     Generate and save the similarity maps in the `outputs` directory for each token in the query.
