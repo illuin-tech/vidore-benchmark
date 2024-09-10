@@ -1,6 +1,7 @@
 # Custom
 .DS_Store
-.env
+/.env
+/.vscode/
 /logs/
 /data/**
 !/data/interpretability_examples/
