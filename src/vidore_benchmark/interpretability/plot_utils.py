@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Tuple, cast
+from typing import Any, Dict, Optional, Tuple, Union, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,9 +12,9 @@ def plot_similarity_patches(
     img: Image.Image,
     patch_size: int,
     image_resolution: int,
-    similarity_map: Optional[npt.NDArray | torch.Tensor] = None,
+    similarity_map: Optional[Union[npt.NDArray, torch.Tensor]] = None,
     figsize: Tuple[int, int] = (8, 8),
-    style: Dict[str, Any] | Optional[str] = None,
+    style: Optional[Union[Dict[str, Any], str]] = None,
 ) -> Tuple[plt.Figure, plt.Axes]:
     """
     Plot patches of a square image.
@@ -72,9 +72,9 @@ def plot_similarity_heatmap(
     img: Image.Image,
     patch_size: int,
     image_resolution: int,
-    similarity_map: npt.NDArray | torch.Tensor,
+    similarity_map: Union[npt.NDArray, torch.Tensor],
     figsize: Tuple[int, int] = (8, 8),
-    style: Dict[str, Any] | Optional[str] = None,
+    style: Optional[Union[Dict[str, Any], str]] = None,
     show_colorbar: bool = False,
     show_axes: bool = False,
 ) -> Tuple[plt.Figure, plt.Axes]:

@@ -11,12 +11,13 @@ packages = ["src/vidore_benchmark"]
 [project]
 name = "vidore_benchmark"
 dynamic = ["version"]
-description = "Visual Document Retrieval (ViDoRe): Benchmark"
+description = "Vision Document Retrieval (ViDoRe): Benchmark. Evaluation code for the ColPali paper."
 authors = [
     { name = "Tony Wu", email = "tony.wu@illuin.tech" },
     { name = "Manuel Faysse", email = "manuel.faysse@illuin.tech" },
     { name = "Hugues Sibille", email = "hugues.sibille@illuin.tech" },
 ]
+maintainers = [{ name = "Tony Wu", email = "tony.wu@illuin.tech" }]
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
@@ -30,7 +31,7 @@ classifiers = [
 
 dependencies = [
     "datasets>=2.15.0,<3.0.0",
-    "colpali-engine==0.2.0",
+    "colpali-engine==0.2.2",
     "einops>=0.8.0,<1.0.0",
     "GPUtil>=1.4.0,<2.0.0",
     "loguru>=0.7.0,<1.0.0",
@@ -48,13 +49,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = [
-    "black>=24.4.2",
-    "ipykernel>=6.29.4",
-    "mypy>=1.10.0",
-    "pytest>=8.2.1",
-    "ruff>=0.4.5",
-]
+dev = ["pytest>=8.2.1", "ruff>=0.4.5"]
 
 bge-m3 = ["FlagEmbedding>=1.2.10,<2.0.0"]
 bm25 = ["nltk>=3.8.1,<4.0.0", "rank-bm25>=0.2.2,<1.0.0"]
@@ -84,12 +79,16 @@ homepage = "https://github.com/illuin-tech/vidore-benchmark"
 vidore-benchmark = "vidore_benchmark.main:app"
 generate-similarity-maps = "vidore_benchmark.generate_similarity_maps:app"
 
-[tool.black]
-line-length = 120
+[tool.pytest.ini_options]
+filterwarnings = ["ignore::Warning"]
+markers = ["slow: marks test as slow"]
+testpaths = ["tests"]
 
 [tool.ruff]
-select = ["E", "F", "W", "I", "N"]
 line-length = 120
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N"]
+
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]

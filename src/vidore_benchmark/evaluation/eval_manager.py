@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, ClassVar, Dict, List, Optional
+from typing import Any, ClassVar, Dict, List, Optional, Union
 
 import pandas as pd
 
@@ -48,7 +48,7 @@ class EvalManager:
         return cls(df)
 
     @classmethod
-    def from_json(cls, path: str | Path):
+    def from_json(cls, path: Union[str, Path]):
         datapath = Path(path)
         if not datapath.is_file():
             raise FileNotFoundError(f"{path} is not a file")
@@ -57,7 +57,7 @@ class EvalManager:
         return cls.from_dict(data)
 
     @classmethod
-    def from_multiple_json(cls, paths: List[str] | List[Path]):
+    def from_multiple_json(cls, paths: Union[List[str], List[Path]]):
         data = {}
         for path in paths:
             datapath = Path(path)
@@ -67,7 +67,7 @@ class EvalManager:
         return cls.from_dict(data)
 
     @classmethod
-    def from_dir(cls, datadir: str | Path):
+    def from_dir(cls, datadir: Union[str, Path]):
         datadir_ = Path(datadir)
         if not datadir_.is_dir():
             raise FileNotFoundError(f"{datadir} is not a directory")
@@ -77,7 +77,7 @@ class EvalManager:
         return cls.from_multiple_json(eval_files)
 
     @classmethod
-    def from_csv(cls, path: str | Path):
+    def from_csv(cls, path: Union[str, Path]):
         """
         Load evaluation results from a CSV file.
         """
@@ -172,7 +172,7 @@ class EvalManager:
         df = self.data.T.sort_index(level=[0, 1], ascending=ascending).T
         return EvalManager(df)
 
-    def to_csv(self, path: str | Path):
+    def to_csv(self, path: Union[str, Path]):
         """
         Save the evaluation results to a CSV file.
 
