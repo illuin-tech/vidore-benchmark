@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, Optional, TypeVar, cast
 
 import torch
-from colpali_engine.models.paligemma_colbert_architecture import ColPali
+from colpali_engine.models import ColPali
 from dotenv import load_dotenv
 from loguru import logger
 from PIL import Image
