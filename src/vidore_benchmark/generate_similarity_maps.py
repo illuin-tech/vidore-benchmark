@@ -3,12 +3,11 @@ from typing import Annotated, List, cast
 
 import torch
 import typer
-from colpali_engine.models import ColPali
+from colpali_engine.models import ColPali, ColPaliProcessor
 from dotenv import load_dotenv
 from loguru import logger
 from PIL import Image
 
-from vidore_benchmark.interpretability.colpali_processor import ColPaliProcessor
 from vidore_benchmark.interpretability.gen_similarity_maps import gen_and_save_similarity_map_per_token
 from vidore_benchmark.utils.constants import OUTPUT_DIR
 from vidore_benchmark.utils.logging_utils import setup_logging
@@ -49,18 +48,19 @@ def generate_similarity_maps(
     print(f"Using device: {device}")
 
     # Load the model and LORA adapter
-    model_path = "vidore/colpali-v1.2"
+    model_name = "vidore/colpali-v1.2"
+    processor_name = "google/paligemma-3b-mix-448"
     model = cast(
         ColPali,
         ColPali.from_pretrained(
-            model_path,
+            model_name,
             torch_dtype=torch.bfloat16,
             device_map=device,
         ),
     )
 
     # Load the processor
-    processor = ColPaliProcessor.from_pretrained(model_path)
+    processor = cast(ColPaliProcessor, ColPaliProcessor.from_pretrained(processor_name))
     print("Loaded custom processor.\n")
 
     images = [Image.open(img_filepath) for img_filepath in documents]
