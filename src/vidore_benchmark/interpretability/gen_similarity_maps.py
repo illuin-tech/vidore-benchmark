@@ -1,5 +1,5 @@
 import pprint
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Optional, Tuple, Union
 from uuid import uuid4
@@ -8,12 +8,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import torch
-from colpali_engine.models import ColPali
+from colpali_engine.models import ColPali, ColPaliProcessor
 from einops import rearrange
 from PIL import Image
 from tqdm import trange
 
-from vidore_benchmark.interpretability.colpali_processor import ColPaliProcessor
 from vidore_benchmark.interpretability.plot_utils import plot_similarity_heatmap, plot_similarity_patches
 from vidore_benchmark.interpretability.torch_utils import normalize_similarity_map_per_query_token
 from vidore_benchmark.interpretability.vit_configs import VIT_CONFIG
@@ -48,11 +47,8 @@ def gen_and_save_similarity_map_per_token(
     """
 
     # Sanity checks
-    if len(model.active_adapters()) != 1:
-        raise ValueError("The model must have exactly one active adapter.")
-
     if model.config.name_or_path not in VIT_CONFIG:
-        raise ValueError("The model must be referred to in the VIT_CONFIG dictionary.")
+        raise ValueError(f"`{model.config.name_or_path}` is not referenced in the VIT_CONFIG dictionary.")
     vit_config = VIT_CONFIG[model.config.name_or_path]
 
     # Handle savepath
@@ -67,21 +63,16 @@ def gen_and_save_similarity_map_per_token(
     input_image_square = image.resize((vit_config.resolution, vit_config.resolution))
 
     # Preprocess the inputs
-    input_text_processed = processor.process_text(query, add_special_tokens=True).to(model.device)
-    input_image_processed = processor.process_image(image, add_special_prompt=True).to(model.device)
+    input_text_processed = processor.process_queries([query]).to(model.device)
+    input_image_processed = processor.process_images([image]).to(model.device)
 
-    # Forward pass
+    # Forward passes
     with torch.no_grad():
-        output_text = model.forward(**asdict(input_text_processed))  # (1, n_text_tokens, hidden_dim)
-
-    # NOTE: `output_image`` will have shape:
-    # (1, n_patch_x * n_patch_y, hidden_dim) if `add_special_prompt` is False
-    # (1, n_patch_x * n_patch_y + n_special_tokens, hidden_dim) if `add_special_prompt` is True
-    with torch.no_grad():
-        output_image = model.forward(**asdict(input_image_processed))
+        output_text = model.forward(**input_text_processed)  # (1, n_text_tokens, hidden_dim)
+        output_image = model.forward(**input_image_processed)  # (1, n_patch_x * n_patch_y, hidden_dim)
 
     # Remove the special tokens from the output
-    output_image = output_image[:, : processor.processor.image_seq_length, :]  # (1, n_patch_x * n_patch_y, hidden_dim)
+    output_image = output_image[:, : processor.image_seq_length, :]  # (1, n_patch_x * n_patch_y, hidden_dim)
 
     output_image = rearrange(
         output_image, "b (h w) c -> b h w c", h=vit_config.n_patch_per_dim, w=vit_config.n_patch_per_dim

@@ -20,4 +20,7 @@ VIT_CONFIG: Dict[str, ViTConfig] = {
     "google/paligemma-3b-mix-448": ViTConfig(
         patch_size=14, resolution=448
     ),  # based on "timm/ViT-SO400M-14-SigLIP-384" with increased resolution
+    "vidore/colpaligemma-3b-pt-448-base": ViTConfig(
+        patch_size=14, resolution=448
+    ),  # Copied from "google/paligemma-3b-mix-448"
 }
