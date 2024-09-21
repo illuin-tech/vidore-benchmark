@@ -235,6 +235,9 @@ generate-similarity-maps \
     --queries "Quelle partie de la production pétrolière du Kazakhstan provient de champs en mer ?"
 ```
 
+> [!WARNING]
+> The current version of `vidore-benchmark` uses a different ColPali checkpoint than the one used in the paper. As a result, the similarity maps may differ slightly from the ones presented in the paper. If you want to reproduce the exact similarity maps from the paper, you should use the `vidore/colpali` checkpoint along with `vidore-benchmark<=3.3.0`.
+
 ## Citation
 
 **ColPali: Efficient Document Retrieval with Vision Language Models**  
