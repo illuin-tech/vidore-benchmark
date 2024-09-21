@@ -42,8 +42,6 @@ def gen_and_save_similarity_map_per_token(
 ) -> None:
     """
     Generate and save the similarity maps in the `outputs` directory for each token in the query.
-
-    NOTE: The used device is the one specified in the model.
     """
 
     # Sanity checks
@@ -68,23 +66,24 @@ def gen_and_save_similarity_map_per_token(
 
     # Forward passes
     with torch.no_grad():
-        output_text = model.forward(**input_text_processed)  # (1, n_text_tokens, hidden_dim)
-        output_image = model.forward(**input_image_processed)  # (1, n_patch_x * n_patch_y, hidden_dim)
+        output_text = model.forward(**input_text_processed)  # (1, query_tokens, dim)
+        output_image = model.forward(**input_image_processed)  # (1, n_patches_x * n_patches_y, dim)
 
     # Remove the special tokens from the output
-    output_image = output_image[:, : processor.image_seq_length, :]  # (1, n_patch_x * n_patch_y, hidden_dim)
+    output_image = output_image[:, : processor.image_seq_length, :]  # (1, n_patches_x * n_patches_y, dim)
 
+    # Rearrange the output image tensor to explicitly represent the 2D grid of patches
     output_image = rearrange(
         output_image, "b (h w) c -> b h w c", h=vit_config.n_patch_per_dim, w=vit_config.n_patch_per_dim
-    )  # (1, n_patch_x, n_patch_y, hidden_dim)
+    )  # (1, n_patches_x, n_patches_y, dim)
 
     # Get the unnormalized attention map
     similarity_map = torch.einsum(
         "bnk,bijk->bnij", output_text, output_image
-    )  # (1, n_text_tokens, n_patch_x, n_patch_y)
+    )  # (1, query_tokens, n_patches_x, n_patches_y)
     similarity_map_normalized = normalize_similarity_map_per_query_token(
         similarity_map
-    )  # (1, n_text_tokens, n_patch_x, n_patch_y)
+    )  # (1, query_tokens, n_patches_x, n_patches_y)
 
     # Get text token information
     n_tokens = input_text_processed.input_ids.size(1)
@@ -93,8 +92,10 @@ def gen_and_save_similarity_map_per_token(
     pprint.pprint(text_tokens)
     print("\n")
 
+    # Placeholder
     max_sim_scores_per_token: Dict[str, float] = {}
 
+    # Iterate over the tokens and plot the similarity maps for each token
     for token_idx in trange(1, n_tokens - 1, desc="Iterating over tokens..."):  # exclude the <bos> and the "\n" tokens
         if kind == "patches":
             fig, axis = plot_similarity_patches(
@@ -134,19 +135,24 @@ def gen_and_save_similarity_map_per_token(
 
         savepath = savedir / f"token_{token_idx}.png"
         fig.savefig(savepath, dpi=300, bbox_inches="tight")
+
         print(f"Saved attention map for token {token_idx} (`{text_tokens[token_idx]}`) to `{savepath}`.\n")
         plt.close(fig)
 
     # Plot and save the max similarity scores per token
     with sns.axes_style("darkgrid"):
-        savepath = savedir / "max_sim_scores_per_token.png"
         fig, ax = plt.subplots(figsize=(1 * len(max_sim_scores_per_token), 5))
+
         ser = pd.Series(max_sim_scores_per_token)
         ser.plot.bar(ax=ax)
+
         ax.set_xlabel("Token")
         ax.set_ylabel("Score")
         ax.set_title("Max similarity score across all patches", fontsize=14)
+
+        savepath = savedir / "max_sim_scores_per_token.png"
         fig.savefig(savepath, dpi=300, bbox_inches="tight")
+
         print(f"Saved max similarity scores per token to `{savepath}`.\n")
         plt.close(fig)
 
