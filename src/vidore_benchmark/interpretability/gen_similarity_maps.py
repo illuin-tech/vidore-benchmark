@@ -77,19 +77,22 @@ def gen_and_save_similarity_map_per_token(
         output_image, "b (h w) c -> b h w c", h=vit_config.n_patch_per_dim, w=vit_config.n_patch_per_dim
     )  # (1, n_patches_x, n_patches_y, dim)
 
-    # Get the unnormalized attention map
+    # Get the similarity map
     similarity_map = torch.einsum(
         "bnk,bijk->bnij", output_text, output_image
     )  # (1, query_tokens, n_patches_x, n_patches_y)
+
+    # Normalize the similarity map
     similarity_map_normalized = normalize_similarity_map_per_query_token(
         similarity_map
     )  # (1, query_tokens, n_patches_x, n_patches_y)
 
-    # Get text token information
+    # Get the list of query tokens
     n_tokens = input_text_processed.input_ids.size(1)
-    text_tokens = processor.tokenizer.tokenize(processor.decode(input_text_processed.input_ids[0]))
+    list_query_tokens = processor.tokenizer.tokenize(processor.decode(input_text_processed.input_ids[0]))
+
     print("\nText tokens:")
-    pprint.pprint(text_tokens)
+    pprint.pprint({idx: val for idx, val in enumerate(list_query_tokens)})
     print("\n")
 
     # Placeholder
@@ -107,10 +110,10 @@ def gen_and_save_similarity_map_per_token(
                 style=style,
             )
             max_sim_score = similarity_map[0, token_idx, :, :].max().item()
-            max_sim_scores_per_token[f"{token_idx}: {text_tokens[token_idx]}"] = max_sim_score
+            max_sim_scores_per_token[f"{token_idx}: {list_query_tokens[token_idx]}"] = max_sim_score
             if add_title:
                 fig.suptitle(
-                    f"Token #{token_idx}: `{text_tokens[token_idx]}`. MaxSim score: {max_sim_score:.2f}",
+                    f"Token #{token_idx}: `{list_query_tokens[token_idx]}`. MaxSim score: {max_sim_score:.2f}",
                     color="white",
                     fontsize=14,
                 )
@@ -124,10 +127,10 @@ def gen_and_save_similarity_map_per_token(
                 style=style,
             )
             max_sim_score = similarity_map[0, token_idx, :, :].max().item()
-            max_sim_scores_per_token[f"{token_idx}: {text_tokens[token_idx]}"] = max_sim_score
+            max_sim_scores_per_token[f"{token_idx}: {list_query_tokens[token_idx]}"] = max_sim_score
             if add_title:
                 ax.set_title(
-                    f"Token #{token_idx}: `{text_tokens[token_idx]}`. MaxSim score: {max_sim_score:.2f}",
+                    f"Token #{token_idx}: `{list_query_tokens[token_idx]}`. MaxSim score: {max_sim_score:.2f}",
                     fontsize=14,
                 )
         else:
@@ -136,7 +139,7 @@ def gen_and_save_similarity_map_per_token(
         savepath = savedir / f"token_{token_idx}.png"
         fig.savefig(savepath, dpi=300, bbox_inches="tight")
 
-        print(f"Saved attention map for token {token_idx} (`{text_tokens[token_idx]}`) to `{savepath}`.\n")
+        print(f"Saved attention map for token {token_idx} (`{list_query_tokens[token_idx]}`) to `{savepath}`.\n")
         plt.close(fig)
 
     # Plot and save the max similarity scores per token
