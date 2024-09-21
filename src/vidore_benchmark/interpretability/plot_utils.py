@@ -94,7 +94,7 @@ def plot_similarity_heatmap(
 
     # Sanity checks
     if isinstance(similarity_map, torch.Tensor):
-        similarity_map = cast(npt.NDArray, similarity_map.cpu().numpy())
+        similarity_map = cast(npt.NDArray, similarity_map.to(torch.float32).cpu().numpy())
     if similarity_map.shape != (num_patches, num_patches):
         raise ValueError("The shape of the patch_opacities tensor is not correct.")
     if not np.all((0 <= similarity_map) & (similarity_map <= 1)):

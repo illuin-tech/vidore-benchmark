@@ -1,14 +1,15 @@
 from pathlib import Path
 from typing import Annotated, List, cast
 
+import torch
 import typer
+from colpali_engine.models import ColPali
 from dotenv import load_dotenv
 from loguru import logger
 from PIL import Image
 
 from vidore_benchmark.interpretability.colpali_processor import ColPaliProcessor
 from vidore_benchmark.interpretability.gen_similarity_maps import gen_and_save_similarity_map_per_token
-from vidore_benchmark.models.colpali_model import ColPali
 from vidore_benchmark.utils.constants import OUTPUT_DIR
 from vidore_benchmark.utils.logging_utils import setup_logging
 from vidore_benchmark.utils.torch_utils import get_torch_device
@@ -22,22 +23,20 @@ app = typer.Typer(
 )
 
 
-@app.callback()
-def main(log_level: Annotated[str, typer.Option("--log", help="Logging level")] = "warning"):
-    logger.enable("vidore_benchmark")
-    setup_logging(log_level)
-
-
 @app.command()
 def generate_similarity_maps(
     documents: Annotated[List[Path], typer.Option(help="List of document filepaths (image format)")],
     queries: Annotated[List[str], typer.Option(help="List of queries")],
     device: Annotated[str, typer.Option(help="Torch device")] = "auto",
+    log_level: Annotated[str, typer.Option("--log", help="Logging level")] = "warning",
 ) -> None:
     """
     Load the ColPali model and, for each query-document pair, generate similarity maps fo
     each token in the current query.
     """
+
+    logger.enable("vidore_benchmark")
+    setup_logging(log_level)
 
     # Sanity checks
     assert len(documents) == len(queries), "The number of documents and queries must be the same."
@@ -45,19 +44,20 @@ def generate_similarity_maps(
         if not document.is_file():
             raise FileNotFoundError(f"File not found: `{document}`")
 
+    # Set the device
     device = get_torch_device(device)
-
-    model_path = "google/paligemma-3b-mix-448"
-    lora_path = "vidore/colpali"
+    print(f"Using device: {device}")
 
     # Load the model and LORA adapter
-    model = cast(ColPali, ColPali.from_pretrained(model_path, device_map=device))
-
-    # Load the Lora adapter into the model
-    model.load_adapter(lora_path, adapter_name="colpali", device_map=device)
-    if model.active_adapters() != ["colpali"]:
-        raise ValueError(f"Incorrect adapters loaded: {model.active_adapters()}")
-    print(f"Loaded model from {model_path} and LORA from {lora_path}.")
+    model_path = "vidore/colpali-v1.2"
+    model = cast(
+        ColPali,
+        ColPali.from_pretrained(
+            model_path,
+            torch_dtype=torch.bfloat16,
+            device_map=device,
+        ),
+    )
 
     # Load the processor
     processor = ColPaliProcessor.from_pretrained(model_path)

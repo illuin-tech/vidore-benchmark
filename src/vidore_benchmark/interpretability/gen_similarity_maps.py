@@ -48,11 +48,8 @@ def gen_and_save_similarity_map_per_token(
     """
 
     # Sanity checks
-    if len(model.active_adapters()) != 1:
-        raise ValueError("The model must have exactly one active adapter.")
-
     if model.config.name_or_path not in VIT_CONFIG:
-        raise ValueError("The model must be referred to in the VIT_CONFIG dictionary.")
+        raise ValueError(f"`{model.config.name_or_path}` is not referenced in the VIT_CONFIG dictionary.")
     vit_config = VIT_CONFIG[model.config.name_or_path]
 
     # Handle savepath
