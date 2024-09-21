@@ -1,16 +1,19 @@
 # Vision Document Retrieval (ViDoRe): Benchmark 👀
 
 [![arXiv](https://img.shields.io/badge/arXiv-2407.01449-b31b1b.svg?style=for-the-badge)](https://arxiv.org/abs/2407.01449)
-[![GitHub](https://img.shields.io/badge/ColPali_(training)-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/illuin-tech/colpali)
+[![GitHub](https://img.shields.io/badge/ColPali_Engine-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/illuin-tech/colpali)
 [![Hugging Face](https://img.shields.io/badge/Vidore_Hf_Space-FFD21E?style=for-the-badge&logo=huggingface&logoColor=000)](https://huggingface.co/vidore)
 
+[![Test](https://github.com/illuin-tech/vidore-benchmark/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/illuin-tech/vidore-benchmark/actions/workflows/test.yml)
+[![Version](https://img.shields.io/pypi/v/vidore-benchmark?color=%2334D058&label=pypi%20package)](https://pypi.org/project/vidore-benchmark/)
+[![Downloads](https://static.pepy.tech/badge/vidore-benchmark)](https://pepy.tech/project/vidore-benchmark)
+
+---
+
 [[Model card]](https://huggingface.co/vidore/colpali)
-[[ViDoRe Benchmark]](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d)
 [[ViDoRe Leaderboard]](https://huggingface.co/spaces/vidore/vidore-leaderboard)
 [[Demo]](https://huggingface.co/spaces/manu/ColPali-demo)
 [[Blog Post]](https://huggingface.co/blog/manu/colpali)
-
-Main contributors: [Manuel Faysse](https://github.com/ManuelFay), [Hugues Sibille](https://github.com/HuguesSib), [Tony Wu](https://github.com/tonywu71)
 
 ## Approach
 
@@ -242,8 +245,7 @@ generate-similarity-maps \
 
 **ColPali: Efficient Document Retrieval with Vision Language Models**  
 
-- First authors: Manuel Faysse\*, Hugues Sibille\*, Tony Wu\* (\*Equal Contribution)
-- Contributors: Bilel Omrani, Gautier Viaud, Céline Hudelot, Pierre Colombo
+Authors: **Manuel Faysse**\*, **Hugues Sibille**\*, **Tony Wu**\*, Bilel Omrani, Gautier Viaud, Céline Hudelot, Pierre Colombo (\* denotes equal contribution)
 
 ```latex
 @misc{faysse2024colpaliefficientdocumentretrieval,
