@@ -19,6 +19,8 @@
 
 The Visual Document Retrieval Benchmark (ViDoRe), is introduced to evaluate and enhance the performance of document retrieval systems on visually rich documents across various tasks, domains, languages, and settings. It was used to evaluate the ColPali model, a VLM-powered retriever that efficiently retrieves documents based on their visual content and textual queries.
 
+![ViDoRe Examples](assets/vidore_examples.webp)
+
 > [!TIP]
 > If you want to fine-tune ColPali for your specific use-case, you should check the [`colpali`](https://github.com/illuin-tech/colpali) repository. It contains with the whole codebase used to train the model presented in our paper.
 
