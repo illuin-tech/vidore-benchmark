@@ -17,7 +17,7 @@
 
 ## Approach
 
-The Visual Document Retrieval Benchmark (ViDoRe), is introduced to evaluate and enhance the performance of document retrieval systems on visually rich documents across various tasks, domains, languages, and settings. It was used to evaluate the ColPali model, a VLM-powered retriever that efficiently retrieves documents based on their visual content and textual queries.
+The Visual Document Retrieval Benchmark (ViDoRe), is introduced to evaluate the performance of document retrieval systems on visually rich documents across various tasks, domains, languages, and settings. It was used to evaluate the ColPali model, a VLM-powered retriever that efficiently retrieves documents based on their visual content and textual queries using a late-interaction mechanism.
 
 ![ViDoRe Examples](assets/vidore_examples.webp)
 
