@@ -49,7 +49,6 @@ def generate_similarity_maps(
 
     # Load the model and LORA adapter
     model_name = "vidore/colpali-v1.2"
-    processor_name = "google/paligemma-3b-mix-448"
     model = cast(
         ColPali,
         ColPali.from_pretrained(
@@ -60,7 +59,7 @@ def generate_similarity_maps(
     )
 
     # Load the processor
-    processor = cast(ColPaliProcessor, ColPaliProcessor.from_pretrained(processor_name))
+    processor = cast(ColPaliProcessor, ColPaliProcessor.from_pretrained(model_name))
     print("Loaded custom processor.\n")
 
     images = [Image.open(img_filepath) for img_filepath in documents]
