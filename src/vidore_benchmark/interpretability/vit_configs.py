@@ -23,4 +23,7 @@ VIT_CONFIG: Dict[str, ViTConfig] = {
     "vidore/colpaligemma-3b-pt-448-base": ViTConfig(
         patch_size=14, resolution=448
     ),  # Copied from "google/paligemma-3b-mix-448"
+    "vidore/colpali": ViTConfig(patch_size=14, resolution=448),  # Copied from "google/paligemma-3b-mix-448"
+    "vidore/colpali-v1.1": ViTConfig(patch_size=14, resolution=448),  # Copied from "google/paligemma-3b-mix-448"
+    "vidore/colpali-v1.2": ViTConfig(patch_size=14, resolution=448),  # Copied from "google/paligemma-3b-mix-448"
 }
