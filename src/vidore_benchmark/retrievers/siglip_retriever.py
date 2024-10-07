@@ -18,7 +18,7 @@ class SigLIPRetriever(VisionRetriever):
         super().__init__()
         self.device = get_torch_device(device)
         self.processor = AutoProcessor.from_pretrained("google/siglip-so400m-patch14-384")
-        self.model = AutoModel.from_pretrained("google/siglip-so400m-patch14-384").to(self.device)
+        self.model = AutoModel.from_pretrained("google/siglip-so400m-patch14-384").to(self.device).eval()
         self.model.eval()
 
     @property

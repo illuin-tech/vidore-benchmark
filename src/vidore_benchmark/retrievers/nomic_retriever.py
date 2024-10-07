@@ -22,8 +22,8 @@ class NomicVisionRetriever(VisionRetriever):
         super().__init__()
         self.device = get_torch_device(device)
 
-        self.model = AutoModel.from_pretrained("nomic-ai/nomic-embed-vision-v1.5", trust_remote_code=True).to(
-            self.device
+        self.model = (
+            AutoModel.from_pretrained("nomic-ai/nomic-embed-vision-v1.5", trust_remote_code=True).to(self.device).eval()
         )
         self.processor = AutoImageProcessor.from_pretrained("nomic-ai/nomic-embed-vision-v1.5")
 
