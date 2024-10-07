@@ -19,7 +19,7 @@ class JinaClipRetriever(VisionRetriever):
     def __init__(self, device: str = "auto"):
         super().__init__()
         self.device = get_torch_device(device)
-        self.model = AutoModel.from_pretrained("jinaai/jina-clip-v1", trust_remote_code=True).to(self.device)
+        self.model = AutoModel.from_pretrained("jinaai/jina-clip-v1", trust_remote_code=True).to(self.device).eval()
         self.emb_dim_query = 768
         self.emb_dim_doc = 768
 
@@ -41,7 +41,6 @@ class JinaClipRetriever(VisionRetriever):
         return list_emb_queries
 
     def forward_documents(self, documents, batch_size: int, **kwargs) -> List[torch.Tensor]:
-
         list_emb_documents: List[torch.Tensor] = []
         for doc_batch in tqdm(
             batched(documents, batch_size), desc="Document batch", total=math.ceil(len(documents) / batch_size)

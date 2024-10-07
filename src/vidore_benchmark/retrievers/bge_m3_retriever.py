@@ -20,7 +20,7 @@ class BGEM3Retriever(VisionRetriever):
     def __init__(self, device: str = "auto"):
         super().__init__()
         self.device = get_torch_device(device)
-        self.model = BGEM3FlagModel("BAAI/bge-m3", use_fp16=True)
+        self.model = BGEM3FlagModel("BAAI/bge-m3", use_fp16=True).eval()
         self.emb_dim_query = 1024
         self.emb_dim_doc = 1024
 
