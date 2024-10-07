@@ -65,7 +65,7 @@ can evaluate the ColPali model on the ViDoRe benchmark to reproduce the results 
 
 ```bash
 vidore-benchmark evaluate-retriever \
-    --model-name vidore/colpali \
+    --model-name vidore/colpali-v1.2 \
     --collection-name "vidore/vidore-benchmark-667173f98e70a1c0fa4db00d" \
     --split test
 ```
@@ -77,7 +77,7 @@ Alternatively, you can evaluate your model on a single dataset. If your retriver
 
 ```bash
 vidore-benchmark evaluate-retriever \
-    --model-name vidore/colpali \
+    --model-name vidore/colpali-v1.2 \
     --dataset-name vidore/docvqa_test_subsampled \
     --split test
 ```
@@ -99,7 +99,7 @@ You can use token pooling to reduce the length of the document embeddings. In pr
 
 ```bash
 vidore-benchmark evaluate-retriever \
-    --model-name vidore/colpali \
+    --model-name vidore/colpali-v1.2 \
     --dataset-name vidore/docvqa_test_subsampled \
     --split test \
     --use-token-pooling \
@@ -110,7 +110,7 @@ vidore-benchmark evaluate-retriever \
 
 ```bash
 vidore-benchmark retrieve-on-dataset \
-    --model-name vidore/colpali \
+    --model-name vidore/colpali-v1.2 \
     --query "Which hour of the day had the highest overall electricity generation in 2019?" \
     --k 5 \
     --dataset-name vidore/syntheticDocQA_energy_test \
