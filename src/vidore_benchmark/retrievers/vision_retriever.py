@@ -113,7 +113,8 @@ class VisionRetriever(ABC):
                 score_passage = float(score.item())
 
                 if query in results:
-                    results[query][filename] = max(results[query].get(filename, 0), score_passage)
+                    current_score = results[query].get(filename, 0)
+                    results[query][filename] = max(current_score, score_passage)
                 else:
                     results[query] = {filename: score_passage}
 
