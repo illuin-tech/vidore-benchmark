@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning].
 
 ## [Unreleased]
 
+### Deprecated
+
+- Deprecate the `interpretability` module
+
 ## [4.0.1] - 2024-10-07
 
 - Rename ColPali model alias to match model name (use `--model-name vidore/colpali` instead of `--model-name vidore/colpali-v1.2` with the `vidore-benchmark evaluate-retriever` CLI)
