@@ -200,23 +200,6 @@ eval_manager = EvalManager.from_dir("data/metrics/")
 df = eval_manager.get_df_for_metric("ndcg_at_5")
 ```
 
-### Show the similarity maps for interpretability
-
-By superimposing the late interaction heatmap on top of the original image, we can visualize the most salient image patches with respect to each term of the query, yielding interpretable insights into model focus zones.
-
-You can generate similarity maps using the `generate-similarity-maps`. For instance, you can reproduce the similarity maps from the paper using the images from [`data/interpretability_examples`](https://github.com/illuin-tech/vidore-benchmark/tree/main/data/interpretability_examples) and by running the following command. You can also feed multiple documents and queries at once to generate multiple similarity maps.
-
-```bash
-generate-similarity-maps \
-    --documents "data/interpretability_examples/energy_electricity_generation.jpeg" \
-    --queries "Which hour of the day had the highest overall electricity generation in 2019?" \
-    --documents "data/interpretability_examples/shift_kazakhstan.jpg" \
-    --queries "Quelle partie de la production pétrolière du Kazakhstan provient de champs en mer ?"
-```
-
-> [!WARNING]
-> The current version of `vidore-benchmark` uses a different ColPali checkpoint than the one used in the paper. As a result, the similarity maps may differ slightly from the ones presented in the paper. If you want to reproduce the exact similarity maps from the paper, you should use the `vidore/colpali` checkpoint along with `vidore-benchmark<=3.3.0`.
-
 ## Citation
 
 **ColPali: Efficient Document Retrieval with Vision Language Models**  
