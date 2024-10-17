@@ -30,7 +30,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "datasets>=2.15.0,<3.0.0",
+    "datasets>=2.15.0",
     "colpali-engine>=0.3.2,<0.4.0",
     "einops>=0.8.0,<1.0.0",
     "GPUtil>=1.4.0,<2.0.0",
@@ -38,13 +38,9 @@ dependencies = [
     "mteb>=1.12.47,<2.0.0",
     "numpy>=1.21.2,<2.0.0",
     "pdf2image>=1.17.0,<2.0.0",
-    "peft>=0.11.1,<0.13.0",
-    "pillow>=9.2.0,<11.0.0",
     "python-dotenv>=1.0.1,<2.0.0",
     "sentencepiece>=0.2.0,<1.0.0",
     "sentence-transformers>=3.0.1,<4.0.0",
-    "torch>=2.0.0,<3.0.0",
-    "transformers>=4.41.1,<5.0.0",
     "typer>=0.12.3,<1.0.0",
 ]
 
