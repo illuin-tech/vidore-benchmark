@@ -9,6 +9,7 @@ from tqdm import tqdm
 
 from vidore_benchmark.compression.quantization.embedding_binarizer import BaseEmbeddingQuantizer
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
+from vidore_benchmark.retrievers.bm25_retriever import BM25Retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
 
@@ -46,6 +47,13 @@ def evaluate_dataset(
         if len(queries) == 0:
             raise ValueError("All queries are None")
     documents = ds[col_documents]
+
+    # Edge case: using the BM25Retriever
+    if isinstance(vision_retriever, BM25Retriever):
+        scores = vision_retriever.get_scores_bm25(queries=queries, documents=documents)
+        relevant_docs, results = vision_retriever.get_relevant_docs_results(ds, queries, scores)
+        metrics = vision_retriever.compute_metrics(relevant_docs, results)
+        return metrics
 
     # Get the embeddings for the queries and documents
     emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
