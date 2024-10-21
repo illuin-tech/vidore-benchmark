@@ -41,8 +41,6 @@ class BM25Retriever(VisionRetriever):
         self,
         queries: List[str],
         documents: Union[List[Image.Image], List[str]],
-        batch_query: int,
-        batch_doc: int,
         **kwargs,
     ) -> torch.Tensor:
         # Sanity check: `documents` must be a list of filepaths (strings)
