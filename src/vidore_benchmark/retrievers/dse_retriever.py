@@ -1,19 +1,22 @@
 from __future__ import annotations
 
-from typing import ClassVar, List, Optional, TypeVar, cast
+import math
+from typing import ClassVar, List, Optional, TypeVar
 
 import torch
 from transformers import AutoProcessor, Qwen2VLForConditionalGeneration
+
+from vidore_benchmark.utils.iter_utils import batched
+
 try:
     from qwen_vl_utils import process_vision_info
-    from torch.nn.functional import cosine_similarity
 except:
     print("qwen_vl_utils not found")
 
 from dotenv import load_dotenv
 from loguru import logger
 from PIL import Image
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import Dataset
 from tqdm import tqdm
 
 from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
@@ -56,7 +59,7 @@ class DSERetriever(VisionRetriever):
         logger.info(f"Using device: {self.device}")
 
         min_pixels = 1 * 28 * 28
-        max_pixels = 2560 * 28 * 28
+        max_pixels = 1024 * 28 * 28 # modified from 2560
 
         self.processor = AutoProcessor.from_pretrained(model_name, min_pixels=min_pixels,
                                                   max_pixels=max_pixels)
@@ -79,15 +82,9 @@ class DSERetriever(VisionRetriever):
         return True
 
     def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
-
-        dataloader = DataLoader(
-            dataset=ListDataset[str](queries),
-            batch_size=batch_size,
-            shuffle=False,
-        )
-
         qs = []
-        for batch_query in tqdm(dataloader, desc="Forward pass queries..."):
+        for batch_query in tqdm(batched(queries, batch_size),  desc="Query batch",
+                                total=math.ceil(len(queries) / batch_size)):
             query_messages = []
             for query in batch_query:
                 message = [
@@ -123,14 +120,10 @@ class DSERetriever(VisionRetriever):
 
 
     def forward_documents(self, documents: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
-        dataloader = DataLoader(
-            dataset=ListDataset[Image.Image](documents),
-            batch_size=batch_size,
-            shuffle=False,
-        )
-
         ds = []
-        for batch_doc in tqdm(dataloader, desc="Forward pass documents..."):
+        for batch_doc in tqdm(
+            batched(documents, batch_size), desc="Document batch", total=math.ceil(len(documents) / batch_size)
+        ):
             doc_messages = []
             for doc in batch_doc:
                 message = [
@@ -138,7 +131,7 @@ class DSERetriever(VisionRetriever):
                         'role': 'user',
                         'content': [
                             {'type': 'image', 'image': doc},
-                            # 'resized_height':680 , 'resized_width':680} # adjust the image size for efficiency trade-off
+                            # 'resized_height':680 , 'resized_width':680} # adjust the image sizes
                             {'type': 'text', 'text': 'What is shown in this image?'}
                         ]
                     }
