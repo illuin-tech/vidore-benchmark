@@ -42,3 +42,7 @@ try:
     from .colqwen_retriever import ColQwenRetriever
 except ImportError:
     pass
+try:
+    from .dse_retriever import DSERetriever
+except ImportError:
+    pass
