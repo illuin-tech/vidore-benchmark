@@ -35,7 +35,8 @@ def main(log_level: Annotated[str, typer.Option("--log", help="Logging level")] 
 
 @app.command()
 def evaluate_retriever(
-    model_name: Annotated[str, typer.Option(help="Model name alias (tagged with `@register_vision_retriever`)")],
+    model_class: Annotated[str, typer.Option(help="Model name alias (tagged with `@register_vision_retriever`)")],
+    model_name: Annotated[str, typer.Option(help="Model name or path")] = None,
     dataset_name: Annotated[Optional[str], typer.Option(help="HuggingFace Hub dataset name")] = None,
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
     batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 4,
@@ -58,7 +59,11 @@ def evaluate_retriever(
         raise ValueError("Please provide only one of dataset name or collection name")
 
     # Create the vision retriever
-    retriever = load_vision_retriever_from_registry(model_name)()
+    if model_name:
+        retriever = load_vision_retriever_from_registry(model_class)(model_name=model_name)
+        model_class = model_name
+    else:
+        retriever = load_vision_retriever_from_registry(model_class)()
 
     # Get the quantization strategy
     if quantization == "binarize":
@@ -97,15 +102,15 @@ def evaluate_retriever(
         }
 
         if use_token_pooling:
-            savepath = OUTPUT_DIR / f"{model_name.replace('/', '_')}_metrics_pool_factor_{pool_factor}.json"
+            savepath = OUTPUT_DIR / f"{model_class.replace('/', '_')}_metrics_pool_factor_{pool_factor}.json"
         else:
-            savepath = OUTPUT_DIR / f"{model_name.replace('/', '_')}_metrics.json"
+            savepath = OUTPUT_DIR / f"{model_class.replace('/', '_')}_metrics.json"
 
         with open(str(savepath), "w", encoding="utf-8") as f:
             json.dump(metrics, f)
 
         print(f"Metrics saved to `{savepath}`")
-        print(f"NDCG@5 for {model_name} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
+        print(f"NDCG@5 for {model_class} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
 
     elif collection_name is not None:
         # if it's a local directory, load the datasets from there
@@ -121,7 +126,7 @@ def evaluate_retriever(
             datasets = [dataset_item.item_id for dataset_item in datasets]
 
         metrics_all = {}
-        savedir = OUTPUT_DIR / model_name.replace("/", "_")
+        savedir = OUTPUT_DIR / model_class.replace("/", "_")
         savedir.mkdir(parents=True, exist_ok=True)
 
         for dataset_item in datasets:
@@ -150,12 +155,12 @@ def evaluate_retriever(
                 json.dump(metrics, f)
 
             print(f"Metrics saved to `{savepath}`")
-            print(f"NDCG@5 for {model_name} on {dataset_item}: {metrics[dataset_item]['ndcg_at_5']}")
+            print(f"NDCG@5 for {model_class} on {dataset_item}: {metrics[dataset_item]['ndcg_at_5']}")
 
         if use_token_pooling:
-            savepath_all = OUTPUT_DIR / f"{model_name.replace('/', '_')}_all_metrics_pool_factor_{pool_factor}.json"
+            savepath_all = OUTPUT_DIR / f"{model_class.replace('/', '_')}_all_metrics_pool_factor_{pool_factor}.json"
         else:
-            savepath_all = OUTPUT_DIR / f"{model_name.replace('/', '_')}_all_metrics.json"
+            savepath_all = OUTPUT_DIR / f"{model_class.replace('/', '_')}_all_metrics.json"
 
         with open(str(savepath_all), "w", encoding="utf-8") as f:
             json.dump(metrics_all, f)
