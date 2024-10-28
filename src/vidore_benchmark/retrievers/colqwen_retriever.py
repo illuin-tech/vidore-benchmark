@@ -86,7 +86,7 @@ class ColQwenRetriever(VisionRetriever):
             with torch.no_grad():
                 batch_query = {k: v.to(self.device) for k, v in batch_query.items()}
                 embeddings_query = self.model(**batch_query)
-                qs.extend(list(torch.unbind(embeddings_query)))
+                qs.extend(list(torch.unbind(embeddings_query.to("cpu"))))
 
         return qs
 
@@ -103,7 +103,7 @@ class ColQwenRetriever(VisionRetriever):
             with torch.no_grad():
                 batch_doc = {k: v.to(self.device) for k, v in batch_doc.items()}
                 embeddings_doc = self.model(**batch_doc)
-            ds.extend(list(torch.unbind(embeddings_doc)))
+            ds.extend(list(torch.unbind(embeddings_doc.to("cpu"))))
         return ds
 
     def get_scores(
