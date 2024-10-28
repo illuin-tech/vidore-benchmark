@@ -88,18 +88,28 @@ def evaluate_retriever(
         print(f"NDCG@5 for {model_name} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
 
     elif collection_name is not None:
-        collection = huggingface_hub.get_collection(collection_name)
-        datasets = collection.items
+        # if it's a local directory, load the datasets from there
+        import os
+        if os.path.isdir(collection_name):
+            print(f"Loading datasets from local directory: {collection_name}")
+            datasets = os.listdir(collection_name)
+            datasets = [os.path.join(collection_name, dataset) for dataset in datasets]
+        else:
+            print(f"Loading datasets from hub collection: {collection_name}")
+            collection = huggingface_hub.get_collection(collection_name)
+            datasets = collection.items
+            datasets = [dataset_item.item_id for dataset_item in datasets]
 
         metrics_all = {}
         savedir = OUTPUT_DIR / model_name.replace("/", "_")
         savedir.mkdir(parents=True, exist_ok=True)
 
         for dataset_item in datasets:
-            print(f"\n---------------------------\nEvaluating {dataset_item.item_id}")
-            dataset = cast(Dataset, load_dataset(dataset_item.item_id, split=split))
+            print(f"\n---------------------------\nEvaluating {dataset_item}")
+            dataset = cast(Dataset, load_dataset(dataset_item, split=split))
+            dataset_item = dataset_item.replace(collection_name + "/", "")
             metrics = {
-                dataset_item.item_id: evaluate_dataset(
+                dataset_item: evaluate_dataset(
                     retriever,
                     dataset,
                     batch_query=batch_query,
@@ -111,15 +121,15 @@ def evaluate_retriever(
             metrics_all.update(metrics)
 
             if use_token_pooling:
-                savepath = savedir / f"{dataset_item.item_id.replace('/', '_')}_metrics_pool_factor_{pool_factor}.json"
+                savepath = savedir / f"{dataset_item.replace('/', '_')}_metrics_pool_factor_{pool_factor}.json"
             else:
-                savepath = savedir / f"{dataset_item.item_id.replace('/', '_')}_metrics.json"
+                savepath = savedir / f"{dataset_item.replace('/', '_')}_metrics.json"
 
             with open(str(savepath), "w", encoding="utf-8") as f:
                 json.dump(metrics, f)
 
             print(f"Metrics saved to `{savepath}`")
-            print(f"NDCG@5 for {model_name} on {dataset_item.item_id}: {metrics[dataset_item.item_id]['ndcg_at_5']}")
+            print(f"NDCG@5 for {model_name} on {dataset_item}: {metrics[dataset_item]['ndcg_at_5']}")
 
         if use_token_pooling:
             savepath_all = OUTPUT_DIR / f"{model_name.replace('/', '_')}_all_metrics_pool_factor_{pool_factor}.json"
