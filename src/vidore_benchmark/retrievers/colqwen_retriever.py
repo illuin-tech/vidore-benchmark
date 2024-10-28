@@ -59,9 +59,6 @@ class ColQwenRetriever(VisionRetriever):
             ).eval(),
         )
 
-        # model to device
-        self.model.to(self.device)
-
         # Load the processor
         self.processor = cast(ColQwen2Processor, ColQwen2Processor.from_pretrained(model_name))
         print("Loaded custom processor.\n")
