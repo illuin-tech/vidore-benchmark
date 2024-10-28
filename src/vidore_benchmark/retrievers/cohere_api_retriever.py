@@ -6,10 +6,11 @@ from typing import List, Optional, cast
 import torch
 from PIL import Image
 from tqdm import tqdm
-import os
+
 from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
+
 # soft deps to cohere
 try:
     import cohere
@@ -37,7 +38,6 @@ class CohereAPIRetriever(VisionRetriever):
             batched(queries, batch_size), desc="Query batch", total=math.ceil(len(queries) / batch_size)
         ):
             # delay
-            import time
             # time.sleep(2)
             response = self.co.embed(
                 texts=query_batch, model="embed-english-v3.0", input_type="search_query",
@@ -59,8 +59,8 @@ class CohereAPIRetriever(VisionRetriever):
             doc_batch = cast(List[Image.Image], doc_batch)
 
             def _to_b64(image: Image.Image) -> str:
-                from io import BytesIO
                 import base64
+                from io import BytesIO
 
                 buffer = BytesIO()
                 image.save(buffer, format="JPEG")
