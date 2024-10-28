@@ -41,7 +41,7 @@ class ColQwenRetriever(VisionRetriever):
 
     def __init__(
         self,
-        model_name: str = "../colpali/models/colqwen-v0.1-merged", # "vidore/colqwen2-v0.1", # "vidore/colqwen-v0.1-merged",
+        model_name: str = "../colpali/models/colqwen2-v0.1-merged", # "vidore/colqwen2-v0.1", # "vidore/colqwen-v0.1-merged",
         device: str = "auto",
     ):
         super().__init__()
