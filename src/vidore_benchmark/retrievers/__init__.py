@@ -11,6 +11,10 @@ try:
 except ImportError:
     pass
 try:
+    from .cohere_api_retriever import CohereAPIRetriever
+except ImportError:
+    pass
+try:
     from .colpali_retriever import ColPaliRetriever
 except ImportError:
     pass
@@ -32,5 +36,9 @@ except ImportError:
     pass
 try:
     from .vision_retriever import VisionRetriever
+except ImportError:
+    pass
+try:
+    from .colqwen_retriever import ColQwenRetriever
 except ImportError:
     pass
