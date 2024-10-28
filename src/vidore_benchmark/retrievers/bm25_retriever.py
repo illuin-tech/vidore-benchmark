@@ -2,10 +2,15 @@ from typing import Dict, List, Optional, Union, cast
 
 import numpy as np
 import torch
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
+
+try:
+    from nltk.corpus import stopwords
+    from nltk.tokenize import word_tokenize
+    from rank_bm25 import BM25Okapi
+except ImportError:
+    print("nltk not found. Please install nltk by running `pip install nltk` if you want to use BM25Retriever.")
+
 from PIL import Image
-from rank_bm25 import BM25Okapi
 
 from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
