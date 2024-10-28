@@ -4,7 +4,11 @@ import random
 from pathlib import Path
 
 from loguru import logger
-from pdf2image import convert_from_path
+try:
+    from pdf2image import convert_from_path
+except ImportError:
+    logger.warning("pdf2image not found. PDF files will not be converted to images.")
+    convert_from_path = None
 from tqdm import tqdm
 
 
