@@ -62,7 +62,7 @@ class DSERetriever(VisionRetriever):
                                                   max_pixels=max_pixels)
         self.model = Qwen2VLForConditionalGeneration.from_pretrained(model_name,
                                                                 attn_implementation="flash_attention_2",
-                                                                torch_dtype=torch.bfloat16).to('cuda:0').eval()
+                                                                torch_dtype=torch.bfloat16).to(self.device).eval()
         self.processor.tokenizer.padding_side = "left"
         self.model.padding_side = "left"
 
@@ -170,10 +170,8 @@ class DSERetriever(VisionRetriever):
         if batch_size is None:
             raise ValueError("`batch_size` must be provided for ColPaliRetriever's scoring")
         # compute cosine similarity
-        device = get_torch_device("auto")
-
-        qs_stacked = torch.stack(list_emb_queries).to(device)
-        ps_stacked = torch.stack(list_emb_documents).to(device)
+        qs_stacked = torch.stack(list_emb_queries).to(self.device)
+        ps_stacked = torch.stack(list_emb_documents).to(self.device)
 
         scores = torch.einsum("bd,cd->bc", qs_stacked, ps_stacked)
         scores = scores.to(torch.float32).cpu()
