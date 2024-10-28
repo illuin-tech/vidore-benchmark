@@ -12,7 +12,7 @@ from vidore_benchmark.utils.iter_utils import batched
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
-@register_vision_retriever("google/siglip-so400m-patch14-384")
+@register_vision_retriever("siglip")
 class SigLIPRetriever(VisionRetriever):
     def __init__(self, device: str = "auto"):
         super().__init__()
