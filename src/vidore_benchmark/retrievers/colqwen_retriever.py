@@ -29,7 +29,7 @@ class ListDataset(Dataset[T]):
         return self.elements[idx]
 
 
-@register_vision_retriever("vidore/colqwen-v0.1")
+@register_vision_retriever("vidore/colqwen2-v0.1")
 class ColQwenRetriever(VisionRetriever):
     """
     ColPali Retriever that implements the model from "ColPali: Efficient Document Retrieval
