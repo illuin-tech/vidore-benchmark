@@ -51,6 +51,7 @@ class DSERetriever(VisionRetriever):
     def __init__(
         self,
         model_name: str = "MrLight/dse-qwen2-2b-mrl-v1", # "vidore/colqwen-v0.1-merged",
+        num_image_tokens: int = 1024, # 2560 is the original value
         device: str = "auto",
     ):
         super().__init__()
@@ -59,7 +60,7 @@ class DSERetriever(VisionRetriever):
         logger.info(f"Using device: {self.device}")
 
         min_pixels = 1 * 28 * 28
-        max_pixels = 1024 * 28 * 28 # modified from 2560
+        max_pixels = num_image_tokens * 28 * 28 # we can play with resolution here
 
         self.processor = AutoProcessor.from_pretrained(model_name, min_pixels=min_pixels,
                                                   max_pixels=max_pixels)
