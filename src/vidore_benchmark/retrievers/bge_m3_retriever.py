@@ -11,7 +11,7 @@ from vidore_benchmark.utils.iter_utils import batched
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
-@register_vision_retriever("BAAI/bge-m3")
+@register_vision_retriever("bge-m3")
 class BGEM3Retriever(VisionRetriever):
     """
     BGEM3Retriever class to retrieve embeddings the BGE-M3 model (dense embeddings).

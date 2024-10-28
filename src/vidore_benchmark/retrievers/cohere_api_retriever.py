@@ -18,12 +18,14 @@ except ImportError:
     cohere = None
 
 
-@register_vision_retriever("cohere/embed-v3")
+@register_vision_retriever("cohere")
 class CohereAPIRetriever(VisionRetriever):
-    def __init__(self):
+    def __init__(self, model_name: str = "embed-english-v3.0"):
+
         super().__init__()
         # Initialize the Cohere client with env variable COHERE_API_KEY
         # api_key = os.getenv("COHERE_API_KEY")
+        self.model_name = model_name
         api_key = "izJl1Jkk2fOkg4ZaMcUHlXXA8p13MUKeoNSvN9LG"
         self.co = cohere.ClientV2(api_key)
 
@@ -40,7 +42,7 @@ class CohereAPIRetriever(VisionRetriever):
             # delay
             # time.sleep(2)
             response = self.co.embed(
-                texts=query_batch, model="embed-english-v3.0", input_type="search_query",
+                texts=query_batch, model=self.model_name, input_type="search_query",
                 embedding_types=["float"]
             )
             query_embeddings = list(response.embeddings.float_)

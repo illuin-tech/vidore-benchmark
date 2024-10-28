@@ -12,7 +12,7 @@ from vidore_benchmark.utils.iter_utils import batched
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
-@register_vision_retriever("BAAI/bge-m3-colbert")
+@register_vision_retriever("bge-m3-colbert")
 class BGEM3ColbertRetriever(VisionRetriever):
     """
     BGEM3Retriever class to retrieve embeddings the BGE-M3 model (multi-vector embeddings + ColBERT scoring).
