@@ -154,7 +154,8 @@ def evaluate_retriever(
 
 @app.command()
 def retrieve_on_dataset(
-    model_name: Annotated[str, typer.Option(help="Model name alias (tagged with `@register_vision_retriever`)")],
+    model_class: Annotated[str, typer.Option(help="Model name alias (tagged with `@register_vision_retriever`)")],
+    model_name: Annotated[str, typer.Option(help="Model name or path")],
     query: Annotated[str, typer.Option(help="Query to use for retrieval")],
     k: Annotated[int, typer.Option(help="Number of documents to retrieve")],
     dataset_name: Annotated[str, typer.Option(help="HuggingFace Hub dataset name")],
@@ -167,7 +168,11 @@ def retrieve_on_dataset(
     """
 
     # Create the vision retriever
-    retriever = load_vision_retriever_from_registry(model_name)()
+    if model_name:
+        retriever = load_vision_retriever_from_registry(model_class)(model_name=model_name)
+    else:
+        retriever = load_vision_retriever_from_registry(model_class)()
+
 
     # Load the dataset
     ds = cast(Dataset, load_dataset(dataset_name, split=split))
@@ -199,7 +204,8 @@ def retrieve_on_dataset(
 
 @app.command()
 def retrieve_on_pdfs(
-    model_name: Annotated[str, typer.Option(help="Model name to use for evaluation")],
+    model_class: Annotated[str, typer.Option(help="Model name alias (tagged with `@register_vision_retriever`)")],
+    model_name: Annotated[str, typer.Option(help="Model name or path")],
     query: Annotated[str, typer.Option(help="Query to use for retrieval")],
     k: Annotated[int, typer.Option(help="Number of documents to retrieve")],
     data_dirpath: Annotated[
@@ -217,7 +223,10 @@ def retrieve_on_pdfs(
         raise FileNotFoundError(f"Invalid data directory: `{data_dirpath}`")
 
     # Create the vision retriever
-    retriever = load_vision_retriever_from_registry(model_name)()
+    if model_name:
+        retriever = load_vision_retriever_from_registry(model_class)(model_name=model_name)
+    else:
+        retriever = load_vision_retriever_from_registry(model_class)()
 
     # Convert the PDFs to a collection of images
     convert_all_pdfs_to_images(data_dirpath)
