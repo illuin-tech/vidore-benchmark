@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning].
 
 - Fix `evaluate_dataset` when used with the BM25 retriever
 
+### Removed
+
+- Remove experimental quantization
+
 ## [4.0.2] - 2024-10-17
 
 ### Deprecated

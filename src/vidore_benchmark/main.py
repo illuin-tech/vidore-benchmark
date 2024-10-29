@@ -3,16 +3,13 @@ from pathlib import Path
 from typing import Annotated, Optional, cast
 
 import huggingface_hub
-import numpy as np
 import typer
 from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
 from loguru import logger
 
-from vidore_benchmark.compression.quantization import EmbeddingBinarizer, EmbeddingInt8Quantizer
 from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
 from vidore_benchmark.evaluation.evaluate import evaluate_dataset, get_top_k
-from vidore_benchmark.retrievers.colpali_retriever import ColPaliRetriever
 from vidore_benchmark.retrievers.utils.load_retriever import load_vision_retriever_from_registry
 from vidore_benchmark.utils.constants import OUTPUT_DIR
 from vidore_benchmark.utils.image_utils import generate_dataset_from_img_folder
@@ -42,7 +39,6 @@ def evaluate_retriever(
     batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
     batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
     collection_name: Annotated[Optional[str], typer.Option(help="Collection name to use for evaluation")] = None,
-    quantization: Annotated[Optional[str], typer.Option(help="Quantization method to use for embeddings")] = None,
     use_token_pooling: Annotated[bool, typer.Option(help="Whether to use token pooling for text embeddings")] = False,
     pool_factor: Annotated[int, typer.Option(help="Pooling factor for hierarchical token pooling")] = 3,
 ):
@@ -60,21 +56,6 @@ def evaluate_retriever(
     # Create the vision retriever
     retriever = load_vision_retriever_from_registry(model_name)()
 
-    # Get the quantization strategy
-    if quantization == "binarize":
-        embedding_quantizer = EmbeddingBinarizer()
-    elif quantization == "int8":
-        if isinstance(retriever, ColPaliRetriever):
-            # ColPali's embeddings are L2-normalized so they are in the range [-1, 1]
-            naive_ranges = np.array([[-1.0, 1.0]] * retriever.emb_dim_doc).T
-        else:
-            raise NotImplementedError("Int8 quantization is only supported for ColPali retriever.")
-        embedding_quantizer = EmbeddingInt8Quantizer(ranges=naive_ranges)
-    elif quantization is None:
-        embedding_quantizer = None
-    else:
-        raise ValueError(f"Invalid quantization method: {quantization}")
-
     # Get the pooling strategy
     embedding_pooler = HierarchicalEmbeddingPooler(pool_factor) if use_token_pooling else None
 
@@ -91,7 +72,6 @@ def evaluate_retriever(
                 batch_query=batch_query,
                 batch_doc=batch_doc,
                 batch_score=batch_score,
-                embedding_quantizer=embedding_quantizer,
                 embedding_pooler=embedding_pooler,
             )
         }
@@ -125,7 +105,6 @@ def evaluate_retriever(
                     batch_query=batch_query,
                     batch_doc=batch_doc,
                     batch_score=batch_score,
-                    embedding_quantizer=embedding_quantizer,
                     embedding_pooler=embedding_pooler,
                 )
             }
