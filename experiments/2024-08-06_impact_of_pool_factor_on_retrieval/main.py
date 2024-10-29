@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import time
+from pathlib import Path
 from typing import Annotated, Dict, List, Optional, Tuple, cast
 
 import typer
@@ -12,9 +13,10 @@ from tqdm import tqdm
 from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
 from vidore_benchmark.retrievers.utils.load_retriever import load_vision_retriever_from_registry
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
-from vidore_benchmark.utils.constants import OUTPUT_DIR
 
 load_dotenv(override=True)
+
+OUTPUT_DIR = Path("outputs")
 
 
 def evaluate_dataset_with_different_pool_factors(

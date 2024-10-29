@@ -4,6 +4,7 @@ import random
 from pathlib import Path
 
 from loguru import logger
+
 try:
     from pdf2image import convert_from_path
 except ImportError:

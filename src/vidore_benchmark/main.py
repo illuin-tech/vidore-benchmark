@@ -12,12 +12,13 @@ from loguru import logger
 from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
 from vidore_benchmark.evaluation.evaluate import evaluate_dataset, get_top_k
 from vidore_benchmark.retrievers.utils.load_retriever import load_vision_retriever_from_registry
-from vidore_benchmark.utils.constants import OUTPUT_DIR
 from vidore_benchmark.utils.image_utils import generate_dataset_from_img_folder
 from vidore_benchmark.utils.logging_utils import setup_logging
 from vidore_benchmark.utils.pdf_utils import convert_all_pdfs_to_images
 
 load_dotenv(override=True)
+
+OUTPUT_DIR = Path("outputs")
 
 app = typer.Typer(
     help="CLI for evaluating retrievers on the ViDoRe benchmark.",
@@ -25,7 +26,7 @@ app = typer.Typer(
 )
 
 
-def get_model_id(model_class: str, pretrained_model_name_or_path: Optional[str] = None) -> str:
+def sanitize_model_id(model_class: str, pretrained_model_name_or_path: Optional[str] = None) -> str:
     """
     Return sanitized model ID for saving metrics.
     """
@@ -75,7 +76,9 @@ def evaluate_retriever(
         model_class,
         pretrained_model_name_or_path=pretrained_model_name_or_path,
     )
-    model_id = get_model_id(model_class, pretrained_model_name_or_path)
+
+    # Sanitize the model ID to use as a filename
+    model_id = sanitize_model_id(model_class, pretrained_model_name_or_path)
 
     # Get the pooling strategy
     embedding_pooler = HierarchicalEmbeddingPooler(pool_factor) if use_token_pooling else None
@@ -114,13 +117,12 @@ def evaluate_retriever(
     elif collection_name is not None:
         if os.path.isdir(collection_name):
             print(f"Loading datasets from local directory: `{collection_name}`")
-            datasets = os.listdir(collection_name)
-            datasets = [os.path.join(collection_name, dataset) for dataset in datasets]
+            dataset_items = os.listdir(collection_name)
+            dataset_items = [os.path.join(collection_name, dataset) for dataset in dataset_items]
         else:
             print(f"Loading datasets from the Hf Hub collection: {collection_name}")
             collection = huggingface_hub.get_collection(collection_name)
-            datasets = collection.items
-            datasets = [dataset_item.item_id for dataset_item in datasets]
+            dataset_items = [dataset_item.item_id for dataset_item in collection.items]
 
         # Placeholder for all metrics
         metrics_all: Dict[str, Dict[str, float]] = {}
@@ -128,7 +130,7 @@ def evaluate_retriever(
         savedir = OUTPUT_DIR / model_id.replace("/", "_")
         savedir.mkdir(parents=True, exist_ok=True)
 
-        for dataset_item in datasets:
+        for dataset_item in dataset_items:
             print(f"\n---------------------------\nEvaluating {dataset_item}")
             dataset = cast(
                 Dataset,
@@ -147,10 +149,13 @@ def evaluate_retriever(
             }
             metrics_all.update(metrics)
 
+            # Sanitize the dataset item to use as a filename
+            dataset_item_id = dataset_item.replace("/", "_")
+
             if use_token_pooling:
-                savepath = savedir / f"{dataset_item.replace('/', '_')}_metrics_pool_factor_{pool_factor}.json"
+                savepath = savedir / f"{dataset_item_id}_metrics_pool_factor_{pool_factor}.json"
             else:
-                savepath = savedir / f"{dataset_item.replace('/', '_')}_metrics.json"
+                savepath = savedir / f"{dataset_item_id}_metrics.json"
 
             with open(str(savepath), "w", encoding="utf-8") as f:
                 json.dump(metrics, f)
