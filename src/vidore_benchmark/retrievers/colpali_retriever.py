@@ -32,7 +32,7 @@ class ListDataset(Dataset[T]):
 @register_vision_retriever("colpali")
 class ColPaliRetriever(VisionRetriever):
     """
-    ColPali Retriever that implements the model from "ColPali: Efficient Document Retrieval
+    ColPali retriever that implements the model from "ColPali: Efficient Document Retrieval
     with Vision Language Models".
     """
 
@@ -41,7 +41,7 @@ class ColPaliRetriever(VisionRetriever):
 
     def __init__(
         self,
-        model_name: str = "vidore/colpali-v1.2",
+        pretrained_model_name_or_path,
         device: str = "auto",
     ):
         super().__init__()
@@ -53,14 +53,14 @@ class ColPaliRetriever(VisionRetriever):
         self.model = cast(
             ColPali,
             ColPali.from_pretrained(
-                model_name,
+                pretrained_model_name_or_path,
                 torch_dtype=torch.bfloat16,
                 device_map=device,
             ).eval(),
         )
 
         # Load the processor
-        self.processor = cast(ColPaliProcessor, ColPaliProcessor.from_pretrained(model_name))
+        self.processor = cast(ColPaliProcessor, ColPaliProcessor.from_pretrained(pretrained_model_name_or_path))
         print("Loaded custom processor.\n")
 
     @property

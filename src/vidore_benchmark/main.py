@@ -1,6 +1,7 @@
 import json
+import os
 from pathlib import Path
-from typing import Annotated, Optional, cast
+from typing import Annotated, Dict, Optional, cast
 
 import huggingface_hub
 import typer
@@ -24,6 +25,15 @@ app = typer.Typer(
 )
 
 
+def get_model_id(model_class: str, pretrained_model_name_or_path: Optional[str] = None) -> str:
+    """
+    Return sanitized model ID for saving metrics.
+    """
+    model_id = pretrained_model_name_or_path if pretrained_model_name_or_path is not None else model_class
+    model_id = model_id.replace("/", "_")
+    return model_id
+
+
 @app.callback()
 def main(log_level: Annotated[str, typer.Option("--log", help="Logging level")] = "warning"):
     logger.enable("vidore_benchmark")
@@ -32,14 +42,20 @@ def main(log_level: Annotated[str, typer.Option("--log", help="Logging level")] 
 
 @app.command()
 def evaluate_retriever(
-    model_class: Annotated[str, typer.Option(help="Model name alias (tagged with `@register_vision_retriever`)")],
-    model_name: Annotated[str, typer.Option(help="Model name or path")] = None,
+    model_class: Annotated[str, typer.Option(help="Model class")],
+    pretrained_model_name_or_path: Annotated[
+        Optional[str],
+        typer.Option(help="If model class is a Hf model, this arg is passed to the `model.from_pretrained` method."),
+    ] = None,
     dataset_name: Annotated[Optional[str], typer.Option(help="HuggingFace Hub dataset name")] = None,
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
     batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 4,
     batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
     batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
-    collection_name: Annotated[Optional[str], typer.Option(help="Collection name to use for evaluation")] = None,
+    collection_name: Annotated[
+        Optional[str],
+        typer.Option(help="Dataset collection to use for evaluation. Can be a Hf collection id or a local dirpath."),
+    ] = None,
     use_token_pooling: Annotated[bool, typer.Option(help="Whether to use token pooling for text embeddings")] = False,
     pool_factor: Annotated[int, typer.Option(help="Pooling factor for hierarchical token pooling")] = 3,
 ):
@@ -55,11 +71,11 @@ def evaluate_retriever(
         raise ValueError("Please provide only one of dataset name or collection name")
 
     # Create the vision retriever
-    if model_name:
-        retriever = load_vision_retriever_from_registry(model_class)(model_name=model_name)
-        model_class = model_name
-    else:
-        retriever = load_vision_retriever_from_registry(model_class)()
+    retriever = load_vision_retriever_from_registry(
+        model_class,
+        pretrained_model_name_or_path=pretrained_model_name_or_path,
+    )
+    model_id = get_model_id(model_class, pretrained_model_name_or_path)
 
     # Get the pooling strategy
     embedding_pooler = HierarchicalEmbeddingPooler(pool_factor) if use_token_pooling else None
@@ -67,8 +83,11 @@ def evaluate_retriever(
     # Create the output directory if it doesn't exist
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Load the dataset
-    if dataset_name is not None:
+    # Load the dataset(s) and evaluate
+    if dataset_name is None and collection_name is None:
+        raise ValueError("Please provide a dataset name or collection name.")
+
+    elif dataset_name is not None:
         dataset = cast(Dataset, load_dataset(dataset_name, split=split))
         metrics = {
             dataset_name: evaluate_dataset(
@@ -82,36 +101,39 @@ def evaluate_retriever(
         }
 
         if use_token_pooling:
-            savepath = OUTPUT_DIR / f"{model_class.replace('/', '_')}_metrics_pool_factor_{pool_factor}.json"
+            savepath = OUTPUT_DIR / f"{model_id}_metrics_pool_factor_{pool_factor}.json"
         else:
-            savepath = OUTPUT_DIR / f"{model_class.replace('/', '_')}_metrics.json"
+            savepath = OUTPUT_DIR / f"{model_id}_metrics.json"
 
         with open(str(savepath), "w", encoding="utf-8") as f:
             json.dump(metrics, f)
 
         print(f"Metrics saved to `{savepath}`")
-        print(f"NDCG@5 for {model_class} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
+        print(f"NDCG@5 for {model_id} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
 
     elif collection_name is not None:
-        # if it's a local directory, load the datasets from there
-        import os
         if os.path.isdir(collection_name):
-            print(f"Loading datasets from local directory: {collection_name}")
+            print(f"Loading datasets from local directory: `{collection_name}`")
             datasets = os.listdir(collection_name)
             datasets = [os.path.join(collection_name, dataset) for dataset in datasets]
         else:
-            print(f"Loading datasets from hub collection: {collection_name}")
+            print(f"Loading datasets from the Hf Hub collection: {collection_name}")
             collection = huggingface_hub.get_collection(collection_name)
             datasets = collection.items
             datasets = [dataset_item.item_id for dataset_item in datasets]
 
-        metrics_all = {}
-        savedir = OUTPUT_DIR / model_class.replace("/", "_")
+        # Placeholder for all metrics
+        metrics_all: Dict[str, Dict[str, float]] = {}
+
+        savedir = OUTPUT_DIR / model_id.replace("/", "_")
         savedir.mkdir(parents=True, exist_ok=True)
 
         for dataset_item in datasets:
             print(f"\n---------------------------\nEvaluating {dataset_item}")
-            dataset = cast(Dataset, load_dataset(dataset_item, split=split))
+            dataset = cast(
+                Dataset,
+                load_dataset(dataset_item, split=split),
+            )
             dataset_item = dataset_item.replace(collection_name + "/", "")
             metrics = {
                 dataset_item: evaluate_dataset(
@@ -134,28 +156,28 @@ def evaluate_retriever(
                 json.dump(metrics, f)
 
             print(f"Metrics saved to `{savepath}`")
-            print(f"NDCG@5 for {model_class} on {dataset_item}: {metrics[dataset_item]['ndcg_at_5']}")
+            print(f"NDCG@5 for {model_id} on {dataset_item}: {metrics[dataset_item]['ndcg_at_5']}")
 
         if use_token_pooling:
-            savepath_all = OUTPUT_DIR / f"{model_class.replace('/', '_')}_all_metrics_pool_factor_{pool_factor}.json"
+            savepath_all = OUTPUT_DIR / f"{model_id}_all_metrics_pool_factor_{pool_factor}.json"
         else:
-            savepath_all = OUTPUT_DIR / f"{model_class.replace('/', '_')}_all_metrics.json"
+            savepath_all = OUTPUT_DIR / f"{model_id}_all_metrics.json"
 
         with open(str(savepath_all), "w", encoding="utf-8") as f:
             json.dump(metrics_all, f)
 
         print(f"Concatenated metrics saved to `{savepath_all}`")
 
-    else:
-        raise ValueError("Please provide a dataset name or collection name.")
-
     print("Done.")
 
 
 @app.command()
 def retrieve_on_dataset(
-    model_class: Annotated[str, typer.Option(help="Model name alias (tagged with `@register_vision_retriever`)")],
-    model_name: Annotated[str, typer.Option(help="Model name or path")],
+    model_class: Annotated[str, typer.Option(help="Model class")],
+    pretrained_model_name_or_path: Annotated[
+        str,
+        typer.Option(help="If model class is a Hf model, this arg is passed to the `model.from_pretrained` method."),
+    ],
     query: Annotated[str, typer.Option(help="Query to use for retrieval")],
     k: Annotated[int, typer.Option(help="Number of documents to retrieve")],
     dataset_name: Annotated[str, typer.Option(help="HuggingFace Hub dataset name")],
@@ -168,11 +190,9 @@ def retrieve_on_dataset(
     """
 
     # Create the vision retriever
-    if model_name:
-        retriever = load_vision_retriever_from_registry(model_class)(model_name=model_name)
-    else:
-        retriever = load_vision_retriever_from_registry(model_class)()
-
+    retriever = load_vision_retriever_from_registry(
+        model_class, pretrained_model_name_or_path=pretrained_model_name_or_path
+    )
 
     # Load the dataset
     ds = cast(Dataset, load_dataset(dataset_name, split=split))
@@ -204,8 +224,11 @@ def retrieve_on_dataset(
 
 @app.command()
 def retrieve_on_pdfs(
-    model_class: Annotated[str, typer.Option(help="Model name alias (tagged with `@register_vision_retriever`)")],
-    model_name: Annotated[str, typer.Option(help="Model name or path")],
+    model_class: Annotated[str, typer.Option(help="Model class")],
+    pretrained_model_name_or_path: Annotated[
+        str,
+        typer.Option(help="If model class is a Hf model, this arg is passed to the `model.from_pretrained` method."),
+    ],
     query: Annotated[str, typer.Option(help="Query to use for retrieval")],
     k: Annotated[int, typer.Option(help="Number of documents to retrieve")],
     data_dirpath: Annotated[
@@ -223,10 +246,9 @@ def retrieve_on_pdfs(
         raise FileNotFoundError(f"Invalid data directory: `{data_dirpath}`")
 
     # Create the vision retriever
-    if model_name:
-        retriever = load_vision_retriever_from_registry(model_class)(model_name=model_name)
-    else:
-        retriever = load_vision_retriever_from_registry(model_class)()
+    retriever = load_vision_retriever_from_registry(
+        model_class, pretrained_model_name_or_path=pretrained_model_name_or_path
+    )
 
     # Convert the PDFs to a collection of images
     convert_all_pdfs_to_images(data_dirpath)
@@ -256,7 +278,7 @@ def retrieve_on_pdfs(
 
     print(f"Top-{k} documents for the query '{query}':")
 
-    for document, score in top_k[query].items():  # type: ignore
+    for document, score in top_k[query].items():
         print(f"Document: {document}, Score: {score}")
 
     print("Done.")

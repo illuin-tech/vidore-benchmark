@@ -84,7 +84,7 @@ app = typer.Typer(
 
 @app.command()
 def run_experiment(
-    model_name: Annotated[str, typer.Option(help="Model name alias (tagged with `@register_vision_retriever`)")],
+    model_class: Annotated[str, typer.Option(help="Model name alias (tagged with `@register_vision_retriever`)")],
     pool_factors: Annotated[List[int], typer.Option(help="Pooling factors for hierarchical token pooling")],
     dataset_name: Annotated[str, typer.Option(help="HuggingFace Hub dataset name")],
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
@@ -92,8 +92,8 @@ def run_experiment(
     batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
     batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
 ):
-    # Create the vision retriever
-    retriever = load_vision_retriever_from_registry(model_name)()
+    # Load the vision retriever
+    retriever = load_vision_retriever_from_registry(model_class)
 
     # Load the dataset
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -112,7 +112,7 @@ def run_experiment(
         metrics = {dataset_name: pool_factor_to_metrics[pool_factor]}
         savepath_metrics = (
             OUTPUT_DIR
-            / f"{model_name.replace('/', '_')}"
+            / f"{model_class.replace('/', '_')}"
             / f"{dataset_name.replace('/', '_')}_metrics_pool_factor_{pool_factor}.json"
         )
         savepath_metrics.parent.mkdir(parents=True, exist_ok=True)
@@ -121,7 +121,7 @@ def run_experiment(
     print(f"Metrics saved in `{OUTPUT_DIR}`")
 
     savepath_latencies = (
-        OUTPUT_DIR / f"{model_name.replace('/', '_')}" / f"{dataset_name.replace('/', '_')}_scoring_latencies.json"
+        OUTPUT_DIR / f"{model_class.replace('/', '_')}" / f"{dataset_name.replace('/', '_')}_scoring_latencies.json"
     )
     savepath_latencies.parent.mkdir(parents=True, exist_ok=True)
     with open(str(savepath_latencies), "w", encoding="utf-8") as f:

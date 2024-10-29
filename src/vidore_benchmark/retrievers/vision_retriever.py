@@ -10,10 +10,14 @@ from mteb.evaluation.evaluators import RetrievalEvaluator
 
 class VisionRetriever(ABC):
     """
-    Abstract class for ViDoRe retrievers.
+    Abstract class for vision retrievers used in the VidoRe benchmark.
     """
 
-    def __init__(self):
+    @abstractmethod
+    def __init__(self, **kwargs):
+        """
+        Initialize the VisionRetriever.
+        """
         pass
 
     @property
