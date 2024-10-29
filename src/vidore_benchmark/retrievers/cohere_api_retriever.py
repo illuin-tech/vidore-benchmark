@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from typing import List, Optional, cast
-
+import os
 import torch
 from PIL import Image
 from tqdm import tqdm
@@ -24,9 +24,8 @@ class CohereAPIRetriever(VisionRetriever):
 
         super().__init__()
         # Initialize the Cohere client with env variable COHERE_API_KEY
-        # api_key = os.getenv("COHERE_API_KEY")
+        api_key = os.getenv("COHERE_API_KEY")
         self.model_name = model_name
-        api_key = "izJl1Jkk2fOkg4ZaMcUHlXXA8p13MUKeoNSvN9LG"
         self.co = cohere.ClientV2(api_key)
 
     @property
