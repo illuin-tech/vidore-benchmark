@@ -46,7 +46,10 @@ def evaluate_retriever(
     model_class: Annotated[str, typer.Option(help="Model class")],
     pretrained_model_name_or_path: Annotated[
         Optional[str],
-        typer.Option(help="If model class is a Hf model, this arg is passed to the `model.from_pretrained` method."),
+        typer.Option(
+            "--model-name",
+            help="If model class is a Hf model, this arg is passed to the `model.from_pretrained` method.",
+        ),
     ] = None,
     dataset_name: Annotated[Optional[str], typer.Option(help="HuggingFace Hub dataset name")] = None,
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
@@ -179,13 +182,16 @@ def evaluate_retriever(
 @app.command()
 def retrieve_on_dataset(
     model_class: Annotated[str, typer.Option(help="Model class")],
-    pretrained_model_name_or_path: Annotated[
-        str,
-        typer.Option(help="If model class is a Hf model, this arg is passed to the `model.from_pretrained` method."),
-    ],
     query: Annotated[str, typer.Option(help="Query to use for retrieval")],
     k: Annotated[int, typer.Option(help="Number of documents to retrieve")],
     dataset_name: Annotated[str, typer.Option(help="HuggingFace Hub dataset name")],
+    pretrained_model_name_or_path: Annotated[
+        Optional[str],
+        typer.Option(
+            "--model-name",
+            help="If model class is a Hf model, this arg is passed to the `model.from_pretrained` method.",
+        ),
+    ] = None,
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
     batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
     batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
@@ -230,15 +236,18 @@ def retrieve_on_dataset(
 @app.command()
 def retrieve_on_pdfs(
     model_class: Annotated[str, typer.Option(help="Model class")],
-    pretrained_model_name_or_path: Annotated[
-        str,
-        typer.Option(help="If model class is a Hf model, this arg is passed to the `model.from_pretrained` method."),
-    ],
     query: Annotated[str, typer.Option(help="Query to use for retrieval")],
     k: Annotated[int, typer.Option(help="Number of documents to retrieve")],
     data_dirpath: Annotated[
         str, typer.Option(help="Path to the folder containing the PDFs to use as the retrieval corpus")
     ],
+    pretrained_model_name_or_path: Annotated[
+        Optional[str],
+        typer.Option(
+            "--model-name",
+            help="If model class is a Hf model, this arg is passed to the `model.from_pretrained` method.",
+        ),
+    ] = None,
     batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
     batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
 ):
