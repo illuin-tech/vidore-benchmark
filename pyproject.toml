@@ -49,11 +49,13 @@ dev = ["pytest>=8.2.1", "ruff>=0.4.5"]
 
 bge-m3 = ["FlagEmbedding>=1.2.10,<2.0.0"]
 bm25 = ["nltk>=3.8.1,<4.0.0", "rank-bm25>=0.2.2,<1.0.0"]
+cohere = ["cohere>=5.11.2,<6.0.0"]
 jina-clip = ["timm>=1.0.7,<2.0.0"]
 siglip = ["protobuf>=4.25.3,<5.0.0"]
 all-retrievers = [
     "vidore-benchmark[bge-m3]",
     "vidore-benchmark[bm25]",
+    "vidore-benchmark[cohere]",
     "vidore-benchmark[jina-clip]",
     "vidore-benchmark[siglip]",
 ]
