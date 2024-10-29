@@ -4,8 +4,8 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple
 
 import torch
+from colpali_engine.trainer.eval_utils import CustomRetrievalEvaluator
 from datasets import Dataset
-from mteb.evaluation.evaluators import RetrievalEvaluator
 
 
 class VisionRetriever(ABC):
@@ -135,7 +135,7 @@ class VisionRetriever(ABC):
         NOTE: Override this method if the retriever has a different evaluation metric.
         """
 
-        mteb_evaluator = RetrievalEvaluator()
+        mteb_evaluator = CustomRetrievalEvaluator()
 
         ndcg, _map, recall, precision, naucs = mteb_evaluator.evaluate(
             relevant_docs,

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning].
 
 ## [Unreleased]
 
+**IMPORTANT: This code was tested with the tip of the colpali-engine repository. Wait for the next release of colpali-engine before merging.**
+
 ### Fixed
 
 - Fix `evaluate_dataset` when used with the BM25 retriever

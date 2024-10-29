@@ -65,6 +65,7 @@ can evaluate the ColPali model on the ViDoRe benchmark to reproduce the results 
 
 ```bash
 vidore-benchmark evaluate-retriever \
+    --model-class colpali \
     --model-name vidore/colpali-v1.2 \
     --collection-name "vidore/vidore-benchmark-667173f98e70a1c0fa4db00d" \
     --split test
@@ -77,6 +78,7 @@ Alternatively, you can evaluate your model on a single dataset. If your retriver
 
 ```bash
 vidore-benchmark evaluate-retriever \
+    --model-class colpali \
     --model-name vidore/colpali-v1.2 \
     --dataset-name vidore/docvqa_test_subsampled \
     --split test
@@ -86,6 +88,7 @@ If you want to evaluate a retriever that relies on pure-text retrieval (no visua
 
 ```bash
 vidore-benchmark evaluate-retriever \
+    --model-class bge-m3 \
     --model-name BAAI/bge-m3 \
     --dataset-name vidore/docvqa_test_subsampled_tesseract \
     --split test
@@ -99,6 +102,7 @@ You can use token pooling to reduce the length of the document embeddings. In pr
 
 ```bash
 vidore-benchmark evaluate-retriever \
+    --model-class colpali \
     --model-name vidore/colpali-v1.2 \
     --dataset-name vidore/docvqa_test_subsampled \
     --split test \
@@ -110,6 +114,7 @@ vidore-benchmark evaluate-retriever \
 
 ```bash
 vidore-benchmark retrieve-on-dataset \
+    --model-class colpali \
     --model-name vidore/colpali-v1.2 \
     --query "Which hour of the day had the highest overall electricity generation in 2019?" \
     --k 5 \
@@ -121,6 +126,7 @@ vidore-benchmark retrieve-on-dataset \
 
 ```bash
 vidore-benchmark retriever_on_pdfs \
+    --model-class siglip \
     --model-name google/siglip-so400m-patch14-384 \
     --query "Which hour of the day had the highest overall electricity generation in 2019?" \
     --k 5 \
@@ -153,7 +159,7 @@ def main():
     """
     Example script for a Python usage of the Vidore Benchmark.
     """
-    my_retriever = JinaClipRetriever()
+    my_retriever = JinaClipRetriever("jinaai/jina-clip-v1")
     dataset = cast(Dataset, load_dataset("vidore/syntheticDocQA_dummy", split="test"))
     metrics = evaluate_dataset(my_retriever, dataset, batch_query=4, batch_doc=4)
     print(metrics)
