@@ -132,25 +132,7 @@ vidore-benchmark retriever_on_pdfs \
 To get more information about the available options, run:
 
 ```bash
-❯ vidore-benchmark --help
-                                                                                                                      
- Usage: vidore-benchmark [OPTIONS] COMMAND [ARGS]...                                                                       
-                                                                                                                      
- CLI for evaluating retrievers on the ViDoRe benchmark.                                                               
-                                                                                                                      
-╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ --install-completion          Install completion for the current shell.                                            │
-│ --show-completion             Show completion for the current shell, to copy it or customize the installation.     │
-│ --help                        Show this message and exit.                                                          │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-╭─ Commands ─────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ evaluate-retriever    Evaluate the retriever on the given dataset or collection. The metrics are saved to a JSON   │
-│                       file.                                                                                        │
-│ retrieve-on-dataset   Retrieve the top-k documents according to the given query.                                   │
-│ retrieve-on-pdfs      This script is used to ask a query and retrieve the top-k documents from a given folder      │
-│                       containing PDFs. The PDFs will be converted to a dataset of image pages and then used for    │
-│                       retrieval.                                                                                   │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+vidore-benchmark --help
 ```
 
 ## Python usage

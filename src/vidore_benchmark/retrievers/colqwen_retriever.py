@@ -4,6 +4,7 @@ from typing import ClassVar, List, Optional, TypeVar, cast
 
 import torch
 from colpali_engine.models import ColQwen2, ColQwen2Processor
+from colpali_engine.utils.torch_utils import get_torch_device
 from dotenv import load_dotenv
 from loguru import logger
 from PIL import Image
@@ -12,7 +13,6 @@ from tqdm import tqdm
 
 from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
-from vidore_benchmark.utils.torch_utils import get_torch_device
 
 T = TypeVar("T")
 load_dotenv(override=True)
@@ -41,7 +41,7 @@ class ColQwenRetriever(VisionRetriever):
 
     def __init__(
         self,
-        model_name: str = "vidore/colqwen2-v0.1", # "vidore/colqwen-v0.1-merged",
+        model_name: str = "vidore/colqwen2-v0.1",  # "vidore/colqwen-v0.1-merged",
         device: str = "auto",
     ):
         super().__init__()

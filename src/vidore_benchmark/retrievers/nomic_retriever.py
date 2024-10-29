@@ -5,6 +5,7 @@ from typing import List, Optional, cast
 
 import torch
 import torch.nn.functional as F  # noqa: N812
+from colpali_engine.utils.torch_utils import get_torch_device
 from PIL import Image
 from torch import Tensor
 from tqdm import tqdm
@@ -13,7 +14,6 @@ from transformers import AutoImageProcessor, AutoModel, AutoTokenizer
 from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
-from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 @register_vision_retriever("nomic-embed-vision")

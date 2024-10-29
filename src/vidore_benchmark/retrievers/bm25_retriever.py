@@ -10,11 +10,11 @@ try:
 except ImportError:
     print("nltk not found. Please install nltk by running `pip install nltk` if you want to use BM25Retriever.")
 
+from colpali_engine.utils.torch_utils import get_torch_device
 from PIL import Image
 
 from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
-from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 @register_vision_retriever("bm25")
