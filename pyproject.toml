@@ -58,13 +58,7 @@ all-retrievers = [
     "vidore-benchmark[siglip]",
 ]
 
-interpretability = ["matplotlib>=3.9.0,<4.0.0", "seaborn>=0.13.2,<1.0.0"]
-
-all = [
-    "vidore-benchmark[all-retrievers]",
-    "vidore-benchmark[dev]",
-    "vidore-benchmark[interpretability]",
-]
+all = ["vidore-benchmark[all-retrievers]", "vidore-benchmark[dev]"]
 
 skypilot = ["skypilot==0.6.1,<1.0.0"]
 
@@ -73,7 +67,6 @@ homepage = "https://github.com/illuin-tech/vidore-benchmark"
 
 [project.scripts]
 vidore-benchmark = "vidore_benchmark.main:app"
-generate-similarity-maps = "vidore_benchmark.generate_similarity_maps:app"
 
 [tool.pytest.ini_options]
 filterwarnings = ["ignore::Warning"]

@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning].
 ### Removed
 
 - Remove experimental quantization
+- Remove the `interpretability` module. The interpretability code has been moved and improved as part of the [`colpali-engine==0.3.2`](https://github.com/illuin-tech/colpali/releases/tag/v0.3.2) release.
 
 ## [4.0.2] - 2024-10-17
 
