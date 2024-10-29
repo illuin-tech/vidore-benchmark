@@ -33,7 +33,7 @@ class JinaClipRetriever(VisionRetriever):
             batched(queries, batch_size), desc="Query batch", total=math.ceil(len(queries) / batch_size)
         ):
             query_batch = cast(List[str], query_batch)
-            with torch.no_grad():
+            with torch.inference_mode():
                 output = self.model.encode_text(query_batch)
             query_embeddings = torch.tensor(output).to(self.device)
             list_emb_queries.append(query_embeddings)
@@ -46,7 +46,7 @@ class JinaClipRetriever(VisionRetriever):
             batched(documents, batch_size), desc="Document batch", total=math.ceil(len(documents) / batch_size)
         ):
             doc_batch = cast(List[Image.Image], doc_batch)
-            with torch.no_grad():
+            with torch.inference_mode():
                 output = self.model.encode_image(doc_batch)
             doc_embeddings = torch.tensor(output).to(self.device)
             list_emb_documents.append(doc_embeddings)

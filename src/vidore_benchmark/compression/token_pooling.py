@@ -59,7 +59,7 @@ class HierarchicalEmbeddingPooler(BaseEmbeddingPooler):
 
         cluster_id_to_indices: Dict[int, torch.Tensor] = {}
 
-        with torch.no_grad():
+        with torch.inference_mode():
             for cluster_id in range(1, max_clusters + 1):
                 cluster_indices = torch.where(torch.tensor(cluster_labels == cluster_id, device=self.device))[0]
                 cluster_id_to_indices[cluster_id] = cluster_indices

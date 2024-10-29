@@ -55,7 +55,7 @@ class NomicVisionRetriever(VisionRetriever):
             encoded_input = self.text_tokenizer(query_texts, padding=True, truncation=True, return_tensors="pt").to(
                 self.device
             )
-            with torch.no_grad():
+            with torch.inference_mode():
                 qs = self.text_model(**encoded_input)
             qs = self._mean_pooling(qs, encoded_input["attention_mask"])  # type: ignore
             qs = F.layer_norm(qs, normalized_shape=(qs.shape[1],))
@@ -74,7 +74,7 @@ class NomicVisionRetriever(VisionRetriever):
             doc_batch = cast(List[Image.Image], doc_batch)
 
             vision_inputs = self.processor(doc_batch, return_tensors="pt").to(self.device)
-            with torch.no_grad():
+            with torch.inference_mode():
                 ps = self.model(**vision_inputs).last_hidden_state
                 ps = F.normalize(ps[:, 0], p=2, dim=1)
 

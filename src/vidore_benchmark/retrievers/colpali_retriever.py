@@ -49,29 +49,31 @@ class ColPaliRetriever(VisionRetriever):
         self.device = get_torch_device(device)
         logger.info(f"Using device: {self.device}")
 
-        # Load the model and LORA adapter
+        # Load the model
         self.model = cast(
             ColPali,
             ColPali.from_pretrained(
                 pretrained_model_name_or_path,
                 torch_dtype=torch.bfloat16,
-                device_map=device,
+                device_map=self.device,
             ).eval(),
         )
 
         # Load the processor
-        self.processor = cast(ColPaliProcessor, ColPaliProcessor.from_pretrained(pretrained_model_name_or_path))
-        print("Loaded custom processor.\n")
+        self.processor = cast(
+            ColPaliProcessor,
+            ColPaliProcessor.from_pretrained(pretrained_model_name_or_path),
+        )
 
     @property
     def use_visual_embedding(self) -> bool:
         return True
 
     def process_images(self, images: List[Image.Image], **kwargs):
-        return self.processor.process_images(images=images)
+        return self.processor.process_images(images=images).to(self.device)
 
     def process_queries(self, queries: List[str], **kwargs):
-        return self.processor.process_queries(queries=queries)
+        return self.processor.process_queries(queries=queries).to(self.device)
 
     def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
@@ -83,8 +85,7 @@ class ColPaliRetriever(VisionRetriever):
 
         qs = []
         for batch_query in tqdm(dataloader, desc="Forward pass queries..."):
-            with torch.no_grad():
-                batch_query = {k: v.to(self.device) for k, v in batch_query.items()}
+            with torch.inference_mode():
                 embeddings_query = self.model(**batch_query)
                 qs.extend(list(torch.unbind(embeddings_query)))
 
@@ -100,10 +101,9 @@ class ColPaliRetriever(VisionRetriever):
 
         ds = []
         for batch_doc in tqdm(dataloader, desc="Forward pass documents..."):
-            with torch.no_grad():
-                batch_doc = {k: v.to(self.device) for k, v in batch_doc.items()}
+            with torch.inference_mode():
                 embeddings_doc = self.model(**batch_doc)
-            ds.extend(list(torch.unbind(embeddings_doc)))
+                ds.extend(list(torch.unbind(embeddings_doc)))
         return ds
 
     def get_scores(

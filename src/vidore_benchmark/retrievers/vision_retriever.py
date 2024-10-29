@@ -10,7 +10,7 @@ from mteb.evaluation.evaluators import RetrievalEvaluator
 
 class VisionRetriever(ABC):
     """
-    Abstract class for vision retrievers used in the VidoRe benchmark.
+    Abstract class for vision retrievers used in the ViDoRe benchmark.
     """
 
     @abstractmethod
@@ -33,7 +33,7 @@ class VisionRetriever(ABC):
     @abstractmethod
     def forward_queries(self, queries: Any, batch_size: int, **kwargs) -> List[torch.Tensor]:
         """
-        Forward pass the processed queries.
+        Preprocess and forward pass the queries through the model.
 
         NOTE: This method can either:
         - return a single tensor where the first dimension corresponds to the number of queries.
@@ -44,7 +44,7 @@ class VisionRetriever(ABC):
     @abstractmethod
     def forward_documents(self, documents: Any, batch_size: int, **kwargs) -> List[torch.Tensor]:
         """
-        Forward pass the processed documents (i.e. page images).
+        Preprocess and forward pass the documents through the model.
 
         NOTE: This method can either:
         - return a single tensor where the first dimension corresponds to the number of documents.
