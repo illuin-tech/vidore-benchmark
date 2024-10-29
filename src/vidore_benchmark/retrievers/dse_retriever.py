@@ -4,24 +4,23 @@ import math
 from typing import ClassVar, List, Optional, TypeVar
 
 import torch
-from transformers import AutoProcessor, Qwen2VLForConditionalGeneration
-
-from vidore_benchmark.utils.iter_utils import batched
-
-try:
-    from qwen_vl_utils import process_vision_info
-except:
-    print("qwen_vl_utils not found")
-
 from colpali_engine.utils.torch_utils import get_torch_device
 from dotenv import load_dotenv
 from loguru import logger
 from PIL import Image
 from torch.utils.data import Dataset
 from tqdm import tqdm
+from transformers import AutoProcessor, Qwen2VLForConditionalGeneration
 
 from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+from vidore_benchmark.utils.iter_utils import batched
+
+try:
+    from qwen_vl_utils import process_vision_info
+except ImportError:
+    pass
+
 
 T = TypeVar("T")
 load_dotenv(override=True)
