@@ -109,5 +109,5 @@ setup: |
   
   avenv
   pip install -e .
-  pip install -e ".[dev,interpretability]"
+  pip install -e ".[dev]"
   echo -e "\n\n============   SKYPILOT SETUP: Installed Python deps in venv.   ============\n\n"
