@@ -3,13 +3,17 @@ from typing import List, Optional, cast
 
 import torch
 from colpali_engine.utils.torch_utils import get_torch_device
-from FlagEmbedding import BGEM3FlagModel
 from tqdm import tqdm
 
 from vidore_benchmark.evaluation.colbert_score import get_colbert_similarity
 from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
+
+try:
+    from FlagEmbedding import BGEM3FlagModel
+except ImportError:
+    pass
 
 
 @register_vision_retriever("bge-m3-colbert")
