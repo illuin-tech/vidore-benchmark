@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import math
-from typing import List, Optional, TypeVar
+from typing import List, Optional
 
 import torch
 from colpali_engine.utils.torch_utils import get_torch_device
 from dotenv import load_dotenv
 from loguru import logger
 from PIL import Image
-from torch.utils.data import Dataset
 from tqdm import tqdm
 from transformers import AutoProcessor, Qwen2VLForConditionalGeneration
 
@@ -22,19 +21,7 @@ except ImportError:
     pass
 
 
-T = TypeVar("T")
 load_dotenv(override=True)
-
-
-class ListDataset(Dataset[T]):
-    def __init__(self, elements: List[T]):
-        self.elements = elements
-
-    def __len__(self) -> int:
-        return len(self.elements)
-
-    def __getitem__(self, idx: int) -> T:
-        return self.elements[idx]
 
 
 @register_vision_retriever("dse-qwen2")
