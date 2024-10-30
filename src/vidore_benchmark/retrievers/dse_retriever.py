@@ -110,7 +110,7 @@ class DSERetriever(VisionRetriever):
             query_inputs = self.model.prepare_inputs_for_generation(
                 **query_inputs, cache_position=cache_position, use_cache=False
             )
-            with torch.inference_mode():
+            with torch.no_grad():
                 output = self.model(**query_inputs, return_dict=True, output_hidden_states=True)
             query_embeddings = self.get_embedding(output.hidden_states[-1], 1536)
             qs.extend(list(torch.unbind(query_embeddings.to("cpu"))))
@@ -147,7 +147,7 @@ class DSERetriever(VisionRetriever):
             doc_inputs = self.model.prepare_inputs_for_generation(
                 **doc_inputs, cache_position=cache_position, use_cache=False
             )
-            with torch.inference_mode():
+            with torch.no_grad():
                 output = self.model(**doc_inputs, return_dict=True, output_hidden_states=True)
             doc_embeddings = self.get_embedding(output.hidden_states[-1], 1536)
 

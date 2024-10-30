@@ -74,7 +74,7 @@ class ColPaliRetriever(VisionRetriever):
 
         qs = []
         for batch_query in tqdm(dataloader, desc="Forward pass queries..."):
-            with torch.inference_mode():
+            with torch.no_grad():
                 embeddings_query = self.model(**batch_query)
                 qs.extend(list(torch.unbind(embeddings_query)))
 
@@ -90,7 +90,7 @@ class ColPaliRetriever(VisionRetriever):
 
         ds = []
         for batch_doc in tqdm(dataloader, desc="Forward pass documents..."):
-            with torch.inference_mode():
+            with torch.no_grad():
                 embeddings_doc = self.model(**batch_doc)
                 ds.extend(list(torch.unbind(embeddings_doc)))
         return ds

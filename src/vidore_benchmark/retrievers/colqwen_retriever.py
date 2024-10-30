@@ -72,7 +72,7 @@ class ColQwenRetriever(VisionRetriever):
 
         qs = []
         for batch_query in tqdm(dataloader, desc="Forward pass queries..."):
-            with torch.inference_mode():
+            with torch.no_grad():
                 batch_query = {k: v.to(self.device) for k, v in batch_query.items()}
                 embeddings_query = self.model(**batch_query)
                 qs.extend(list(torch.unbind(embeddings_query.to("cpu"))))
@@ -89,7 +89,7 @@ class ColQwenRetriever(VisionRetriever):
 
         ds = []
         for batch_doc in tqdm(dataloader, desc="Forward pass documents..."):
-            with torch.inference_mode():
+            with torch.no_grad():
                 batch_doc = {k: v.to(self.device) for k, v in batch_doc.items()}
                 embeddings_doc = self.model(**batch_doc)
             ds.extend(list(torch.unbind(embeddings_doc.to("cpu"))))

@@ -46,7 +46,7 @@ class BGEM3ColbertRetriever(VisionRetriever):
             batched(queries, batch_size), desc="Query batch", total=math.ceil(len(queries) / batch_size)
         ):
             query_batch = cast(List[str], query_batch)
-            with torch.inference_mode():
+            with torch.no_grad():
                 output = self.model.encode(
                     query_batch,
                     max_length=512,
@@ -63,7 +63,7 @@ class BGEM3ColbertRetriever(VisionRetriever):
             batched(documents, batch_size), desc="Document batch", total=math.ceil(len(documents) / batch_size)
         ):
             doc_batch = cast(List[str], doc_batch)
-            with torch.inference_mode():
+            with torch.no_grad():
                 output = self.model.encode(
                     doc_batch,
                     max_length=512,

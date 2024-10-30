@@ -58,7 +58,7 @@ class SigLIPRetriever(VisionRetriever):
 
             input_image_processed = self.processor(images=list_doc, return_tensors="pt", padding=True).to(self.device)
 
-            with torch.inference_mode():
+            with torch.no_grad():
                 ps = self.model.get_image_features(**input_image_processed)
                 doc_embeddings = torch.tensor(ps).to(self.device)
                 list_emb_documents.append(doc_embeddings)
