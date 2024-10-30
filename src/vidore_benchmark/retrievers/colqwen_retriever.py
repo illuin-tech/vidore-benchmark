@@ -41,7 +41,7 @@ class ColQwenRetriever(VisionRetriever):
 
     def __init__(
         self,
-        model_name: str = "vidore/colqwen2-v0.1",  # "vidore/colqwen-v0.1-merged",
+        pretrained_model_name_or_path: str = "vidore/colqwen2-v0.1",
         device: str = "auto",
     ):
         super().__init__()
@@ -53,14 +53,14 @@ class ColQwenRetriever(VisionRetriever):
         self.model = cast(
             ColQwen2,
             ColQwen2.from_pretrained(
-                model_name,
+                pretrained_model_name_or_path,
                 torch_dtype=torch.bfloat16,
                 device_map=device,
             ).eval(),
         )
 
         # Load the processor
-        self.processor = cast(ColQwen2Processor, ColQwen2Processor.from_pretrained(model_name))
+        self.processor = cast(ColQwen2Processor, ColQwen2Processor.from_pretrained(pretrained_model_name_or_path))
         print("Loaded custom processor.\n")
 
     @property

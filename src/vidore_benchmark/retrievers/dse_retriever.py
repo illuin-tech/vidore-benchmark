@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import ClassVar, List, Optional, TypeVar
+from typing import List, Optional, TypeVar
 
 import torch
 from colpali_engine.utils.torch_utils import get_torch_device
@@ -44,12 +44,9 @@ class DSERetriever(VisionRetriever):
     with Vision Language Models".
     """
 
-    emb_dim_query: ClassVar[int] = 128
-    emb_dim_doc: ClassVar[int] = 128
-
     def __init__(
         self,
-        model_name: str = "MrLight/dse-qwen2-2b-mrl-v1",  # "vidore/colqwen-v0.1-merged",
+        pretrained_model_name_or_path: str = "MrLight/dse-qwen2-2b-mrl-v1",
         num_image_tokens: int = 1024,  # 2560 is the original value
         device: str = "auto",
     ):
@@ -59,12 +56,16 @@ class DSERetriever(VisionRetriever):
         logger.info(f"Using device: {self.device}")
 
         min_pixels = 1 * 28 * 28
-        max_pixels = num_image_tokens * 28 * 28  # we can play with resolution here
+        max_pixels = num_image_tokens * 28 * 28
 
-        self.processor = AutoProcessor.from_pretrained(model_name, min_pixels=min_pixels, max_pixels=max_pixels)
+        self.processor = AutoProcessor.from_pretrained(
+            pretrained_model_name_or_path, min_pixels=min_pixels, max_pixels=max_pixels
+        )
         self.model = (
             Qwen2VLForConditionalGeneration.from_pretrained(
-                model_name, attn_implementation="flash_attention_2", torch_dtype=torch.bfloat16
+                pretrained_model_name_or_path,
+                attn_implementation="flash_attention_2" if torch.cuda.is_available() else None,
+                torch_dtype=torch.bfloat16,
             )
             .to(self.device)
             .eval()
@@ -117,7 +118,7 @@ class DSERetriever(VisionRetriever):
                 videos=query_video_inputs,
                 padding="longest",
                 return_tensors="pt",
-            ).to("cuda:0")
+            ).to(self.device)
             cache_position = torch.arange(0, len(query_texts))
             query_inputs = self.model.prepare_inputs_for_generation(
                 **query_inputs, cache_position=cache_position, use_cache=False
@@ -154,7 +155,7 @@ class DSERetriever(VisionRetriever):
             doc_image_inputs, doc_video_inputs = process_vision_info(doc_messages)
             doc_inputs = self.processor(
                 text=doc_texts, images=doc_image_inputs, videos=doc_video_inputs, padding="longest", return_tensors="pt"
-            ).to("cuda:0")
+            ).to(self.device)
             cache_position = torch.arange(0, len(doc_texts))
             doc_inputs = self.model.prepare_inputs_for_generation(
                 **doc_inputs, cache_position=cache_position, use_cache=False
@@ -174,6 +175,7 @@ class DSERetriever(VisionRetriever):
     ) -> torch.Tensor:
         if batch_size is None:
             raise ValueError("`batch_size` must be provided for ColPaliRetriever's scoring")
+
         # compute cosine similarity
         qs_stacked = torch.stack(list_emb_queries).to(self.device)
         ps_stacked = torch.stack(list_emb_documents).to(self.device)

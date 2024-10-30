@@ -24,7 +24,10 @@ load_dotenv(override=True)
 
 @register_vision_retriever("cohere")
 class CohereAPIRetriever(VisionRetriever):
-    def __init__(self, model_name: str = "embed-english-v3.0"):
+    def __init__(
+        self,
+        pretrained_model_name_or_path: str = "embed-english-v3.0",
+    ):
 
         super().__init__()
 
@@ -32,7 +35,7 @@ class CohereAPIRetriever(VisionRetriever):
         if api_key is None:
             raise ValueError("COHERE_API_KEY environment variable is not set")
 
-        self.model_name = model_name
+        self.pretrained_model_name_or_path = pretrained_model_name_or_path
         self.co = cohere.ClientV2(api_key)
 
     @property
@@ -49,7 +52,7 @@ class CohereAPIRetriever(VisionRetriever):
             # time.sleep(2)
             response = self.co.embed(
                 texts=query_batch,
-                model=self.model_name,
+                model=self.pretrained_model_name_or_path,
                 input_type="search_query",
                 embedding_types=["float"],
             )
