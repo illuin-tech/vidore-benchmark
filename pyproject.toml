@@ -30,7 +30,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "colpali-engine>=0.3.2,<0.4.0",        # TODO: Bump to 0.3.3 when released
+    "colpali-engine>=0.3.3,<0.4.0",
     "datasets>=2.15.0",
     "einops>=0.8.0,<1.0.0",
     "GPUtil>=1.4.0,<2.0.0",
