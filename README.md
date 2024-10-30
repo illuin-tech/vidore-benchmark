@@ -34,6 +34,9 @@ The eval codebase depends on a few Python packages, which can be downloaded usin
 pip install vidore-benchmark
 ```
 
+> [!TIP]
+> By default, the `vidore-benchmark` package already includes the dependencies for the ColVision models (e.g. ColPali, ColQwen2...).
+
 To keep a lightweight repository, only the essential packages were installed. In particular, you must specify the dependencies for the specific non-Transformers models you want to run (see the list in `pyproject.toml`). For instance, if you are going to evaluate the BGE-M3 retriever:
 
 ```bash
