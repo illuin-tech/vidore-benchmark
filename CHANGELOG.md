@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning].
 
 - Add support for ColQwen2, DSEQwen2, and Cohere API embedding models
 
+### Changed
+
+- Add option to load a specific checkpoint for Hf models with `pretrained_model_name_or_path`
+- Change the CLI argument names (breaking)
+
 ### Fixed
 
 - Fix `evaluate_dataset` when used with the BM25 retriever
