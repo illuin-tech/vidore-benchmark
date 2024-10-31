@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from collections import OrderedDict
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import torch
 from datasets import Dataset
@@ -56,11 +56,22 @@ def evaluate_dataset(
         return metrics
 
     # Get the embeddings for the queries and documents
-    emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
+    # NOTE: To prevent overloading the RAM for large datasets, we will forward both queries and documents
+    # in batches. Note that this is optimization is not related to the model's forward pass.
+    emb_queries: List[torch.Tensor] = []
+    emb_documents: List[torch.Tensor] = []
 
-    emb_documents = []
-    for doc_batch in tqdm(batched(ds, n=batch_doc*10), desc="Document pre-batch", total=math.ceil(len(ds) / (batch_doc*10))):
-        documents = [db[col_documents] for db in doc_batch]
+    dataloader_prebatch_size = max(batch_query, batch_doc)
+
+    for doc_batch in tqdm(
+        batched(ds, n=dataloader_prebatch_size),
+        desc="Dataloader pre-batching",
+        total=math.ceil(len(ds) / (dataloader_prebatch_size)),
+    ):
+        queries: List[str] = [query for query in queries]
+        emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
+
+        documents: List[Any] = [db[col_documents] for db in doc_batch]
         emb_documents.extend(vision_retriever.forward_documents(documents, batch_size=batch_doc))
 
     if embedding_pooler is not None:
