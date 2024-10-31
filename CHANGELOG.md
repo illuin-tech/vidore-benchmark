@@ -16,10 +16,12 @@ and this project adheres to [Semantic Versioning].
 - Restructure the `vidore-benchmark` package (breaking)
 - Change the CLI argument names (breaking)
 - Add option to load a specific checkpoint for Hf models with `pretrained_model_name_or_path`
+- Add better RAM handling during evaluation
 
 ### Fixed
 
 - Fix `evaluate_dataset` when used with the BM25 retriever
+- Fix issue when no `pretrained_model_name_or_path` is `None` in `load_vision_retriever_from_registry`
 
 ### Removed
 
