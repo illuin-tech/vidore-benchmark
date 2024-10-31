@@ -72,9 +72,10 @@ class ColPaliRetriever(VisionRetriever):
             collate_fn=self.process_queries,
         )
 
-        qs = []
-        for batch_query in tqdm(dataloader, desc="Forward pass queries..."):
-            with torch.no_grad():
+        qs: List[torch.Tensor] = []
+
+        with torch.no_grad():
+            for batch_query in tqdm(dataloader, desc="Forward pass queries...", leave=False):
                 embeddings_query = self.model(**batch_query)
                 qs.extend(list(torch.unbind(embeddings_query)))
 
@@ -88,9 +89,10 @@ class ColPaliRetriever(VisionRetriever):
             collate_fn=self.process_images,
         )
 
-        ds = []
-        for batch_doc in tqdm(dataloader, desc="Forward pass documents..."):
-            with torch.no_grad():
+        ds: List[torch.Tensor] = []
+
+        with torch.no_grad():
+            for batch_doc in tqdm(dataloader, desc="Forward pass documents...", leave=False):
                 embeddings_doc = self.model(**batch_doc)
                 ds.extend(list(torch.unbind(embeddings_doc)))
         return ds

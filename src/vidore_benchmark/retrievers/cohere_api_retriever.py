@@ -79,7 +79,10 @@ class CohereAPIRetriever(VisionRetriever):
         list_emb_queries: List[List[float]] = []
 
         for query_batch in tqdm(
-            batched(queries, batch_size), desc="Query batch", total=math.ceil(len(queries) / batch_size)
+            batched(queries, batch_size),
+            desc="Query batch",
+            total=math.ceil(len(queries) / batch_size),
+            leave=False,
         ):
             response = self.call_api_queries(query_batch)
             query_embeddings = list(response.embeddings.float_)
@@ -93,7 +96,10 @@ class CohereAPIRetriever(VisionRetriever):
         list_emb_documents: List[List[float]] = []
 
         for doc_batch in tqdm(
-            batched(documents, batch_size), desc="Document batch", total=math.ceil(len(documents) / batch_size)
+            batched(documents, batch_size),
+            desc="Document batch",
+            total=math.ceil(len(documents) / batch_size),
+            leave=False,
         ):
             doc_batch = cast(List[Image.Image], doc_batch)
             images_base64 = [self.convert_image_to_base64(doc) for doc in doc_batch]

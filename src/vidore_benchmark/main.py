@@ -53,9 +53,9 @@ def evaluate_retriever(
     ] = None,
     dataset_name: Annotated[Optional[str], typer.Option(help="HuggingFace Hub dataset name")] = None,
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
-    batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 4,
-    batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
-    batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
+    batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 8,
+    batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 8,
+    batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 16,
     collection_name: Annotated[
         Optional[str],
         typer.Option(help="Dataset collection to use for evaluation. Can be a Hf collection id or a local dirpath."),

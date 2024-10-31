@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import math
 from collections import OrderedDict
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import torch
 from datasets import Dataset
@@ -10,6 +11,7 @@ from tqdm import tqdm
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
 from vidore_benchmark.retrievers.bm25_retriever import BM25Retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+from vidore_benchmark.utils.iter_utils import batched
 
 
 def evaluate_dataset(
@@ -44,18 +46,33 @@ def evaluate_dataset(
         queries.remove(None)
         if len(queries) == 0:
             raise ValueError("All queries are None")
-    documents = ds[col_documents]
 
     # Edge case: using the BM25Retriever
     if isinstance(vision_retriever, BM25Retriever):
+        documents = ds[col_documents]
         scores = vision_retriever.get_scores_bm25(queries=queries, documents=documents)
         relevant_docs, results = vision_retriever.get_relevant_docs_results(ds, queries, scores)
         metrics = vision_retriever.compute_metrics(relevant_docs, results)
         return metrics
 
     # Get the embeddings for the queries and documents
-    emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
-    emb_documents = vision_retriever.forward_documents(documents, batch_size=batch_doc)
+    # NOTE: To prevent overloading the RAM for large datasets, we will forward both queries and documents
+    # in batches. Note that this is optimization is not related to the model's forward pass.
+    emb_queries: List[torch.Tensor] = []
+    emb_documents: List[torch.Tensor] = []
+
+    dataloader_prebatch_size = max(batch_query, batch_doc)
+
+    for doc_batch in tqdm(
+        batched(ds, n=dataloader_prebatch_size),
+        desc="Dataloader pre-batching",
+        total=math.ceil(len(ds) / (dataloader_prebatch_size)),
+    ):
+        queries: List[str] = [query for query in queries]
+        emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
+
+        documents: List[Any] = [db[col_documents] for db in doc_batch]
+        emb_documents.extend(vision_retriever.forward_documents(documents, batch_size=batch_doc))
 
     if embedding_pooler is not None:
         for idx, emb_document in tqdm(enumerate(emb_documents), total=len(emb_documents), desc="Pooling embeddings..."):

@@ -74,7 +74,10 @@ class DSERetriever(VisionRetriever):
     def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
         qs = []
         for batch_query in tqdm(
-            batched(queries, batch_size), desc="Query batch", total=math.ceil(len(queries) / batch_size)
+            batched(queries, batch_size),
+            desc="Query batch",
+            total=math.ceil(len(queries) / batch_size),
+            leave=False,
         ):
             query_messages = []
             for query in batch_query:
@@ -120,7 +123,10 @@ class DSERetriever(VisionRetriever):
     def forward_documents(self, documents: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
         ds = []
         for batch_doc in tqdm(
-            batched(documents, batch_size), desc="Document batch", total=math.ceil(len(documents) / batch_size)
+            batched(documents, batch_size),
+            desc="Document batch",
+            total=math.ceil(len(documents) / batch_size),
+            leave=False,
         ):
             doc_messages = []
             for doc in batch_doc:
