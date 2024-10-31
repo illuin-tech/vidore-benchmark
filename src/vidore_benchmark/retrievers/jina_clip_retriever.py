@@ -39,7 +39,10 @@ class JinaClipRetriever(VisionRetriever):
     def forward_queries(self, queries, batch_size: int, **kwargs) -> List[torch.Tensor]:
         list_emb_queries: List[torch.Tensor] = []
         for query_batch in tqdm(
-            batched(queries, batch_size), desc="Query batch", total=math.ceil(len(queries) / batch_size)
+            batched(queries, batch_size),
+            desc="Query batch",
+            total=math.ceil(len(queries) / batch_size),
+            leave=False,
         ):
             query_batch = cast(List[str], query_batch)
             with torch.no_grad():
@@ -52,7 +55,10 @@ class JinaClipRetriever(VisionRetriever):
     def forward_documents(self, documents, batch_size: int, **kwargs) -> List[torch.Tensor]:
         list_emb_documents: List[torch.Tensor] = []
         for doc_batch in tqdm(
-            batched(documents, batch_size), desc="Document batch", total=math.ceil(len(documents) / batch_size)
+            batched(documents, batch_size),
+            desc="Document batch",
+            total=math.ceil(len(documents) / batch_size),
+            leave=False,
         ):
             doc_batch = cast(List[Image.Image], doc_batch)
             with torch.no_grad():
