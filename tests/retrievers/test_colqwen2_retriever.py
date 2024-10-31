@@ -1,6 +1,7 @@
 from typing import Generator
 
 import pytest
+
 from vidore_benchmark.retrievers.colqwen_retriever import ColQwenRetriever
 from vidore_benchmark.utils.testing_utils import tear_down_torch
 

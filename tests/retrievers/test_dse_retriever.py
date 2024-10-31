@@ -1,6 +1,7 @@
 from typing import Generator
 
 import pytest
+
 from vidore_benchmark.retrievers.dse_retriever import DSERetriever
 from vidore_benchmark.utils.testing_utils import tear_down_torch
 
