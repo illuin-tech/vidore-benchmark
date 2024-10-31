@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import ClassVar, List, Optional, cast
 
 import torch
-from colpali_engine.models import ColPali, ColPaliProcessor
+from colpali_engine.models import ColQwen2, ColQwen2Processor
 from colpali_engine.utils.torch_utils import get_torch_device
 from dotenv import load_dotenv
 from loguru import logger
@@ -18,10 +18,10 @@ from vidore_benchmark.utils.data_utils import ListDataset
 load_dotenv(override=True)
 
 
-@register_vision_retriever("colpali")
-class ColPaliRetriever(VisionRetriever):
+@register_vision_retriever("colqwen2")
+class ColQwenRetriever(VisionRetriever):
     """
-    ColPali retriever that implements the model from "ColPali: Efficient Document Retrieval
+    ColPali Retriever that implements the model from "ColPali: Efficient Document Retrieval
     with Vision Language Models".
     """
 
@@ -30,7 +30,7 @@ class ColPaliRetriever(VisionRetriever):
 
     def __init__(
         self,
-        pretrained_model_name_or_path: str,
+        pretrained_model_name_or_path: str = "vidore/colqwen2-v0.1",
         device: str = "auto",
     ):
         super().__init__()
@@ -38,31 +38,29 @@ class ColPaliRetriever(VisionRetriever):
         self.device = get_torch_device(device)
         logger.info(f"Using device: {self.device}")
 
-        # Load the model
+        # Load the model and LORA adapter
         self.model = cast(
-            ColPali,
-            ColPali.from_pretrained(
+            ColQwen2,
+            ColQwen2.from_pretrained(
                 pretrained_model_name_or_path,
                 torch_dtype=torch.bfloat16,
-                device_map=self.device,
+                device_map=device,
             ).eval(),
         )
 
         # Load the processor
-        self.processor = cast(
-            ColPaliProcessor,
-            ColPaliProcessor.from_pretrained(pretrained_model_name_or_path),
-        )
+        self.processor = cast(ColQwen2Processor, ColQwen2Processor.from_pretrained(pretrained_model_name_or_path))
+        print("Loaded custom processor.\n")
 
     @property
     def use_visual_embedding(self) -> bool:
         return True
 
     def process_images(self, images: List[Image.Image], **kwargs):
-        return self.processor.process_images(images=images).to(self.device)
+        return self.processor.process_images(images=images)
 
     def process_queries(self, queries: List[str], **kwargs):
-        return self.processor.process_queries(queries=queries).to(self.device)
+        return self.processor.process_queries(queries=queries)
 
     def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
@@ -75,8 +73,9 @@ class ColPaliRetriever(VisionRetriever):
         qs = []
         for batch_query in tqdm(dataloader, desc="Forward pass queries..."):
             with torch.no_grad():
+                batch_query = {k: v.to(self.device) for k, v in batch_query.items()}
                 embeddings_query = self.model(**batch_query)
-                qs.extend(list(torch.unbind(embeddings_query)))
+                qs.extend(list(torch.unbind(embeddings_query.to("cpu"))))
 
         return qs
 
@@ -91,8 +90,9 @@ class ColPaliRetriever(VisionRetriever):
         ds = []
         for batch_doc in tqdm(dataloader, desc="Forward pass documents..."):
             with torch.no_grad():
+                batch_doc = {k: v.to(self.device) for k, v in batch_doc.items()}
                 embeddings_doc = self.model(**batch_doc)
-                ds.extend(list(torch.unbind(embeddings_doc)))
+            ds.extend(list(torch.unbind(embeddings_doc.to("cpu"))))
         return ds
 
     def get_scores(

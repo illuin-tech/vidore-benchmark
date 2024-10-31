@@ -4,16 +4,20 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple
 
 import torch
+from colpali_engine.trainer.eval_utils import CustomRetrievalEvaluator
 from datasets import Dataset
-from mteb.evaluation.evaluators import RetrievalEvaluator
 
 
 class VisionRetriever(ABC):
     """
-    Abstract class for ViDoRe retrievers.
+    Abstract class for vision retrievers used in the ViDoRe benchmark.
     """
 
-    def __init__(self):
+    @abstractmethod
+    def __init__(self, **kwargs):
+        """
+        Initialize the VisionRetriever.
+        """
         pass
 
     @property
@@ -29,7 +33,7 @@ class VisionRetriever(ABC):
     @abstractmethod
     def forward_queries(self, queries: Any, batch_size: int, **kwargs) -> List[torch.Tensor]:
         """
-        Forward pass the processed queries.
+        Preprocess and forward pass the queries through the model.
 
         NOTE: This method can either:
         - return a single tensor where the first dimension corresponds to the number of queries.
@@ -40,7 +44,7 @@ class VisionRetriever(ABC):
     @abstractmethod
     def forward_documents(self, documents: Any, batch_size: int, **kwargs) -> List[torch.Tensor]:
         """
-        Forward pass the processed documents (i.e. page images).
+        Preprocess and forward pass the documents through the model.
 
         NOTE: This method can either:
         - return a single tensor where the first dimension corresponds to the number of documents.
@@ -131,7 +135,7 @@ class VisionRetriever(ABC):
         NOTE: Override this method if the retriever has a different evaluation metric.
         """
 
-        mteb_evaluator = RetrievalEvaluator()
+        mteb_evaluator = CustomRetrievalEvaluator()
 
         ndcg, _map, recall, precision, naucs = mteb_evaluator.evaluate(
             relevant_docs,

@@ -38,7 +38,7 @@ def query_document_pairs_fixture() -> List[Tuple[str, str]]:
 
 
 @pytest.fixture
-def queries_fixtures(query_document_pairs_fixture) -> List[str]:
+def queries_fixture(query_document_pairs_fixture) -> List[str]:
     return [query for query, _ in query_document_pairs_fixture]
 
 

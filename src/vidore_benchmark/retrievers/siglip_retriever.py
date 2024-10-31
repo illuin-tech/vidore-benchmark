@@ -2,6 +2,7 @@ import math
 from typing import List, Optional, cast
 
 import torch
+from colpali_engine.utils.torch_utils import get_torch_device
 from PIL import Image
 from tqdm import tqdm
 from transformers import AutoModel, AutoProcessor
@@ -9,17 +10,25 @@ from transformers import AutoModel, AutoProcessor
 from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
-from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
-@register_vision_retriever("google/siglip-so400m-patch14-384")
+@register_vision_retriever("siglip")
 class SigLIPRetriever(VisionRetriever):
-    def __init__(self, device: str = "auto"):
+    """
+    SigLIPRetriever class to retrieve embeddings from the SigLIP model.
+    """
+
+    def __init__(
+        self,
+        pretrained_model_name_or_path: str = "google/siglip-so400m-patch14-384",
+        device: str = "auto",
+    ):
         super().__init__()
+        self.pretrained_model_name_or_path = pretrained_model_name_or_path
         self.device = get_torch_device(device)
-        self.processor = AutoProcessor.from_pretrained("google/siglip-so400m-patch14-384")
-        self.model = AutoModel.from_pretrained("google/siglip-so400m-patch14-384").to(self.device).eval()
-        self.model.eval()
+
+        self.model = AutoModel.from_pretrained(pretrained_model_name_or_path).to(self.device).eval()
+        self.processor = AutoProcessor.from_pretrained(pretrained_model_name_or_path)
 
     @property
     def use_visual_embedding(self) -> bool:

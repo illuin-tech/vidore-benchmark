@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning].
 
 ## [Unreleased]
 
+### Added
+
+- Add support for ColQwen2, DSEQwen2, and Cohere API embedding models
+
+### Changed
+
+- Restructure the `vidore-benchmark` package (breaking)
+- Change the CLI argument names (breaking)
+- Add option to load a specific checkpoint for Hf models with `pretrained_model_name_or_path`
+
 ### Fixed
 
 - Fix `evaluate_dataset` when used with the BM25 retriever
@@ -15,6 +25,10 @@ and this project adheres to [Semantic Versioning].
 
 - Remove experimental quantization
 - Remove the `interpretability` module. The interpretability code has been moved and improved as part of the [`colpali-engine==0.3.2`](https://github.com/illuin-tech/colpali/releases/tag/v0.3.2) release.
+
+### Tests
+
+- Add tests for ColQwen2, DSEQwen2, and Cohere API embedding models
 
 ## [4.0.2] - 2024-10-17
 

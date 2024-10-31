@@ -2,26 +2,41 @@ import math
 from typing import List, Optional, cast
 
 import torch
-from FlagEmbedding import BGEM3FlagModel
+from colpali_engine.utils.torch_utils import get_torch_device
 from tqdm import tqdm
 
 from vidore_benchmark.evaluation.colbert_score import get_colbert_similarity
 from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
-from vidore_benchmark.utils.torch_utils import get_torch_device
+
+try:
+    from FlagEmbedding import BGEM3FlagModel
+except ImportError:
+    pass
 
 
-@register_vision_retriever("BAAI/bge-m3-colbert")
+@register_vision_retriever("bge-m3-colbert")
 class BGEM3ColbertRetriever(VisionRetriever):
     """
     BGEM3Retriever class to retrieve embeddings the BGE-M3 model (multi-vector embeddings + ColBERT scoring).
     """
 
-    def __init__(self, device: str = "auto"):
+    def __init__(
+        self,
+        pretrained_model_name_or_path: str = "BAAI/bge-m3",
+        device: str = "auto",
+    ):
         super().__init__()
         self.device = get_torch_device(device)
-        self.model = BGEM3FlagModel("BAAI/bge-m3", use_fp16=True).eval()
+
+        self.model = BGEM3FlagModel(
+            pretrained_model_name_or_path,
+            use_fp16=True,
+            device=self.device,
+        )
+        # NOTE: BGEM3FlagModel is already in eval mode
+
         self.emb_dim_query = 1024
         self.emb_dim_doc = 1024
 
