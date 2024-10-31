@@ -34,6 +34,9 @@ def load_vision_retriever_from_registry(
 
     retriever_class = load_vision_retriever_class_from_registry(model_class)
 
-    retriever = retriever_class(pretrained_model_name_or_path=pretrained_model_name_or_path)
+    if pretrained_model_name_or_path is not None:
+        retriever = retriever_class(pretrained_model_name_or_path=pretrained_model_name_or_path)
+    else:
+        retriever = retriever_class()
 
     return retriever
