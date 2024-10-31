@@ -13,8 +13,9 @@ and this project adheres to [Semantic Versioning].
 
 ### Changed
 
-- Add option to load a specific checkpoint for Hf models with `pretrained_model_name_or_path`
+- Restructure the `vidore-benchmark` package (breaking)
 - Change the CLI argument names (breaking)
+- Add option to load a specific checkpoint for Hf models with `pretrained_model_name_or_path`
 
 ### Fixed
 
