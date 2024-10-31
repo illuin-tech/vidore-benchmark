@@ -1,7 +1,6 @@
 from typing import Generator
 
 import pytest
-
 from vidore_benchmark.retrievers.bge_m3_colbert_retriever import BGEM3ColbertRetriever
 from vidore_benchmark.utils.testing_utils import tear_down_torch
 

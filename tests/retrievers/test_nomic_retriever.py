@@ -1,7 +1,6 @@
 from typing import Generator
 
 import pytest
-
 from vidore_benchmark.retrievers.nomic_retriever import NomicVisionRetriever
 from vidore_benchmark.utils.testing_utils import tear_down_torch
 

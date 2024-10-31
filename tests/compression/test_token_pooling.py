@@ -1,6 +1,5 @@
 import pytest
 import torch
-
 from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
 
 

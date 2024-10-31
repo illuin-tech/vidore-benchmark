@@ -1,7 +1,6 @@
 from typing import Generator
 
 import pytest
-
 from vidore_benchmark.retrievers.cohere_api_retriever import CohereAPIRetriever
 from vidore_benchmark.utils.testing_utils import tear_down_torch
 

@@ -9,7 +9,6 @@ import typer
 from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
 from tqdm import tqdm
-
 from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
 from vidore_benchmark.retrievers.utils.load_retriever import load_vision_retriever_from_registry
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
