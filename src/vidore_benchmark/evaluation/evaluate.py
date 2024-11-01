@@ -56,8 +56,10 @@ def evaluate_dataset(
         return metrics
 
     # Get the embeddings for the queries and documents
-    # NOTE: To prevent overloading the RAM for large datasets, we will forward both queries and documents
-    # in batches. Note that this is optimization is not related to the model's forward pass.
+    # NOTE: To prevent overloading the RAM for large datasets, we will load the documents (images)
+    # that will be fed to the model in batches (this should be fine for queries as their memory footprint
+    # is negligible. This optimization is about efficient data loading, and is not related to the model's
+    # forward pass which is also batched.
     emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
     emb_documents: List[torch.Tensor] = []
 
