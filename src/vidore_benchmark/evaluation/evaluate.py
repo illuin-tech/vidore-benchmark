@@ -61,9 +61,7 @@ def evaluate_dataset(
     emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
     emb_documents: List[torch.Tensor] = []
 
-    # might just be batch_doc
-    # dataloader_prebatch_size = max(batch_query, batch_doc)
-    dataloader_prebatch_size = batch_doc
+    dataloader_prebatch_size = 10 * batch_doc
 
     for doc_batch in tqdm(
         batched(ds, n=dataloader_prebatch_size),
