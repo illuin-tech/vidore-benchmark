@@ -18,7 +18,7 @@ def evaluate_dataset(
     vision_retriever: VisionRetriever,
     ds: Dataset,
     batch_query: int,
-    batch_doc: int,
+    batch_passage: int,
     batch_score: Optional[int] = None,
     embedding_pooler: Optional[BaseEmbeddingPooler] = None,
 ) -> Dict[str, float]:
@@ -56,14 +56,15 @@ def evaluate_dataset(
         return metrics
 
     # Get the embeddings for the queries and passages
+    emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
+
     # NOTE: To prevent overloading the RAM for large datasets, we will load the passages (images)
     # that will be fed to the model in batches (this should be fine for queries as their memory footprint
     # is negligible. This optimization is about efficient data loading, and is not related to the model's
     # forward pass which is also batched.
-    emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
     emb_passages: List[torch.Tensor] = []
 
-    dataloader_prebatch_size = 10 * batch_doc
+    dataloader_prebatch_size = 10 * batch_passage
 
     for doc_batch in tqdm(
         batched(ds, n=dataloader_prebatch_size),
@@ -71,7 +72,10 @@ def evaluate_dataset(
         total=math.ceil(len(ds) / (dataloader_prebatch_size)),
     ):
         passages: List[Any] = [db[passage_column_name] for db in doc_batch]
-        emb_passages.extend(vision_retriever.forward_passages(passages, batch_size=batch_doc))
+        batch_emb_passages = vision_retriever.forward_passages(passages, batch_size=batch_passage)
+        if isinstance(batch_emb_passages, torch.Tensor):
+            batch_emb_passages = list(torch.unbind(batch_emb_passages))
+            emb_passages.extend(batch_emb_passages)
 
     if embedding_pooler is not None:
         for idx, emb_document in tqdm(enumerate(emb_passages), total=len(emb_passages), desc="Pooling embeddings..."):
