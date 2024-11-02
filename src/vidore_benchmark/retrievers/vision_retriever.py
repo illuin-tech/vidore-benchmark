@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 from colpali_engine.trainer.eval_utils import CustomRetrievalEvaluator
 from datasets import Dataset
+
+logger = logging.getLogger(__name__)
 
 
 class VisionRetriever(ABC):

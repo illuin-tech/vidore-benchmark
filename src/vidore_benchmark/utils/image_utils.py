@@ -4,15 +4,17 @@ Utility functions for working with images.
 
 import base64
 import io
+import logging
 from pathlib import Path
 from typing import Union, cast
 
 import datasets
 from datasets import Dataset
-from loguru import logger
 from PIL import Image
 from torch.utils.data import IterableDataset
 from tqdm import tqdm
+
+logger = logging.getLogger(__name__)
 
 
 def scale_image(image: Image.Image, new_height: int = 1024) -> Image.Image:

@@ -1,10 +1,11 @@
+import logging
 from typing import Dict, Type
-
-from loguru import logger
 
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
 VISION_RETRIEVER_REGISTRY: Dict[str, Type[VisionRetriever]] = {}
+
+logger = logging.getLogger(__name__)
 
 
 def register_vision_retriever(model_class: str):
