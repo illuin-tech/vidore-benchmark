@@ -36,6 +36,7 @@ class SigLIPRetriever(VisionRetriever):
 
     def forward_queries(self, queries, batch_size: int, **kwargs) -> List[torch.Tensor]:
         list_emb_queries: List[torch.Tensor] = []
+
         for query_batch in tqdm(
             batched(queries, batch_size),
             desc="Forwarding query batches",
@@ -46,28 +47,28 @@ class SigLIPRetriever(VisionRetriever):
             inputs_queries = self.processor(
                 text=query_batch, return_tensors="pt", padding="max_length", truncation=True
             ).to(self.device)
-            qs = self.model.get_text_features(**inputs_queries)
-            query_embeddings = torch.tensor(qs).to(self.device)
-            list_emb_queries.append(query_embeddings)
+            query_embeddings = self.model.get_text_features(**inputs_queries)
+            list_emb_queries.extend(list(torch.unbind(query_embeddings, dim=0)))
+
         return list_emb_queries
 
     def forward_passages(self, passages, batch_size: int, **kwargs) -> List[torch.Tensor]:
         list_emb_passages: List[torch.Tensor] = []
-        for doc_batch in tqdm(
+
+        for passage_batch in tqdm(
             batched(passages, batch_size),
             desc="Forwarding passage batches",
             total=math.ceil(len(passages) / batch_size),
             leave=False,
         ):
-            doc_batch = cast(List[Image.Image], doc_batch)
-            list_doc = [document.convert("RGB") for document in doc_batch if isinstance(document, Image.Image)]
+            passage_batch = cast(List[Image.Image], passage_batch)
+            list_doc = [document.convert("RGB") for document in passage_batch if isinstance(document, Image.Image)]
 
             input_image_processed = self.processor(images=list_doc, return_tensors="pt", padding=True).to(self.device)
 
             with torch.no_grad():
-                ps = self.model.get_image_features(**input_image_processed)
-                doc_embeddings = torch.tensor(ps).to(self.device)
-                list_emb_passages.append(doc_embeddings)
+                passage_embeddings = self.model.get_image_features(**input_image_processed)
+                list_emb_passages.extend(list(torch.unbind(passage_embeddings, dim=0)))
 
         return list_emb_passages
 

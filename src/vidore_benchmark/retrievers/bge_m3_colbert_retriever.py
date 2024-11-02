@@ -70,16 +70,16 @@ class BGEM3ColbertRetriever(VisionRetriever):
     def forward_passages(self, passages: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
         list_emb_passages: List[torch.Tensor] = []
 
-        for doc_batch in tqdm(
+        for passage_batch in tqdm(
             batched(passages, batch_size),
             desc="Forwarding passage batches",
             total=math.ceil(len(passages) / batch_size),
             leave=False,
         ):
-            doc_batch = cast(List[str], doc_batch)
+            passage_batch = cast(List[str], passage_batch)
             with torch.no_grad():
                 output = self.model.encode(
-                    doc_batch,
+                    passage_batch,
                     max_length=512,
                     return_dense=False,
                     return_sparse=False,

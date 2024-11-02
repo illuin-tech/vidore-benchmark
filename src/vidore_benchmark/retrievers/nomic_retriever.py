@@ -80,27 +80,27 @@ class NomicVisionRetriever(VisionRetriever):
                 qs = F.normalize(qs, p=2, dim=1)
 
             query_embeddings = torch.tensor(qs).to(self.device)
-            list_emb_queries.append(query_embeddings)
+            list_emb_queries.extend(list(torch.unbind(query_embeddings, dim=0)))
 
         return list_emb_queries
 
     def forward_passages(self, passages, batch_size: int, **kwargs) -> List[torch.Tensor]:
         list_emb_passages: List[torch.Tensor] = []
-        for doc_batch in tqdm(
+        for passage_batch in tqdm(
             batched(passages, batch_size),
             desc="Forwarding passage batches",
             total=math.ceil(len(passages) / batch_size),
             leave=False,
         ):
-            doc_batch = cast(List[Image.Image], doc_batch)
+            passage_batch = cast(List[Image.Image], passage_batch)
 
-            vision_inputs = self.processor(doc_batch, return_tensors="pt").to(self.device)
+            vision_inputs = self.processor(passage_batch, return_tensors="pt").to(self.device)
             with torch.no_grad():
                 ps = self.model(**vision_inputs).last_hidden_state
                 ps = F.normalize(ps[:, 0], p=2, dim=1)
 
-            doc_embeddings = torch.tensor(ps).to(self.device)
-            list_emb_passages.append(doc_embeddings)
+            passage_embeddings = torch.tensor(ps).to(self.device)
+            list_emb_passages.extend(list(torch.unbind(passage_embeddings, dim=0)))
 
         return list_emb_passages
 

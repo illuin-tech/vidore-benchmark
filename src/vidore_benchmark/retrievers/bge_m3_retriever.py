@@ -55,25 +55,29 @@ class BGEM3Retriever(VisionRetriever):
             leave=False,
         ):
             query_batch = cast(List[str], query_batch)
+
             with torch.no_grad():
                 query_embeddings = cast(np.ndarray, self.model.encode(query_batch, max_length=512)["dense_vecs"])
-                list_emb_queries.extend(query_embeddings.tolist())
+
+            list_emb_queries.extend(query_embeddings.tolist())
 
         return torch.tensor(list_emb_queries)
 
     def forward_passages(self, passages: List[str], batch_size: int, **kwargs) -> torch.Tensor:
         list_emb_passages: List[torch.Tensor] = []
 
-        for doc_batch in tqdm(
+        for passage_batch in tqdm(
             batched(passages, batch_size),
             desc="Forwarding passage batches",
             total=math.ceil(len(passages) / batch_size),
             leave=False,
         ):
-            doc_batch = cast(List[str], doc_batch)
+            passage_batch = cast(List[str], passage_batch)
+
             with torch.no_grad():
-                passage_embeddings = cast(np.ndarray, self.model.encode(doc_batch)["dense_vecs"])
-                list_emb_passages.extend(passage_embeddings.tolist())
+                passage_embeddings = cast(np.ndarray, self.model.encode(passage_batch)["dense_vecs"])
+
+            list_emb_passages.extend(passage_embeddings.tolist())
 
         return torch.tensor(list_emb_passages)
 

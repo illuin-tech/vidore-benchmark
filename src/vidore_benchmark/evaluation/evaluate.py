@@ -66,12 +66,12 @@ def evaluate_dataset(
 
     dataloader_prebatch_size = 10 * batch_passage
 
-    for doc_batch in tqdm(
+    for passage_batch in tqdm(
         batched(ds, n=dataloader_prebatch_size),
         desc="Dataloader pre-batching",
         total=math.ceil(len(ds) / (dataloader_prebatch_size)),
     ):
-        passages: List[Any] = [db[passage_column_name] for db in doc_batch]
+        passages: List[Any] = [db[passage_column_name] for db in passage_batch]
         batch_emb_passages = vision_retriever.forward_passages(passages, batch_size=batch_passage)
         if isinstance(batch_emb_passages, torch.Tensor):
             batch_emb_passages = list(torch.unbind(batch_emb_passages))

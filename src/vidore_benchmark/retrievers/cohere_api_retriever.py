@@ -93,14 +93,14 @@ class CohereAPIRetriever(VisionRetriever):
         # NOTE: Batch size should be set to 1 with the current Cohere API.
         list_emb_passages: List[List[float]] = []
 
-        for doc_batch in tqdm(
+        for passage_batch in tqdm(
             batched(passages, batch_size),
             desc="Forwarding passage batches",
             total=math.ceil(len(passages) / batch_size),
             leave=False,
         ):
-            doc_batch = cast(List[Image.Image], doc_batch)
-            images_base64 = [self.convert_image_to_base64(doc) for doc in doc_batch]
+            passage_batch = cast(List[Image.Image], passage_batch)
+            images_base64 = [self.convert_image_to_base64(doc) for doc in passage_batch]
 
             # Optional delay:
             time.sleep(2)
