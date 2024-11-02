@@ -1,6 +1,7 @@
 import math
 from typing import List, Optional, Union, cast
 
+import numpy as np
 import torch
 from colpali_engine.utils.torch_utils import get_torch_device
 from tqdm import tqdm
@@ -44,8 +45,9 @@ class BGEM3Retriever(VisionRetriever):
     def use_visual_embedding(self) -> bool:
         return False
 
-    def forward_queries(self, queries, batch_size: int, **kwargs) -> List[torch.Tensor]:
-        list_emb_queries: List[torch.Tensor] = []
+    def forward_queries(self, queries, batch_size: int, **kwargs) -> torch.Tensor:
+        list_emb_queries: List[float] = []
+
         for query_batch in tqdm(
             batched(queries, batch_size),
             desc="Forwarding query batches",
@@ -54,14 +56,14 @@ class BGEM3Retriever(VisionRetriever):
         ):
             query_batch = cast(List[str], query_batch)
             with torch.no_grad():
-                output = self.model.encode(query_batch, max_length=512)["dense_vecs"]
-            query_embeddings = torch.tensor(output).to(self.device)
-            list_emb_queries.append(query_embeddings)
+                query_embeddings = cast(np.ndarray, self.model.encode(query_batch, max_length=512)["dense_vecs"])
+                list_emb_queries.extend(query_embeddings.tolist())
 
-        return list_emb_queries
+        return torch.tensor(list_emb_queries)
 
-    def forward_passages(self, passages: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
+    def forward_passages(self, passages: List[str], batch_size: int, **kwargs) -> torch.Tensor:
         list_emb_passages: List[torch.Tensor] = []
+
         for doc_batch in tqdm(
             batched(passages, batch_size),
             desc="Forwarding passage batches",
@@ -70,10 +72,10 @@ class BGEM3Retriever(VisionRetriever):
         ):
             doc_batch = cast(List[str], doc_batch)
             with torch.no_grad():
-                output = self.model.encode(doc_batch)["dense_vecs"]
-            doc_embeddings = torch.tensor(output).to(self.device)
-            list_emb_passages.append(doc_embeddings)
-        return list_emb_passages
+                passage_embeddings = cast(np.ndarray, self.model.encode(doc_batch)["dense_vecs"])
+                list_emb_passages.extend(passage_embeddings.tolist())
+
+        return torch.tensor(list_emb_passages)
 
     def get_scores(
         self,
