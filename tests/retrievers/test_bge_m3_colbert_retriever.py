@@ -26,7 +26,7 @@ def test_forward_documents(retriever: BGEM3ColbertRetriever, text_passage_fixtur
 
 @pytest.mark.slow
 def test_get_scores(retriever: BGEM3ColbertRetriever, queries_fixture, text_passage_fixture):
-    emb_query = retriever.forward_queries(queries_fixture, batch_size=1)
-    emb_doc = retriever.forward_passages(text_passage_fixture, batch_size=1)
-    scores = retriever.get_scores(emb_query, emb_doc)
+    query_embeddings = retriever.forward_queries(queries_fixture, batch_size=1)
+    passage_embeddings = retriever.forward_passages(text_passage_fixture, batch_size=1)
+    scores = retriever.get_scores(query_embeddings, passage_embeddings)
     assert scores.shape == (len(queries_fixture), len(text_passage_fixture))
