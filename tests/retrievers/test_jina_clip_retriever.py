@@ -20,14 +20,14 @@ def test_forward_queries(retriever: JinaClipRetriever, queries_fixture):
 
 
 @pytest.mark.slow
-def test_forward_documents(retriever: JinaClipRetriever, document_images_fixture):
-    embeddings_docs = retriever.forward_documents(document_images_fixture, batch_size=1)
-    assert len(embeddings_docs) == len(document_images_fixture)
+def test_forward_documents(retriever: JinaClipRetriever, image_passage_fixture):
+    embeddings_docs = retriever.forward_passages(image_passage_fixture, batch_size=1)
+    assert len(embeddings_docs) == len(image_passage_fixture)
 
 
 @pytest.mark.slow
-def test_get_scores(retriever: JinaClipRetriever, queries_fixture, document_images_fixture):
-    emb_query = retriever.forward_queries(queries_fixture, batch_size=1)
-    emb_doc = retriever.forward_documents(document_images_fixture, batch_size=1)
-    scores = retriever.get_scores(emb_query, emb_doc)
-    assert scores.shape == (len(queries_fixture), len(document_images_fixture))
+def test_get_scores(retriever: JinaClipRetriever, queries_fixture, image_passage_fixture):
+    query_embeddings = retriever.forward_queries(queries_fixture, batch_size=1)
+    passage_embeddings = retriever.forward_passages(image_passage_fixture, batch_size=1)
+    scores = retriever.get_scores(query_embeddings, passage_embeddings)
+    assert scores.shape == (len(queries_fixture), len(image_passage_fixture))

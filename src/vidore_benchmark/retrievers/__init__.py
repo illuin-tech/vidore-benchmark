@@ -1,59 +1,14 @@
-try:
-    from .bge_m3_retriever import BGEM3Retriever
-except ImportError:
-    pass
+from .bge_m3_colbert_retriever import BGEM3ColbertRetriever
+from .bge_m3_retriever import BGEM3Retriever
+from .bm25_retriever import BM25Retriever
+from .cohere_api_retriever import CohereAPIRetriever
+from .colpali_retriever import ColPaliRetriever
+from .colqwen_retriever import ColQwenRetriever
+from .dse_qwen2_retriever import DSEQwen2Retriever
+from .dummy_retriever import DummyRetriever
+from .jina_clip_retriever import JinaClipRetriever
+from .nomic_retriever import NomicVisionRetriever
+from .registry_utils import VISION_RETRIEVER_REGISTRY, load_vision_retriever_from_registry, register_vision_retriever
+from .siglip_retriever import SigLIPRetriever
+from .vision_retriever import VisionRetriever
 
-try:
-    from .bge_m3_colbert_retriever import BGEM3ColbertRetriever
-except ImportError:
-    pass
-
-try:
-    from .bm25_retriever import BM25Retriever
-except ImportError:
-    pass
-
-try:
-    from .cohere_api_retriever import CohereAPIRetriever
-except ImportError:
-    pass
-
-try:
-    from .colpali_retriever import ColPaliRetriever
-except ImportError:
-    pass
-
-try:
-    from .colqwen_retriever import ColQwenRetriever
-except ImportError:
-    pass
-
-try:
-    from .dse_retriever import DSERetriever
-except ImportError:
-    pass
-
-try:
-    from .dummy_retriever import DummyRetriever
-except ImportError:
-    pass
-
-try:
-    from .jina_clip_retriever import JinaClipRetriever
-except ImportError:
-    pass
-
-try:
-    from .nomic_retriever import NomicVisionRetriever
-except ImportError:
-    pass
-
-try:
-    from .siglip_retriever import SigLIPRetriever
-except ImportError:
-    pass
-
-try:
-    from .vision_retriever import VisionRetriever
-except ImportError:
-    pass

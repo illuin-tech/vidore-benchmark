@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from tqdm import tqdm
 
 from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
-from vidore_benchmark.retrievers.utils.load_retriever import load_vision_retriever_from_registry
+from vidore_benchmark.retrievers.registry_utils import load_vision_retriever_from_registry
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
 load_dotenv(override=True)
@@ -45,7 +45,7 @@ def evaluate_dataset_with_different_pool_factors(
 
     # Get the embeddings for the queries and documents
     emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
-    emb_documents = vision_retriever.forward_documents(documents, batch_size=batch_doc)
+    emb_passages = vision_retriever.forward_passages(documents, batch_size=batch_doc)
 
     # Get result placeholder
     pool_factor_to_metrics: Dict[int, Dict[str, float]] = {}
@@ -55,16 +55,16 @@ def evaluate_dataset_with_different_pool_factors(
     pbar = tqdm(pool_factors)
     for pool_factor in pbar:
         pbar.set_description(f"Pool factor: {pool_factor}")
-        emb_documents_pooled = []
+        emb_passages_pooled = []
 
         embedding_pooler = HierarchicalEmbeddingPooler(pool_factor)
-        for emb_document in tqdm(emb_documents, desc="Pooling embeddings..."):
+        for emb_document in tqdm(emb_passages, desc="Pooling embeddings..."):
             emb_document, _ = embedding_pooler.pool_embeddings(emb_document)
-            emb_documents_pooled.append(emb_document)
+            emb_passages_pooled.append(emb_document)
 
         # Get the similarity scores
         start_time = time.perf_counter()
-        scores = vision_retriever.get_scores(emb_queries, emb_documents_pooled, batch_size=batch_score)
+        scores = vision_retriever.get_scores(emb_queries, emb_passages_pooled, batch_size=batch_score)
         end_time = time.perf_counter()
         elapsed_time = end_time - start_time
         pool_factor_to_scoring_latency[pool_factor] = elapsed_time

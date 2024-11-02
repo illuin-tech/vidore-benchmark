@@ -2,18 +2,10 @@ from typing import Dict, List, Optional, Union, cast
 
 import numpy as np
 import torch
-
-try:
-    from nltk.corpus import stopwords
-    from nltk.tokenize import word_tokenize
-    from rank_bm25 import BM25Okapi
-except ImportError:
-    print("nltk not found. Please install nltk by running `pip install nltk` if you want to use BM25Retriever.")
-
 from colpali_engine.utils.torch_utils import get_torch_device
 from PIL import Image
 
-from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
+from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
 
@@ -30,33 +22,38 @@ class BM25Retriever(VisionRetriever):
     def forward_queries(self, queries, batch_size: int, **kwargs) -> List[torch.Tensor]:
         raise NotImplementedError("BM25Retriever only need get_scores_bm25 method.")
 
-    def forward_documents(self, documents: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
+    def forward_passages(self, passages: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
         raise NotImplementedError("BM25Retriever only need get_scores_bm25 method.")
 
     def get_scores(
         self,
-        list_emb_queries: List[torch.Tensor],
-        list_emb_documents: List[torch.Tensor],
+        query_embeddings: Union[torch.Tensor, List[torch.Tensor]],
+        passage_embeddings: Union[torch.Tensor, List[torch.Tensor]],
         batch_size: Optional[int] = None,
         **kwargs,
     ) -> torch.Tensor:
-        raise NotImplementedError("BM25Retriever only need get_scores_bm25 method.")
+        raise NotImplementedError("Please use the `get_scores_bm25` method instead.")
 
     def get_scores_bm25(
         self,
         queries: List[str],
-        documents: Union[List[Image.Image], List[str]],
+        passages: Union[List[Image.Image], List[str]],
         **kwargs,
     ) -> torch.Tensor:
-        # Sanity check: `documents` must be a list of filepaths (strings)
-        if documents and not all(isinstance(doc, str) for doc in documents):
-            raise ValueError("Documents must be a list of filepaths (strings)")
-        documents = cast(List[str], documents)
+        try:
+            from rank_bm25 import BM25Okapi
+        except ImportError:
+            raise ImportError("Please install the `rank-bm25` package to use BM25Retriever.")
+
+        # Sanity check: `passages` must be a list of filepaths (strings)
+        if passages and not all(isinstance(doc, str) for doc in passages):
+            raise ValueError("`passages` must be a list of filepaths (strings)")
+        passages = cast(List[str], passages)
 
         queries_dict = {idx: query for idx, query in enumerate(queries)}
         tokenized_queries = self.preprocess_text(queries_dict)
 
-        corpus = {idx: passage for idx, passage in enumerate(documents)}
+        corpus = {idx: passage for idx, passage in enumerate(passages)}
         tokenized_corpus = self.preprocess_text(corpus)
         output = BM25Okapi(tokenized_corpus)
 
@@ -65,20 +62,26 @@ class BM25Retriever(VisionRetriever):
             score = output.get_scores(query)
             scores.append(score)
 
-        scores = torch.tensor(np.array(scores))  # (num_queries, num_docs)
+        scores = torch.tensor(np.array(scores))  # (n_queries, n_passages)
 
         return scores
 
-    def preprocess_text(self, documents: Dict[int, str]) -> List[List[str]]:
+    def preprocess_text(self, passages: Dict[int, str]) -> List[List[str]]:
         """
         Basic preprocessing of the text data:
         - remove stopwords
         - punctuation
         - lowercase all the words.
         """
+        try:
+            from nltk.corpus import stopwords
+            from nltk.tokenize import word_tokenize
+        except ImportError:
+            raise ImportError("Please install the `nltk` package to use BM25Retriever.")
+
         stop_words = set(stopwords.words("english"))
         tokenized_list = [
             [word.lower() for word in word_tokenize(sentence) if word.isalnum() and word.lower() not in stop_words]
-            for sentence in documents.values()
+            for sentence in passages.values()
         ]
         return tokenized_list

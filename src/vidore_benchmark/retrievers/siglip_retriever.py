@@ -1,5 +1,5 @@
 import math
-from typing import List, Optional, cast
+from typing import List, Optional, Union, cast
 
 import torch
 from colpali_engine.utils.torch_utils import get_torch_device
@@ -7,7 +7,7 @@ from PIL import Image
 from tqdm import tqdm
 from transformers import AutoModel, AutoProcessor
 
-from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
+from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
 
@@ -36,9 +36,10 @@ class SigLIPRetriever(VisionRetriever):
 
     def forward_queries(self, queries, batch_size: int, **kwargs) -> List[torch.Tensor]:
         list_emb_queries: List[torch.Tensor] = []
+
         for query_batch in tqdm(
             batched(queries, batch_size),
-            desc="Query batch",
+            desc="Forwarding query batches",
             total=math.ceil(len(queries) / batch_size),
             leave=False,
         ):
@@ -46,38 +47,41 @@ class SigLIPRetriever(VisionRetriever):
             inputs_queries = self.processor(
                 text=query_batch, return_tensors="pt", padding="max_length", truncation=True
             ).to(self.device)
-            qs = self.model.get_text_features(**inputs_queries)
-            query_embeddings = torch.tensor(qs).to(self.device)
-            list_emb_queries.append(query_embeddings)
+            query_embeddings = self.model.get_text_features(**inputs_queries)
+            list_emb_queries.extend(list(torch.unbind(query_embeddings, dim=0)))
+
         return list_emb_queries
 
-    def forward_documents(self, documents, batch_size: int, **kwargs) -> List[torch.Tensor]:
-        list_emb_documents: List[torch.Tensor] = []
-        for doc_batch in tqdm(
-            batched(documents, batch_size),
-            desc="Document batch",
-            total=math.ceil(len(documents) / batch_size),
+    def forward_passages(self, passages, batch_size: int, **kwargs) -> List[torch.Tensor]:
+        list_emb_passages: List[torch.Tensor] = []
+
+        for passage_batch in tqdm(
+            batched(passages, batch_size),
+            desc="Forwarding passage batches",
+            total=math.ceil(len(passages) / batch_size),
             leave=False,
         ):
-            doc_batch = cast(List[Image.Image], doc_batch)
-            list_doc = [document.convert("RGB") for document in doc_batch if isinstance(document, Image.Image)]
+            passage_batch = cast(List[Image.Image], passage_batch)
+            list_doc = [document.convert("RGB") for document in passage_batch if isinstance(document, Image.Image)]
 
             input_image_processed = self.processor(images=list_doc, return_tensors="pt", padding=True).to(self.device)
 
             with torch.no_grad():
-                ps = self.model.get_image_features(**input_image_processed)
-                doc_embeddings = torch.tensor(ps).to(self.device)
-                list_emb_documents.append(doc_embeddings)
+                passage_embeddings = self.model.get_image_features(**input_image_processed)
+                list_emb_passages.extend(list(torch.unbind(passage_embeddings, dim=0)))
 
-        return list_emb_documents
+        return list_emb_passages
 
     def get_scores(
         self,
-        list_emb_queries: List[torch.Tensor],
-        list_emb_documents: List[torch.Tensor],
+        query_embeddings: Union[torch.Tensor, List[torch.Tensor]],
+        passage_embeddings: Union[torch.Tensor, List[torch.Tensor]],
         batch_size: Optional[int] = None,
     ) -> torch.Tensor:
-        emb_queries = torch.cat(list_emb_queries, dim=0)
-        emb_documents = torch.cat(list_emb_documents, dim=0)
-        scores = torch.einsum("bd,cd->bc", emb_queries, emb_documents)
+        if isinstance(query_embeddings, list):
+            query_embeddings = torch.stack(query_embeddings)
+        if isinstance(passage_embeddings, list):
+            passage_embeddings = torch.stack(passage_embeddings)
+
+        scores = torch.einsum("bd,cd->bc", query_embeddings, passage_embeddings)
         return scores
