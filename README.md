@@ -149,11 +149,9 @@ vidore-benchmark --help
 ### Quickstart example
 
 ```python
-from typing import cast
-
-from datasets import Dataset, load_dataset
+from datasets import load_dataset
 from dotenv import load_dotenv
-from vidore_benchmark.evaluation.evaluate import evaluate_dataset
+from vidore_benchmark.evaluation import evaluate_dataset
 from vidore_benchmark.retrievers.jina_clip_retriever import JinaClipRetriever
 
 load_dotenv(override=True)
@@ -163,7 +161,7 @@ def main():
     Example script for a Python usage of the Vidore Benchmark.
     """
     my_retriever = JinaClipRetriever("jinaai/jina-clip-v1")
-    dataset = cast(Dataset, load_dataset("vidore/syntheticDocQA_dummy", split="test"))
+    dataset = load_dataset("vidore/syntheticDocQA_dummy", split="test")
     metrics = evaluate_dataset(my_retriever, dataset, batch_query=4, batch_doc=4)
     print(metrics)
 ```
@@ -185,7 +183,7 @@ data/metrics/
 The data is stored in `eval_manager.data` as a multi-column DataFrame with the following columns. Use the `get_df_for_metric`, `get_df_for_dataset`, and `get_df_for_model` methods to get the subset of the data you are interested in. For instance:
 
 ```python
-from vidore_benchmark.evaluation.eval_manager import EvalManager
+from vidore_benchmark.evaluation import EvalManager
 
 eval_manager = EvalManager.from_dir("data/metrics/")
 df = eval_manager.get_df_for_metric("ndcg_at_5")
