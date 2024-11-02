@@ -24,7 +24,7 @@ class JinaClipRetriever(VisionRetriever):
         super().__init__()
 
         try:
-            import timm
+            import timm  # noqa: F401
         except ImportError:
             raise ImportError("Please install the `timm` package to use JinaClipRetriever.")
 
