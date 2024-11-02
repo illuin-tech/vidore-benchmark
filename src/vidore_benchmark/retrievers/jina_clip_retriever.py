@@ -85,9 +85,9 @@ class JinaClipRetriever(VisionRetriever):
         batch_size: Optional[int] = None,
     ) -> torch.Tensor:
         if isinstance(query_embeddings, list):
-            query_embeddings = torch.cat(query_embeddings, dim=0)
+            query_embeddings = torch.stack(query_embeddings)
         if isinstance(passage_embeddings, list):
-            passage_embeddings = torch.cat(passage_embeddings, dim=0)
+            passage_embeddings = torch.stack(passage_embeddings)
 
         scores = torch.einsum("bd,cd->bc", query_embeddings, passage_embeddings)
         return scores
