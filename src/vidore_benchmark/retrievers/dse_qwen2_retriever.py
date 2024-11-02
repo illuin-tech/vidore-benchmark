@@ -22,12 +22,7 @@ load_dotenv(override=True)
 
 
 @register_vision_retriever("dse-qwen2")
-class DSERetriever(VisionRetriever):
-    """
-    ColPali Retriever that implements the model from "ColPali: Efficient Document Retrieval
-    with Vision Language Models".
-    """
-
+class DSEQwen2Retriever(VisionRetriever):
     def __init__(
         self,
         pretrained_model_name_or_path: str = "MrLight/dse-qwen2-2b-mrl-v1",

@@ -4,7 +4,7 @@ from .bm25_retriever import BM25Retriever
 from .cohere_api_retriever import CohereAPIRetriever
 from .colpali_retriever import ColPaliRetriever
 from .colqwen_retriever import ColQwenRetriever
-from .dse_retriever import DSERetriever
+from .dse_qwen2_retriever import DSEQwen2Retriever
 from .dummy_retriever import DummyRetriever
 from .jina_clip_retriever import JinaClipRetriever
 from .nomic_retriever import NomicVisionRetriever
