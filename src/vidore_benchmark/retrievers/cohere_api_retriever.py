@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import os
 import time
-from typing import List, Optional, cast
+from typing import List, Optional, Union, cast
 
 import torch
 from dotenv import load_dotenv
@@ -11,14 +11,9 @@ from PIL import Image
 from tenacity import retry, stop_after_attempt, wait_exponential
 from tqdm import tqdm
 
-from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
+from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
-
-try:
-    import cohere
-except ImportError:
-    pass
 
 load_dotenv(override=True)
 
@@ -31,6 +26,11 @@ class CohereAPIRetriever(VisionRetriever):
     ):
 
         super().__init__()
+
+        try:
+            import cohere
+        except ImportError:
+            raise ImportError("Please install the `cohere` package to use CohereAPIRetriever.")
 
         api_key = os.getenv("COHERE_API_KEY", None)
         if api_key is None:
@@ -75,7 +75,7 @@ class CohereAPIRetriever(VisionRetriever):
         )
         return response
 
-    def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[List[float]]:
+    def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> torch.Tensor:
         list_emb_queries: List[List[float]] = []
 
         for query_batch in tqdm(
@@ -89,9 +89,9 @@ class CohereAPIRetriever(VisionRetriever):
 
             list_emb_queries.extend(query_embeddings)
 
-        return list_emb_queries
+        return torch.tensor(list_emb_queries)
 
-    def forward_documents(self, documents, batch_size: int, **kwargs) -> List[List[float]]:
+    def forward_documents(self, documents, batch_size: int, **kwargs) -> torch.Tensor:
         # NOTE: Batch size should be set to 1 with the current Cohere API.
         list_emb_documents: List[List[float]] = []
 
@@ -108,20 +108,15 @@ class CohereAPIRetriever(VisionRetriever):
             time.sleep(2)
 
             response = self.call_api_images(images_base64)
-            doc_embeddings = list(response.embeddings.float_)
+            list_emb_documents.extend(list(response.embeddings.float_))
 
-            list_emb_documents.extend(doc_embeddings)
-
-        return list_emb_documents
+        return torch.tensor(list_emb_documents)
 
     def get_scores(
         self,
-        list_emb_queries: List[List[float]],
-        list_emb_documents: List[List[float]],
+        query_embeddings: Union[torch.Tensor, List[torch.Tensor]],
+        passage_embeddings: Union[torch.Tensor, List[torch.Tensor]],
         batch_size: Optional[int] = None,
     ) -> torch.Tensor:
-
-        emb_queries = torch.tensor(list_emb_queries)
-        emb_documents = torch.tensor(list_emb_documents)
-        scores = torch.einsum("bd,cd->bc", emb_queries, emb_documents)
+        scores = torch.einsum("bd,cd->bc", query_embeddings, passage_embeddings)
         return scores

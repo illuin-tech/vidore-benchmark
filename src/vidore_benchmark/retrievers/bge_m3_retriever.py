@@ -1,18 +1,13 @@
 import math
-from typing import List, Optional, cast
+from typing import List, Optional, Union, cast
 
 import torch
 from colpali_engine.utils.torch_utils import get_torch_device
 from tqdm import tqdm
 
-from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
+from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
-
-try:
-    from FlagEmbedding import BGEM3FlagModel
-except ImportError:
-    pass
 
 
 @register_vision_retriever("bge-m3")
@@ -27,6 +22,12 @@ class BGEM3Retriever(VisionRetriever):
         device: str = "auto",
     ):
         super().__init__()
+
+        try:
+            from FlagEmbedding import BGEM3FlagModel
+        except ImportError:
+            raise ImportError("Please install the `FlagEmbedding` package to use BGEM3Retriever.")
+
         self.device = get_torch_device(device)
 
         self.model = BGEM3FlagModel(
@@ -76,12 +77,14 @@ class BGEM3Retriever(VisionRetriever):
 
     def get_scores(
         self,
-        list_emb_queries: List[torch.Tensor],
-        list_emb_documents: List[torch.Tensor],
+        query_embeddings: Union[torch.Tensor, List[torch.Tensor]],
+        passage_embeddings: Union[torch.Tensor, List[torch.Tensor]],
         batch_size: Optional[int] = None,
     ) -> torch.Tensor:
-        emb_queries = torch.cat(list_emb_queries, dim=0)  # (num_queries, emb_dim_query)
-        emb_documents = torch.cat(list_emb_documents, dim=0)  # (num_docs, emb_dim_doc)
+        if isinstance(query_embeddings, list):
+            query_embeddings = torch.cat(query_embeddings, dim=0)
+        if isinstance(passage_embeddings, list):
+            passage_embeddings = torch.cat(passage_embeddings, dim=0)
 
-        scores = torch.einsum("bd,cd->bc", emb_queries, emb_documents)  # (num_queries, num_docs)
+        scores = torch.einsum("bd,cd->bc", query_embeddings, passage_embeddings)
         return scores

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import math
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import torch
 from colpali_engine.utils.torch_utils import get_torch_device
@@ -11,14 +11,9 @@ from PIL import Image
 from tqdm import tqdm
 from transformers import AutoProcessor, Qwen2VLForConditionalGeneration
 
-from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
+from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
-
-try:
-    from qwen_vl_utils import process_vision_info
-except ImportError:
-    pass
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +68,17 @@ class DSERetriever(VisionRetriever):
     def use_visual_embedding(self) -> bool:
         return True
 
-    def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
+    def forward_queries(
+        self,
+        queries: List[str],
+        batch_size: int,
+        **kwargs,
+    ) -> List[torch.Tensor]:
+        try:
+            from qwen_vl_utils import process_vision_info
+        except ImportError:
+            raise ImportError("Please install the `qwen-vl-utils` package to use DSERetriever.")
+
         qs = []
         for batch_query in tqdm(
             batched(queries, batch_size),
@@ -122,7 +127,17 @@ class DSERetriever(VisionRetriever):
 
         return qs
 
-    def forward_documents(self, documents: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
+    def forward_documents(
+        self,
+        documents: List[Image.Image],
+        batch_size: int,
+        **kwargs,
+    ) -> List[torch.Tensor]:
+        try:
+            from qwen_vl_utils import process_vision_info
+        except ImportError:
+            raise ImportError("Please install the `qwen-vl-utils` package to use DSERetriever.")
+
         ds = []
         for batch_doc in tqdm(
             batched(documents, batch_size),
@@ -164,18 +179,16 @@ class DSERetriever(VisionRetriever):
 
     def get_scores(
         self,
-        list_emb_queries: List[torch.Tensor],
-        list_emb_documents: List[torch.Tensor],
-        batch_size: Optional[int] = 128,
+        query_embeddings: Union[torch.Tensor, List[torch.Tensor]],
+        passage_embeddings: Union[torch.Tensor, List[torch.Tensor]],
+        batch_size: Optional[int] = None,
     ) -> torch.Tensor:
-        if batch_size is None:
-            raise ValueError("`batch_size` must be provided for ColPaliRetriever's scoring")
+        if isinstance(query_embeddings, list):
+            query_embeddings = torch.cat(query_embeddings, dim=0)
+        if isinstance(passage_embeddings, list):
+            passage_embeddings = torch.cat(passage_embeddings, dim=0)
 
-        # compute cosine similarity
-        qs_stacked = torch.stack(list_emb_queries).to(self.device)
-        ps_stacked = torch.stack(list_emb_documents).to(self.device)
-
-        scores = torch.einsum("bd,cd->bc", qs_stacked, ps_stacked)
+        scores = torch.einsum("bd,cd->bc", query_embeddings, passage_embeddings)
         scores = scores.to(torch.float32).cpu()
 
         return scores

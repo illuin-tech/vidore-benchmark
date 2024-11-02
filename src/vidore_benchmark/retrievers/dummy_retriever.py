@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import math
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import torch
 from PIL import Image
 from torch import Tensor
 
-from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
+from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
 
@@ -40,8 +40,8 @@ class DummyRetriever(VisionRetriever):
 
     def get_scores(
         self,
-        list_emb_queries: List[torch.Tensor],
-        list_emb_documents: List[torch.Tensor],
+        query_embeddings: Union[torch.Tensor, List[torch.Tensor]],
+        passage_embeddings: Union[torch.Tensor, List[torch.Tensor]],
         batch_size: Optional[int] = None,
     ) -> torch.Tensor:
-        return torch.rand(len(list_emb_queries), len(list_emb_documents))
+        return torch.rand(len(query_embeddings), len(passage_embeddings))

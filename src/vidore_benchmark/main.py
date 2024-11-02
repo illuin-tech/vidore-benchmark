@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
 from vidore_benchmark.evaluation.evaluate import evaluate_dataset, get_top_k
-from vidore_benchmark.retrievers.utils.load_retriever import load_vision_retriever_from_registry
+from vidore_benchmark.retrievers.registry_utils import load_vision_retriever_from_registry
 from vidore_benchmark.utils.image_utils import generate_dataset_from_img_folder
 from vidore_benchmark.utils.logging_utils import setup_logging
 from vidore_benchmark.utils.pdf_utils import convert_all_pdfs_to_images

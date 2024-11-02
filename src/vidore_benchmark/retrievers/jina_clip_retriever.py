@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import List, Optional, cast
+from typing import List, Optional, Union, cast
 
 import torch
 from colpali_engine.utils.torch_utils import get_torch_device
@@ -9,7 +9,7 @@ from PIL import Image
 from tqdm import tqdm
 from transformers import AutoModel
 
-from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
+from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
 
@@ -22,11 +22,22 @@ class JinaClipRetriever(VisionRetriever):
         device: str = "auto",
     ):
         super().__init__()
+
+        try:
+            import timm
+        except ImportError:
+            raise ImportError("Please install the `timm` package to use JinaClipRetriever.")
+
         self.pretrained_model_name_or_path = pretrained_model_name_or_path
         self.device = get_torch_device(device)
 
         self.model = (
-            AutoModel.from_pretrained(self.pretrained_model_name_or_path, trust_remote_code=True).to(self.device).eval()
+            AutoModel.from_pretrained(
+                self.pretrained_model_name_or_path,
+                trust_remote_code=True,
+            )
+            .to(self.device)
+            .eval()
         )
 
         self.emb_dim_query = 768
@@ -69,11 +80,14 @@ class JinaClipRetriever(VisionRetriever):
 
     def get_scores(
         self,
-        list_emb_queries: List[torch.Tensor],
-        list_emb_documents: List[torch.Tensor],
+        query_embeddings: Union[torch.Tensor, List[torch.Tensor]],
+        passage_embeddings: Union[torch.Tensor, List[torch.Tensor]],
         batch_size: Optional[int] = None,
     ) -> torch.Tensor:
-        emb_queries = torch.cat(list_emb_queries, dim=0)
-        emb_documents = torch.cat(list_emb_documents, dim=0)
-        scores = torch.einsum("bd,cd->bc", emb_queries, emb_documents)
+        if isinstance(query_embeddings, list):
+            query_embeddings = torch.cat(query_embeddings, dim=0)
+        if isinstance(passage_embeddings, list):
+            passage_embeddings = torch.cat(passage_embeddings, dim=0)
+
+        scores = torch.einsum("bd,cd->bc", query_embeddings, passage_embeddings)
         return scores

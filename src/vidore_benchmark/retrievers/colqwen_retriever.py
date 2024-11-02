@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar, List, Optional, cast
+from typing import ClassVar, List, Optional, Union, cast
 
 import torch
 from colpali_engine.models import ColQwen2, ColQwen2Processor
@@ -11,7 +11,8 @@ from PIL import Image
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from vidore_benchmark.retrievers.utils.register_retriever import register_vision_retriever
+from vidore_benchmark.evaluation.scoring import score_multi_vector
+from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.data_utils import ListDataset
 
@@ -99,16 +100,11 @@ class ColQwenRetriever(VisionRetriever):
 
     def get_scores(
         self,
-        list_emb_queries: List[torch.Tensor],
-        list_emb_documents: List[torch.Tensor],
+        query_embeddings: Union[torch.Tensor, List[torch.Tensor]],
+        passage_embeddings: Union[torch.Tensor, List[torch.Tensor]],
         batch_size: Optional[int] = 128,
     ) -> torch.Tensor:
         if batch_size is None:
             raise ValueError("`batch_size` must be provided for ColPaliRetriever's scoring")
-        scores = self.processor.score(
-            list_emb_queries,
-            list_emb_documents,
-            batch_size=batch_size,
-            device=self.device,
-        )
+        scores = score_multi_vector(query_embeddings, passage_embeddings, batch_size=batch_size)
         return scores

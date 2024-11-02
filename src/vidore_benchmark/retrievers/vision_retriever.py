@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 from colpali_engine.trainer.eval_utils import CustomRetrievalEvaluator
@@ -34,7 +34,12 @@ class VisionRetriever(ABC):
         pass
 
     @abstractmethod
-    def forward_queries(self, queries: Any, batch_size: int, **kwargs) -> List[torch.Tensor]:
+    def forward_queries(
+        self,
+        queries: Any,
+        batch_size: int,
+        **kwargs,
+    ) -> Union[torch.Tensor, List[torch.Tensor]]:
         """
         Preprocess and forward pass the queries through the model.
 
@@ -45,7 +50,12 @@ class VisionRetriever(ABC):
         pass
 
     @abstractmethod
-    def forward_documents(self, documents: Any, batch_size: int, **kwargs) -> List[torch.Tensor]:
+    def forward_documents(
+        self,
+        documents: Any,
+        batch_size: int,
+        **kwargs,
+    ) -> Union[torch.Tensor, List[torch.Tensor]]:
         """
         Preprocess and forward pass the documents through the model.
 
@@ -58,20 +68,20 @@ class VisionRetriever(ABC):
     @abstractmethod
     def get_scores(
         self,
-        list_emb_queries: List[torch.Tensor],
-        list_emb_documents: List[torch.Tensor],
+        query_embeddings: Union[torch.Tensor, List[torch.Tensor]],
+        passage_embeddings: Union[torch.Tensor, List[torch.Tensor]],
         batch_size: Optional[int] = None,
     ) -> torch.Tensor:
         """
-        Get the scores between queries and documents.
+        Get the scores between queries and passages.
 
         Inputs:
-        - list_emb_queries: List[torch.Tensor] (n_queries, emb_dim_query)
-        - list_emb_documents: List[torch.Tensor] (n_documents, emb_dim_doc)
+        - query_embeddings: torch.Tensor (n_queries, emb_dim_query) or List[torch.Tensor] (emb_dim_query)
+        - passage_embeddings: torch.Tensor (n_passages, emb_dim_doc) or List[torch.Tensor] (emb_dim_doc)
         - batch_size: Optional[int]
 
         Output:
-        - scores: torch.Tensor (n_queries, n_documents)
+        - scores: torch.Tensor (n_queries, n_passages)
         """
         pass
 

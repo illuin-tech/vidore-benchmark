@@ -1,10 +1,23 @@
 import logging
-from typing import Optional, Type
+from typing import Dict, Optional, Type
 
-from vidore_benchmark.retrievers.utils.register_retriever import VISION_RETRIEVER_REGISTRY
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
+VISION_RETRIEVER_REGISTRY: Dict[str, Type[VisionRetriever]] = {}
+
 logger = logging.getLogger(__name__)
+
+
+def register_vision_retriever(model_class: str):
+    def decorator(cls):
+        VISION_RETRIEVER_REGISTRY[model_class] = cls
+
+        # NOTE: To see this log, use `logger.enable("vidore_benchmark")` at the very top of the script.
+        logger.debug("Registered vision retriever `{}`", model_class)
+
+        return cls
+
+    return decorator
 
 
 def load_vision_retriever_class_from_registry(model_class: str) -> Type[VisionRetriever]:
