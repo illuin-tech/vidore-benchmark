@@ -77,7 +77,7 @@ class DSEQwen2Retriever(VisionRetriever):
         qs = []
         for batch_query in tqdm(
             batched(queries, batch_size),
-            desc="Query batch",
+            desc="Forwarding query batches",
             total=math.ceil(len(queries) / batch_size),
             leave=False,
         ):
@@ -131,7 +131,7 @@ class DSEQwen2Retriever(VisionRetriever):
         ds = []
         for batch_doc in tqdm(
             batched(passages, batch_size),
-            desc="Document batch",
+            desc="Forwarding passage batches",
             total=math.ceil(len(passages) / batch_size),
             leave=False,
         ):

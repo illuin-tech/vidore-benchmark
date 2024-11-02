@@ -38,7 +38,7 @@ class SigLIPRetriever(VisionRetriever):
         list_emb_queries: List[torch.Tensor] = []
         for query_batch in tqdm(
             batched(queries, batch_size),
-            desc="Query batch",
+            desc="Forwarding query batches",
             total=math.ceil(len(queries) / batch_size),
             leave=False,
         ):
@@ -55,7 +55,7 @@ class SigLIPRetriever(VisionRetriever):
         list_emb_passages: List[torch.Tensor] = []
         for doc_batch in tqdm(
             batched(passages, batch_size),
-            desc="Document batch",
+            desc="Forwarding passage batches",
             total=math.ceil(len(passages) / batch_size),
             leave=False,
         ):

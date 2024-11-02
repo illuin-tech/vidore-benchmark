@@ -50,7 +50,7 @@ class BGEM3ColbertRetriever(VisionRetriever):
 
         for query_batch in tqdm(
             batched(queries, batch_size),
-            desc="Query batch",
+            desc="Forwarding query batches",
             total=math.ceil(len(queries) / batch_size),
             leave=False,
         ):
@@ -72,7 +72,7 @@ class BGEM3ColbertRetriever(VisionRetriever):
 
         for doc_batch in tqdm(
             batched(passages, batch_size),
-            desc="Document batch",
+            desc="Forwarding passage batches",
             total=math.ceil(len(passages) / batch_size),
             leave=False,
         ):
