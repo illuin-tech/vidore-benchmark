@@ -17,12 +17,12 @@ def test_forward_queries(retriever: BM25Retriever, queries_fixture):
 
 
 @pytest.mark.slow
-def test_forward_documents(retriever: BM25Retriever, document_ocr_text_fixture):
+def test_forward_documents(retriever: BM25Retriever, text_passage_fixture):
     with pytest.raises(NotImplementedError):
-        _ = retriever.forward_queries(document_ocr_text_fixture, batch_size=1)
+        _ = retriever.forward_queries(text_passage_fixture, batch_size=1)
 
 
 @pytest.mark.slow
-def test_get_scores(retriever: BM25Retriever, queries_fixture, document_ocr_text_fixture):
-    scores = retriever.get_scores_bm25(queries_fixture, document_ocr_text_fixture, batch_query=1, batch_doc=1)
-    assert scores.shape == (len(queries_fixture), len(document_ocr_text_fixture))
+def test_get_scores(retriever: BM25Retriever, queries_fixture, text_passage_fixture):
+    scores = retriever.get_scores_bm25(queries_fixture, text_passage_fixture, batch_query=1, batch_doc=1)
+    assert scores.shape == (len(queries_fixture), len(text_passage_fixture))
