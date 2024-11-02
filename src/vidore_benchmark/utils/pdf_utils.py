@@ -1,16 +1,18 @@
 import glob
+import logging
 import os
 import random
 import warnings
 from pathlib import Path
 
-from loguru import logger
 from tqdm import tqdm
 
 try:
     from pdf2image import convert_from_path
 except ImportError:
     warnings.warn("pdf2image not found")
+
+logger = logging.getLogger(__name__)
 
 
 def convert_pdf_to_images(pdf_file: str, save_folder: str) -> None:

@@ -21,8 +21,8 @@ class DummyRetriever(VisionRetriever):
 
     def __init__(
         self,
-        emb_dim_query: int = 512,
-        emb_dim_doc: int = 512,
+        emb_dim_query: int = 16,
+        emb_dim_doc: int = 16,
     ):
         super().__init__()
         self.emb_dim_query = emb_dim_query
@@ -44,6 +44,4 @@ class DummyRetriever(VisionRetriever):
         list_emb_documents: List[torch.Tensor],
         batch_size: Optional[int] = None,
     ) -> torch.Tensor:
-        if batch_size is None:
-            batch_size = 1
-        return torch.rand(len(list_emb_queries) * batch_size, len(list_emb_documents) * batch_size)
+        return torch.rand(len(list_emb_queries), len(list_emb_documents))

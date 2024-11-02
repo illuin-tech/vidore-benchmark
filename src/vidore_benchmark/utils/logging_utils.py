@@ -1,22 +1,22 @@
 import logging
-import sys
 
-from loguru import logger
+logger = logging.getLogger(__name__)
 
 
-def setup_logging(log_level: str = "WARNING") -> None:
+def setup_logging(log_level: str = "warning") -> None:
     """
-    Setup the logging with loguru.
+    Setup logging configuration.
     """
-
     numeric_level = getattr(logging, log_level.upper(), None)
+
     if not isinstance(numeric_level, int):
         raise ValueError(f"Invalid log level: {log_level}")
 
-    logger.remove()  # remove the default logger
-    logger.add(
-        sink=sys.stderr,
-        level=log_level.upper(),
-        format="{time:MM/DD/YYYY HH:mm:ss} - {level} - {name}:{line} - {message}",
+    logging.basicConfig(
+        level=numeric_level,
+        format="%(asctime)s - %(levelname)s - %(name)s:%(lineno)d - %(message)s",
+        datefmt="%m/%d/%Y %I:%M:%S %p",
+        handlers=[logging.StreamHandler()],
     )
-    logger.info(f"Logging level set to {log_level.upper()}.")
+    logging.captureWarnings(True)
+    logger.info("Logging level set to %s", log_level)

@@ -1,7 +1,10 @@
+import logging
 from typing import Optional, Type
 
 from vidore_benchmark.retrievers.utils.register_retriever import VISION_RETRIEVER_REGISTRY
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+
+logger = logging.getLogger(__name__)
 
 
 def load_vision_retriever_class_from_registry(model_class: str) -> Type[VisionRetriever]:

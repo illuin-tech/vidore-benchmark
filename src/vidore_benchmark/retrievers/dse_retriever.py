@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import logging
 import math
 from typing import List, Optional
 
 import torch
 from colpali_engine.utils.torch_utils import get_torch_device
 from dotenv import load_dotenv
-from loguru import logger
 from PIL import Image
 from tqdm import tqdm
 from transformers import AutoProcessor, Qwen2VLForConditionalGeneration
@@ -19,6 +19,8 @@ try:
     from qwen_vl_utils import process_vision_info
 except ImportError:
     pass
+
+logger = logging.getLogger(__name__)
 
 
 load_dotenv(override=True)

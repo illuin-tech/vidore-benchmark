@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Annotated, Dict, Optional, cast
@@ -7,7 +8,6 @@ import huggingface_hub
 import typer
 from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
-from loguru import logger
 
 from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
 from vidore_benchmark.evaluation.evaluate import evaluate_dataset, get_top_k
@@ -15,6 +15,8 @@ from vidore_benchmark.retrievers.utils.load_retriever import load_vision_retriev
 from vidore_benchmark.utils.image_utils import generate_dataset_from_img_folder
 from vidore_benchmark.utils.logging_utils import setup_logging
 from vidore_benchmark.utils.pdf_utils import convert_all_pdfs_to_images
+
+logger = logging.getLogger(__name__)
 
 load_dotenv(override=True)
 
@@ -37,8 +39,8 @@ def sanitize_model_id(model_class: str, pretrained_model_name_or_path: Optional[
 
 @app.callback()
 def main(log_level: Annotated[str, typer.Option("--log", help="Logging level")] = "warning"):
-    logger.enable("vidore_benchmark")
     setup_logging(log_level)
+    logger.info("Logging level set to `%s`", log_level)
 
 
 @app.command()
@@ -67,6 +69,8 @@ def evaluate_retriever(
     Evaluate the retriever on the given dataset or collection.
     The metrics are saved to a JSON file.
     """
+
+    logging.info(f"Evaluating retriever `{model_class}`")
 
     # Sanity check
     if dataset_name is None and collection_name is None:

@@ -22,11 +22,13 @@ and this project adheres to [Semantic Versioning].
 
 - Fix `evaluate_dataset` when used with the BM25 retriever
 - Fix issue when no `pretrained_model_name_or_path` is `None` in `load_vision_retriever_from_registry`
+- Fix `DummyRetriever`'s `get_scores` method
 
 ### Removed
 
 - Remove experimental quantization
 - Remove the `interpretability` module. The interpretability code has been moved and improved as part of the [`colpali-engine==0.3.2`](https://github.com/illuin-tech/colpali/releases/tag/v0.3.2) release.
+- Replace `loguru` with built-in `logging` module
 
 ### Tests
 
