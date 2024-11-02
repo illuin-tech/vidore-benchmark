@@ -162,7 +162,7 @@ def main():
     """
     my_retriever = JinaClipRetriever("jinaai/jina-clip-v1")
     dataset = load_dataset("vidore/syntheticDocQA_dummy", split="test")
-    metrics = evaluate_dataset(my_retriever, dataset, batch_query=4, batch_doc=4)
+    metrics = evaluate_dataset(my_retriever, dataset, batch_query=4, batch_passage=4)
     print(metrics)
 ```
 

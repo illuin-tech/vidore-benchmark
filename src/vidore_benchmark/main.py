@@ -56,7 +56,7 @@ def evaluate_retriever(
     dataset_name: Annotated[Optional[str], typer.Option(help="HuggingFace Hub dataset name")] = None,
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
     batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 8,
-    batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 8,
+    batch_passage: Annotated[int, typer.Option(help="Batch size for passages embedding inference")] = 8,
     batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 16,
     collection_name: Annotated[
         Optional[str],
@@ -104,7 +104,7 @@ def evaluate_retriever(
                 retriever,
                 dataset,
                 batch_query=batch_query,
-                batch_doc=batch_doc,
+                batch_passage=batch_passage,
                 batch_score=batch_score,
                 embedding_pooler=embedding_pooler,
             )
@@ -149,7 +149,7 @@ def evaluate_retriever(
                     retriever,
                     dataset,
                     batch_query=batch_query,
-                    batch_doc=batch_doc,
+                    batch_passage=batch_passage,
                     batch_score=batch_score,
                     embedding_pooler=embedding_pooler,
                 )
@@ -197,7 +197,7 @@ def retrieve_on_dataset(
         ),
     ] = None,
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
-    batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
+    batch_passage: Annotated[int, typer.Option(help="Batch size for passages embedding inference")] = 4,
     batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
 ):
     """
@@ -216,7 +216,7 @@ def retrieve_on_dataset(
     emb_queries = retriever.forward_queries([query], batch_size=1)
     emb_passages = retriever.forward_passages(
         list(ds["image"]) if retriever.use_visual_embedding else list(ds["text_description"]),
-        batch_size=batch_doc,
+        batch_size=batch_passage,
     )
 
     # Get the top-k passages
@@ -231,8 +231,8 @@ def retrieve_on_dataset(
     )
 
     print(f"Top-{k} passages for the query '{query}':")
-    for document, score in top_k[query].items():
-        print(f"- Document `{document}` (score = {score})")
+    for passages, score in top_k[query].items():
+        print(f"- Document `{passages}` (score = {score})")
 
     print("Done.")
 
@@ -252,7 +252,7 @@ def retrieve_on_pdfs(
             help="If model class is a Hf model, this arg is passed to the `model.from_pretrained` method.",
         ),
     ] = None,
-    batch_doc: Annotated[int, typer.Option(help="Batch size for document embedding inference")] = 4,
+    batch_passage: Annotated[int, typer.Option(help="Batch size for passages embedding inference")] = 4,
     batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
 ):
     """
@@ -280,7 +280,7 @@ def retrieve_on_pdfs(
     emb_queries = retriever.forward_queries([query], batch_size=1)
     emb_passages = retriever.forward_passages(
         list(ds["image"]),
-        batch_size=batch_doc,
+        batch_size=batch_passage,
     )
 
     # Get the top-k passages
@@ -296,8 +296,8 @@ def retrieve_on_pdfs(
 
     print(f"Top-{k} documents for the query '{query}':")
 
-    for document, score in top_k[query].items():
-        print(f"Document: {document}, Score: {score}")
+    for passages, score in top_k[query].items():
+        print(f"Document: {passages}, Score: {score}")
 
     print("Done.")
 
