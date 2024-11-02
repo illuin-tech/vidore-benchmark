@@ -85,9 +85,7 @@ class CohereAPIRetriever(VisionRetriever):
             leave=False,
         ):
             response = self.call_api_queries(query_batch)
-            query_embeddings = list(response.embeddings.float_)
-
-            list_emb_queries.extend(query_embeddings)
+            list_emb_queries.extend(list(response.embeddings.float_))
 
         return torch.tensor(list_emb_queries)
 
@@ -118,5 +116,10 @@ class CohereAPIRetriever(VisionRetriever):
         passage_embeddings: Union[torch.Tensor, List[torch.Tensor]],
         batch_size: Optional[int] = None,
     ) -> torch.Tensor:
+        if isinstance(query_embeddings, list):
+            query_embeddings = torch.cat(query_embeddings, dim=0)
+        if isinstance(passage_embeddings, list):
+            passage_embeddings = torch.cat(passage_embeddings, dim=0)
+
         scores = torch.einsum("bd,cd->bc", query_embeddings, passage_embeddings)
         return scores
