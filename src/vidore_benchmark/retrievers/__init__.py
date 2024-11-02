@@ -1,3 +1,4 @@
+from .biqwen_retriever import BiQwenRetriever
 from .bge_m3_colbert_retriever import BGEM3ColbertRetriever
 from .bge_m3_retriever import BGEM3Retriever
 from .bm25_retriever import BM25Retriever
