@@ -127,12 +127,7 @@ class DSERetriever(VisionRetriever):
 
         return qs
 
-    def forward_documents(
-        self,
-        documents: List[Image.Image],
-        batch_size: int,
-        **kwargs,
-    ) -> List[torch.Tensor]:
+    def forward_passages(self, passages: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
         try:
             from qwen_vl_utils import process_vision_info
         except ImportError:
@@ -140,9 +135,9 @@ class DSERetriever(VisionRetriever):
 
         ds = []
         for batch_doc in tqdm(
-            batched(documents, batch_size),
+            batched(passages, batch_size),
             desc="Document batch",
-            total=math.ceil(len(documents) / batch_size),
+            total=math.ceil(len(passages) / batch_size),
             leave=False,
         ):
             doc_messages = []

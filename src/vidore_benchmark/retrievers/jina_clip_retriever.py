@@ -63,20 +63,20 @@ class JinaClipRetriever(VisionRetriever):
 
         return list_emb_queries
 
-    def forward_documents(self, documents, batch_size: int, **kwargs) -> List[torch.Tensor]:
-        list_emb_documents: List[torch.Tensor] = []
+    def forward_passages(self, passages, batch_size: int, **kwargs) -> List[torch.Tensor]:
+        list_emb_passages: List[torch.Tensor] = []
         for doc_batch in tqdm(
-            batched(documents, batch_size),
+            batched(passages, batch_size),
             desc="Document batch",
-            total=math.ceil(len(documents) / batch_size),
+            total=math.ceil(len(passages) / batch_size),
             leave=False,
         ):
             doc_batch = cast(List[Image.Image], doc_batch)
             with torch.no_grad():
                 output = self.model.encode_image(doc_batch)
             doc_embeddings = torch.tensor(output).to(self.device)
-            list_emb_documents.append(doc_embeddings)
-        return list_emb_documents
+            list_emb_passages.append(doc_embeddings)
+        return list_emb_passages
 
     def get_scores(
         self,

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from collections import OrderedDict
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import torch
 from datasets import Dataset
@@ -34,8 +34,8 @@ def evaluate_dataset(
     """
 
     # Dataset: sanity check
-    col_documents = "image" if vision_retriever.use_visual_embedding else "text_description"
-    required_columns = ["query", col_documents, "image_filename"]
+    passage_column_name = "image" if vision_retriever.use_visual_embedding else "text_description"
+    required_columns = ["query", passage_column_name, "image_filename"]
 
     if not all(col in ds.column_names for col in required_columns):
         raise ValueError(f"Dataset should contain the following columns: {required_columns}")
@@ -49,19 +49,19 @@ def evaluate_dataset(
 
     # Edge case: using the BM25Retriever
     if isinstance(vision_retriever, BM25Retriever):
-        documents = ds[col_documents]
-        scores = vision_retriever.get_scores_bm25(queries=queries, documents=documents)
+        passages = ds[passage_column_name]
+        scores = vision_retriever.get_scores_bm25(queries=queries, passages=passages)
         relevant_docs, results = vision_retriever.get_relevant_docs_results(ds, queries, scores)
         metrics = vision_retriever.compute_metrics(relevant_docs, results)
         return metrics
 
-    # Get the embeddings for the queries and documents
-    # NOTE: To prevent overloading the RAM for large datasets, we will load the documents (images)
+    # Get the embeddings for the queries and passages
+    # NOTE: To prevent overloading the RAM for large datasets, we will load the passages (images)
     # that will be fed to the model in batches (this should be fine for queries as their memory footprint
     # is negligible. This optimization is about efficient data loading, and is not related to the model's
     # forward pass which is also batched.
     emb_queries = vision_retriever.forward_queries(queries, batch_size=batch_query)
-    emb_documents: List[torch.Tensor] = []
+    emb_passages: List[torch.Tensor] = []
 
     dataloader_prebatch_size = 10 * batch_doc
 
@@ -70,18 +70,18 @@ def evaluate_dataset(
         desc="Dataloader pre-batching",
         total=math.ceil(len(ds) / (dataloader_prebatch_size)),
     ):
-        documents: List[Any] = [db[col_documents] for db in doc_batch]
-        emb_documents.extend(vision_retriever.forward_documents(documents, batch_size=batch_doc))
+        passages: List[Any] = [db[passage_column_name] for db in doc_batch]
+        emb_passages.extend(vision_retriever.forward_passages(passages, batch_size=batch_doc))
 
     if embedding_pooler is not None:
-        for idx, emb_document in tqdm(enumerate(emb_documents), total=len(emb_documents), desc="Pooling embeddings..."):
+        for idx, emb_document in tqdm(enumerate(emb_passages), total=len(emb_passages), desc="Pooling embeddings..."):
             emb_document, _ = embedding_pooler.pool_embeddings(emb_document)
-            emb_documents[idx] = emb_document
+            emb_passages[idx] = emb_document
 
     # Get the similarity scores
-    scores = vision_retriever.get_scores(emb_queries, emb_documents, batch_size=batch_score)
+    scores = vision_retriever.get_scores(emb_queries, emb_passages, batch_size=batch_score)
 
-    # Get the relevant documents and results
+    # Get the relevant passages and results
     relevant_docs, results = vision_retriever.get_relevant_docs_results(ds, queries, scores)
 
     # Compute the MTEB metrics
@@ -93,25 +93,25 @@ def evaluate_dataset(
 def get_top_k(
     vision_retriever: VisionRetriever,
     queries: List[str],
-    emb_queries: List[torch.Tensor],
-    emb_documents: List[torch.Tensor],
+    emb_queries: Union[torch.Tensor, List[torch.Tensor]],
+    emb_passages: Union[torch.Tensor, List[torch.Tensor]],
     file_names: List[str],
     k: int,
     batch_score: Optional[int] = None,
 ) -> Dict[str, OrderedDict[str, float]]:
     """
-    Get the top-k documents for a given query.
+    Get the top-k passages for a given query.
 
     Output:
     {
         query_1: {
-            document_1: score_1,
+            passage_1: score_1,
             ...
         },
         ...
     }
     """
-    scores = vision_retriever.get_scores(emb_queries, emb_documents, batch_size=batch_score)
+    scores = vision_retriever.get_scores(emb_queries, emb_passages, batch_size=batch_score)
     passages2filename = {doc_idx: image_filename for doc_idx, image_filename in enumerate(file_names)}
     query_to_score = {}
 
@@ -125,7 +125,7 @@ def get_top_k(
             else:
                 query_to_score[query] = {filename: score_passage}
 
-    # Get the top-k documents
+    # Get the top-k passages
     for query in query_to_score:
         query_to_score[query] = OrderedDict(
             sorted(query_to_score[query].items(), key=lambda item: item[1], reverse=True)[:k]

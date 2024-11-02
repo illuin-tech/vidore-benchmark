@@ -91,14 +91,14 @@ class CohereAPIRetriever(VisionRetriever):
 
         return torch.tensor(list_emb_queries)
 
-    def forward_documents(self, documents, batch_size: int, **kwargs) -> torch.Tensor:
+    def forward_passages(self, passages, batch_size: int, **kwargs) -> torch.Tensor:
         # NOTE: Batch size should be set to 1 with the current Cohere API.
-        list_emb_documents: List[List[float]] = []
+        list_emb_passages: List[List[float]] = []
 
         for doc_batch in tqdm(
-            batched(documents, batch_size),
+            batched(passages, batch_size),
             desc="Document batch",
-            total=math.ceil(len(documents) / batch_size),
+            total=math.ceil(len(passages) / batch_size),
             leave=False,
         ):
             doc_batch = cast(List[Image.Image], doc_batch)
@@ -108,9 +108,9 @@ class CohereAPIRetriever(VisionRetriever):
             time.sleep(2)
 
             response = self.call_api_images(images_base64)
-            list_emb_documents.extend(list(response.embeddings.float_))
+            list_emb_passages.extend(list(response.embeddings.float_))
 
-        return torch.tensor(list_emb_documents)
+        return torch.tensor(list_emb_passages)
 
     def get_scores(
         self,

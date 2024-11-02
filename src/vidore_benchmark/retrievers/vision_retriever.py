@@ -50,18 +50,19 @@ class VisionRetriever(ABC):
         pass
 
     @abstractmethod
-    def forward_documents(
+    def forward_passages(
         self,
-        documents: Any,
+        passages: Any,
         batch_size: int,
         **kwargs,
     ) -> Union[torch.Tensor, List[torch.Tensor]]:
         """
-        Preprocess and forward pass the documents through the model.
+        Preprocess and forward pass the passages through the model. A passage can a text chunk (e.g. BM25) or
+        an image of a document page (e.g. ColPali).
 
         NOTE: This method can either:
-        - return a single tensor where the first dimension corresponds to the number of documents.
-        - return a list of tensors where each tensor corresponds to a document.
+        - return a single tensor where the first dimension corresponds to the number of passages.
+        - return a list of tensors where each tensor corresponds to a passage.
         """
         pass
 
@@ -93,14 +94,9 @@ class VisionRetriever(ABC):
         **kwargs,
     ) -> Tuple[Dict[str, float], Dict[str, Dict[str, float]]]:
         """
-        Get the relevant documents and the results from the scores.
+        Get the relevant passages and the results from the scores.
 
         NOTE: Override this method if the retriever has a different output format.
-
-        Inputs:
-        - queries: List[str]
-        - documents: List[str]
-        - scores: torch.Tensor (n_queries, n_documents)
 
         Outputs:
         - relevant_docs: Dict[str, float]

@@ -82,9 +82,9 @@ class ColQwenRetriever(VisionRetriever):
 
         return qs
 
-    def forward_documents(self, documents: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
+    def forward_passages(self, passages: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
-            dataset=ListDataset[Image.Image](documents),
+            dataset=ListDataset[Image.Image](passages),
             batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_images,

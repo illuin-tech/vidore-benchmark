@@ -84,9 +84,9 @@ class ColPaliRetriever(VisionRetriever):
 
         return qs
 
-    def forward_documents(self, documents: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
+    def forward_passages(self, passages: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
-            dataset=ListDataset[Image.Image](documents),
+            dataset=ListDataset[Image.Image](passages),
             batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_images,
@@ -98,6 +98,7 @@ class ColPaliRetriever(VisionRetriever):
             for batch_doc in tqdm(dataloader, desc="Forward pass documents...", leave=False):
                 embeddings_doc = self.model(**batch_doc)
                 ds.extend(list(torch.unbind(embeddings_doc)))
+
         return ds
 
     def get_scores(

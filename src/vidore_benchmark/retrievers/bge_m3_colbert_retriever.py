@@ -67,13 +67,13 @@ class BGEM3ColbertRetriever(VisionRetriever):
 
         return list_emb_queries
 
-    def forward_documents(self, documents: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
-        list_emb_documents: List[torch.Tensor] = []
+    def forward_passages(self, passages: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
+        list_emb_passages: List[torch.Tensor] = []
 
         for doc_batch in tqdm(
-            batched(documents, batch_size),
+            batched(passages, batch_size),
             desc="Document batch",
-            total=math.ceil(len(documents) / batch_size),
+            total=math.ceil(len(passages) / batch_size),
             leave=False,
         ):
             doc_batch = cast(List[str], doc_batch)
@@ -85,9 +85,9 @@ class BGEM3ColbertRetriever(VisionRetriever):
                     return_sparse=False,
                     return_colbert_vecs=True,
                 )["colbert_vecs"]
-            list_emb_documents.extend([torch.Tensor(elt) for elt in output])
+            list_emb_passages.extend([torch.Tensor(elt) for elt in output])
 
-        return list_emb_documents
+        return list_emb_passages
 
     def get_scores(
         self,

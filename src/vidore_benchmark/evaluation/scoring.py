@@ -13,7 +13,7 @@ def score_multi_vector(
 
     Inputs:
         - emb_queries: List of query embeddings, each of shape (n_seq, emb_dim).
-        - emb_documents: List of document embeddings, each of shape (n_seq, emb_dim).
+        - emb_passages: List of document embeddings, each of shape (n_seq, emb_dim).
         - batch_size: Batch size for the similarity computation.
     """
     if len(emb_queries) == 0:
