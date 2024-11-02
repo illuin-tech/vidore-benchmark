@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog],
 and this project adheres to [Semantic Versioning].
 
+feat: add better soft dep handling + change `get_scores` signature + add `scoring` module + tweaks
+
 ## [Unreleased]
 
 ### Added
@@ -13,10 +15,16 @@ and this project adheres to [Semantic Versioning].
 
 ### Changed
 
-- Restructure the `vidore-benchmark` package (breaking)
-- Change the CLI argument names (breaking)
+- [Breaking] Restructure the `vidore-benchmark` package
+- [Breaking] Change the CLI argument names
 - Add option to load a specific checkpoint for Hf models with `pretrained_model_name_or_path`
 - Add better RAM handling during evaluation
+- Add better optional dependency handling
+- [Breaking] Change the `get_scores` signature
+- [Breaking] Rename `forward_documents` to `forward_passages` to match the literature and reduce confusion
+- Rename `DSERetriever` into `DSEQwen2Retriever`
+- Speed up tests by using smaller inputs
+- [Breaking] Rename args in CLI script
 
 ### Fixed
 
