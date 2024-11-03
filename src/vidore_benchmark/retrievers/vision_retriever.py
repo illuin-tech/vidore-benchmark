@@ -116,14 +116,14 @@ class VisionRetriever(ABC):
         relevant_docs = {}
         results = {}
 
-        queries2filename = {query: image_filename for query, image_filename in zip(ds["query"], ds["image_filename"])}
-        passages2filename = {docidx: image_filename for docidx, image_filename in enumerate(ds["image_filename"])}
+        query_to_filename = {query: image_filename for query, image_filename in zip(ds["query"], ds["image_filename"])}
+        passage_to_filename = {docidx: image_filename for docidx, image_filename in enumerate(ds["image_filename"])}
 
         for query, score_per_query in zip(queries, scores):
-            relevant_docs[query] = {queries2filename[query]: 1}
+            relevant_docs[query] = {query_to_filename[query]: 1}
 
             for docidx, score in enumerate(score_per_query):
-                filename = passages2filename[docidx]
+                filename = passage_to_filename[docidx]
                 score_passage = float(score.item())
 
                 if query in results:
