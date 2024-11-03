@@ -45,6 +45,7 @@ class BiQwenRetriever(VisionRetriever):
                 pretrained_model_name_or_path,
                 torch_dtype=torch.bfloat16,
                 device_map=device,
+                attn_implementation="flash_attention_2" if torch.cuda.is_available() else None,
             ).eval(),
         )
 
