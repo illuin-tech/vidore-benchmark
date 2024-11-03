@@ -76,6 +76,8 @@ def evaluate_dataset(
         if isinstance(batch_emb_passages, torch.Tensor):
             batch_emb_passages = list(torch.unbind(batch_emb_passages))
             emb_passages.extend(batch_emb_passages)
+        else:
+            emb_passages.extend(batch_emb_passages)
 
     if embedding_pooler is not None:
         for idx, emb_document in tqdm(enumerate(emb_passages), total=len(emb_passages), desc="Pooling embeddings..."):
