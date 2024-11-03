@@ -1,17 +1,16 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar, List, Optional, Union, cast
+from typing import ClassVar, List, Optional, cast
 
 import torch
-from colpali_engine.models import ColQwen2, ColQwen2Processor
+from colpali_engine.models import BiQwen2, BiQwen2Processor
 from colpali_engine.utils.torch_utils import get_torch_device
 from dotenv import load_dotenv
 from PIL import Image
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from vidore_benchmark.evaluation.scoring import score_multi_vector
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.data_utils import ListDataset
@@ -20,20 +19,19 @@ logger = logging.getLogger(__name__)
 
 load_dotenv(override=True)
 
-
-@register_vision_retriever("colqwen2")
-class ColQwenRetriever(VisionRetriever):
+@register_vision_retriever("biqwen2")
+class BiQwenRetriever(VisionRetriever):
     """
-    ColPali Retriever that implements the model from "ColPali: Efficient Document Retrieval
+    BiQwen Retriever that implements the model from "ColPali: Efficient Document Retrieval
     with Vision Language Models".
     """
 
-    emb_dim_query: ClassVar[int] = 128
-    emb_dim_doc: ClassVar[int] = 128
+    emb_dim_query: ClassVar[int] = 1536
+    emb_dim_doc: ClassVar[int] = 1536
 
     def __init__(
         self,
-        pretrained_model_name_or_path: str = "vidore/colqwen2-v0.1",
+        pretrained_model_name_or_path: str = "vidore/biqwen2-v0.1",
         device: str = "auto",
     ):
         super().__init__()
@@ -43,8 +41,8 @@ class ColQwenRetriever(VisionRetriever):
 
         # Load the model and LORA adapter
         self.model = cast(
-            ColQwen2,
-            ColQwen2.from_pretrained(
+            BiQwen2,
+            BiQwen2.from_pretrained(
                 pretrained_model_name_or_path,
                 torch_dtype=torch.bfloat16,
                 device_map=device,
@@ -53,7 +51,7 @@ class ColQwenRetriever(VisionRetriever):
         )
 
         # Load the processor
-        self.processor = cast(ColQwen2Processor, ColQwen2Processor.from_pretrained(pretrained_model_name_or_path))
+        self.processor = cast(BiQwen2Processor, BiQwen2Processor.from_pretrained(pretrained_model_name_or_path))
         print("Loaded custom processor.\n")
 
     @property
@@ -83,9 +81,9 @@ class ColQwenRetriever(VisionRetriever):
 
         return qs
 
-    def forward_passages(self, passages: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
+    def forward_passages(self, documents: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
-            dataset=ListDataset[Image.Image](passages),
+            dataset=ListDataset[Image.Image](documents),
             batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_images,
@@ -101,11 +99,16 @@ class ColQwenRetriever(VisionRetriever):
 
     def get_scores(
         self,
-        query_embeddings: Union[torch.Tensor, List[torch.Tensor]],
-        passage_embeddings: Union[torch.Tensor, List[torch.Tensor]],
+        list_emb_queries: List[torch.Tensor],
+        list_emb_documents: List[torch.Tensor],
         batch_size: Optional[int] = 128,
     ) -> torch.Tensor:
         if batch_size is None:
-            raise ValueError("`batch_size` must be provided for ColPaliRetriever's scoring")
-        scores = score_multi_vector(query_embeddings, passage_embeddings, batch_size=batch_size)
+            raise ValueError("`batch_size` must be provided for BiPaliRetriever's scoring")
+        scores = self.processor.score(
+            list_emb_queries,
+            list_emb_documents,
+            batch_size=batch_size,
+            device=self.device,
+        )
         return scores

@@ -41,11 +41,19 @@ def evaluate_dataset(
         raise ValueError(f"Dataset should contain the following columns: {required_columns}")
 
     # Remove `None` queries (i.e. pages for which no question was generated) and duplicates
-    queries = list(set(ds["query"]))
-    if None in queries:
-        queries.remove(None)
-        if len(queries) == 0:
-            raise ValueError("All queries are None")
+    # queries = list(set(ds["query"]))
+    # --> old buggy behavior - this differs from colpali-engine implementation where duplicates are NOT removed
+    # for fairness with externally evaluated retrievers since bug, we maintain this behavior and remove duplicates
+    # This slightly boosts scores on docvqa typically
+    seen_queries = set()
+    queries = []
+    for query in ds["query"]:
+        if query is not None and query not in seen_queries:
+            queries.append(query)
+            seen_queries.add(query)
+
+    if len(queries) == 0:
+        raise ValueError("All queries are None")
 
     # Edge case: using the BM25Retriever
     if isinstance(vision_retriever, BM25Retriever):
@@ -75,6 +83,8 @@ def evaluate_dataset(
         batch_emb_passages = vision_retriever.forward_passages(passages, batch_size=batch_passage)
         if isinstance(batch_emb_passages, torch.Tensor):
             batch_emb_passages = list(torch.unbind(batch_emb_passages))
+            emb_passages.extend(batch_emb_passages)
+        else:
             emb_passages.extend(batch_emb_passages)
 
     if embedding_pooler is not None:
