@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import logging
 from typing import ClassVar, List, Optional, cast
 
 import torch
 from colpali_engine.models import BiQwen2, BiQwen2Processor
 from colpali_engine.utils.torch_utils import get_torch_device
 from dotenv import load_dotenv
-from loguru import logger
 from PIL import Image
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -15,8 +15,9 @@ from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.data_utils import ListDataset
 
-load_dotenv(override=True)
+logger = logging.getLogger(__name__)
 
+load_dotenv(override=True)
 
 @register_vision_retriever("biqwen2")
 class BiQwenRetriever(VisionRetriever):
