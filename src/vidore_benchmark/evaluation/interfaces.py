@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
@@ -78,7 +78,7 @@ class MetricsModel(BaseModel):
     naucs_at_100_diff1: Optional[float] = None
 
 
-class Metadata(BaseModel):
+class MetadataModel(BaseModel):
     """
     Metadata for the ViDoRe benchmark results.
     """
@@ -113,5 +113,35 @@ class ViDoReBenchmarkResults(BaseModel):
     ```
     """
 
-    metadata: Metadata
+    metadata: MetadataModel
     metrics: Dict[str, MetricsModel]
+
+    @classmethod
+    def merge(cls, results: List["ViDoReBenchmarkResults"]) -> "ViDoReBenchmarkResults":
+        """
+        Merge multiple ViDoReBenchmarkResults instances into a single one.
+        Uses the latest timestamp from the input results and combines all metrics.
+        If there are conflicting metrics for the same benchmark, the last one in the list takes precedence.
+
+        Args:
+            results: List of ViDoReBenchmarkResults to merge
+
+        Returns:
+            A new ViDoReBenchmarkResults instance containing the merged data
+
+        Raises:
+            ValueError: If the input list is empty
+        """
+        if not results:
+            raise ValueError("Cannot merge an empty list of results")
+
+        # Use the metadata from the result with the latest timestamp
+        latest_result = max(results, key=lambda x: x.metadata.timestamp)
+        merged_metadata = latest_result.metadata
+
+        # Merge all metrics, later results override earlier ones for the same benchmark
+        merged_metrics: Dict[str, MetricsModel] = {}
+        for result in results:
+            merged_metrics.update(result.metrics)
+
+        return cls(metadata=merged_metadata, metrics=merged_metrics)
