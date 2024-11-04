@@ -81,12 +81,8 @@ class EvalManager:
         """
         Load evaluation results from a CSV file.
         """
-        try:
-            df = pd.read_csv(path, index_col=0, header=[0, 1])
-            return cls(df)
-        except Exception as e:
-            print(f"Error loading {path}: {e}")
-            raise e
+        df = pd.read_csv(path, index_col=0, header=[0, 1])
+        return cls(df)
 
     @property
     def data(self) -> pd.DataFrame:
@@ -139,17 +135,17 @@ class EvalManager:
     def get_df_for_model(self, model: str) -> pd.DataFrame:
         if model not in self.data.index:
             raise ValueError(f"Model {model} not found in the evaluation results")
-        return self.data.loc[[model], :]  # type: ignore
+        return self.data.loc[[model], :]
 
     def get_df_for_dataset(self, dataset: str) -> pd.DataFrame:
         if dataset not in self.datasets:
             raise ValueError(f"Dataset {dataset} not found in the evaluation results")
-        return self.data.loc[:, (dataset, slice(None))]  # type: ignore
+        return self.data.loc[:, (dataset, slice(None))]
 
     def get_df_for_metric(self, metric: str) -> pd.DataFrame:
         if metric not in self.metrics:
             raise ValueError(f"Metric {metric} not found in the evaluation results")
-        return self.data.loc[:, (slice(None), metric)]  # type: ignore
+        return self.data.loc[:, (slice(None), metric)]
 
     def sort_by_dataset(self, ascending: bool = True) -> EvalManager:
         """
