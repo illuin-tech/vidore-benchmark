@@ -1,8 +1,8 @@
-import json
 import logging
 import os
+from datetime import datetime
 from pathlib import Path
-from typing import Annotated, Dict, Optional, cast
+from typing import Annotated, Dict, List, Optional, cast
 
 import huggingface_hub
 import typer
@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
 from vidore_benchmark.evaluation.evaluate import evaluate_dataset, get_top_k
+from vidore_benchmark.evaluation.interfaces import MetadataModel, MetricsModel, ViDoReBenchmarkResults
 from vidore_benchmark.retrievers.registry_utils import load_vision_retriever_from_registry
 from vidore_benchmark.utils.image_utils import generate_dataset_from_img_folder
 from vidore_benchmark.utils.logging_utils import setup_logging
@@ -115,37 +116,44 @@ def evaluate_retriever(
         else:
             savepath = OUTPUT_DIR / f"{model_id}_metrics.json"
 
-        with open(str(savepath), "w", encoding="utf-8") as f:
-            json.dump(metrics, f)
-
-        print(f"Metrics saved to `{savepath}`")
         print(f"NDCG@5 for {model_id} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
+
+        results = ViDoReBenchmarkResults(
+            metadata=MetadataModel(
+                timestamp=datetime.now(),
+                vidore_benchmark_hash=os.popen("git rev-parse HEAD").read().strip(),
+            ),
+            metrics={dataset_name: MetricsModel(**metrics[dataset_name])},
+        )
+
+        with open(str(savepath), "w", encoding="utf-8") as f:
+            f.write(results.model_dump_json(indent=4))
+
+        print(f"Benchmark results saved to `{savepath}`")
 
     elif collection_name is not None:
         if os.path.isdir(collection_name):
             print(f"Loading datasets from local directory: `{collection_name}`")
-            dataset_items = os.listdir(collection_name)
-            dataset_items = [os.path.join(collection_name, dataset) for dataset in dataset_items]
+            dataset_names = os.listdir(collection_name)
+            dataset_names = [os.path.join(collection_name, dataset) for dataset in dataset_names]
         else:
             print(f"Loading datasets from the Hf Hub collection: {collection_name}")
             collection = huggingface_hub.get_collection(collection_name)
-            dataset_items = [dataset_item.item_id for dataset_item in collection.items]
+            dataset_names = [dataset_item.item_id for dataset_item in collection.items]
 
         # Placeholder for all metrics
         metrics_all: Dict[str, Dict[str, float]] = {}
+        results_all: List[ViDoReBenchmarkResults] = []
 
         savedir = OUTPUT_DIR / model_id.replace("/", "_")
         savedir.mkdir(parents=True, exist_ok=True)
 
-        for dataset_item in dataset_items:
-            print(f"\n---------------------------\nEvaluating {dataset_item}")
-            dataset = cast(
-                Dataset,
-                load_dataset(dataset_item, split=split),
-            )
-            dataset_item = dataset_item.replace(collection_name + "/", "")
+        for dataset_name in dataset_names:
+            print(f"\n---------------------------\nEvaluating {dataset_name}")
+            dataset = cast(Dataset, load_dataset(dataset_name, split=split))
+            dataset_name = dataset_name.replace(collection_name + "/", "")
             metrics = {
-                dataset_item: evaluate_dataset(
+                dataset_name: evaluate_dataset(
                     retriever,
                     dataset,
                     batch_query=batch_query,
@@ -157,26 +165,38 @@ def evaluate_retriever(
             metrics_all.update(metrics)
 
             # Sanitize the dataset item to use as a filename
-            dataset_item_id = dataset_item.replace("/", "_")
+            dataset_item_id = dataset_name.replace("/", "_")
 
             if use_token_pooling:
                 savepath = savedir / f"{dataset_item_id}_metrics_pool_factor_{pool_factor}.json"
             else:
                 savepath = savedir / f"{dataset_item_id}_metrics.json"
 
-            with open(str(savepath), "w", encoding="utf-8") as f:
-                json.dump(metrics, f)
+            print(f"NDCG@5 for {model_id} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
 
-            print(f"Metrics saved to `{savepath}`")
-            print(f"NDCG@5 for {model_id} on {dataset_item}: {metrics[dataset_item]['ndcg_at_5']}")
+            results = ViDoReBenchmarkResults(
+                metadata=MetadataModel(
+                    timestamp=datetime.now(),
+                    vidore_benchmark_hash=os.popen("git rev-parse HEAD").read().strip(),
+                ),
+                metrics={dataset_name: MetricsModel(**metrics[dataset_name])},
+            )
+            results_all.append(results)
+
+            with open(str(savepath), "w", encoding="utf-8") as f:
+                f.write(results.model_dump_json(indent=4))
+
+            print(f"Benchmark results saved to `{savepath}`")
 
         if use_token_pooling:
             savepath_all = OUTPUT_DIR / f"{model_id}_all_metrics_pool_factor_{pool_factor}.json"
         else:
             savepath_all = OUTPUT_DIR / f"{model_id}_all_metrics.json"
 
+        results_merged = ViDoReBenchmarkResults.merge(results_all)
+
         with open(str(savepath_all), "w", encoding="utf-8") as f:
-            json.dump(metrics_all, f)
+            f.write(results_merged.model_dump_json(indent=4))
 
         print(f"Concatenated metrics saved to `{savepath_all}`")
 
