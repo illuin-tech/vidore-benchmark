@@ -142,6 +142,8 @@ class ViDoReBenchmarkResults(BaseModel):
         # Merge all metrics, later results override earlier ones for the same benchmark
         merged_metrics: Dict[str, MetricsModel] = {}
         for result in results:
+            if set(merged_metrics.keys()).intersection(set(result.metrics.keys())):
+                raise ValueError("Duplicate dataset keys found in the input results")
             merged_metrics.update(result.metrics)
 
         return cls(metadata=merged_metadata, metrics=merged_metrics)
