@@ -41,6 +41,9 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 ### Tests
 
 - Add tests for ColQwen2, DSEQwen2, and Cohere API embedding models
+- Add fixtures in retriever tests to speed up testing
+- Add tests for `evaluate_dataset` method
+- Add E2E test for cli command `evaluate-retriever`
 
 ## [4.0.2] - 2024-10-17
 
