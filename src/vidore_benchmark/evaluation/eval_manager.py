@@ -5,6 +5,8 @@ from typing import Any, ClassVar, Dict, List, Optional, Union
 
 import pandas as pd
 
+from vidore_benchmark.evaluation.interfaces import ViDoReBenchmarkResults
+
 
 class EvalManager:
     """
@@ -31,6 +33,18 @@ class EvalManager:
 
     def __str__(self) -> str:
         return self.data.__str__()
+
+    @classmethod
+    def from_vidore_results(
+        cls,
+        results: ViDoReBenchmarkResults,
+        model_name: str,
+    ) -> EvalManager:
+        """
+        Create an EvalManager from a ViDoReBenchmarkResults object.
+        """
+        data = {model_name: pd.DataFrame(results.metrics).T.stack()}
+        return cls.from_dict(data)
 
     @classmethod
     def from_dict(cls, data: Dict[Any, Any]):
