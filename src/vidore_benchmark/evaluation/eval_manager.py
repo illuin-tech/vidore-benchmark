@@ -49,20 +49,41 @@ class EvalManager:
     @classmethod
     def from_dict(cls, data: Dict[Any, Any]):
         """
-        Load evaluation results from a dictionary.
+        Load evaluation results from a Python dictionary.
 
-        Expected format:
-        {
-            "model1": pd.read_json(path1).T.stack(),
-            "model2": pd.read_json(path2).T.stack(),
-        }
+        Example usage:
 
+        ```python
+        >>> import pandas as pd
+        >>> data = {
+                "model1": pd.Series(
+                    {
+                        ("dataset1", "metric1"): 0.8,
+                        ("dataset1", "metric2"): 0.7,
+                        ("dataset2", "metric1"): 0.6,
+                    }
+                ),
+                "model2": pd.Series(
+                    {
+                        ("dataset1", "metric1"): 0.9,
+                        ("dataset1", "metric2"): 0.85,
+                        ("dataset2", "metric1"): 0.75,
+                    }
+                ),
+            }
+        >>> eval_manager = EvalManager.from_dict(sample_data)
+        >>> print(eval_manager.data)
         """
         df = pd.DataFrame.from_dict(data, orient="index")
         return cls(df)
 
     @classmethod
     def from_json(cls, path: Union[str, Path]):
+        """
+        Load evaluation results from a JSON file.
+
+        Refer to the `from_dict` method for more details about the expected format of the JSON file.
+        """
         datapath = Path(path)
         if not datapath.is_file():
             raise FileNotFoundError(f"{path} is not a file")
@@ -72,6 +93,11 @@ class EvalManager:
 
     @classmethod
     def from_multiple_json(cls, paths: Union[List[str], List[Path]]):
+        """
+        Load evaluation results from multiple JSON files.
+
+        Refer to the `from_dict` method for more details about the expected format of the JSON file.
+        """
         data = {}
         for path in paths:
             datapath = Path(path)
@@ -82,6 +108,11 @@ class EvalManager:
 
     @classmethod
     def from_dir(cls, datadir: Union[str, Path]):
+        """
+        Load evaluation results from a directory containing JSON files.
+
+        Refer to the `from_dict` method for more details about the expected format of the JSON file.
+        """
         datadir_ = Path(datadir)
         if not datadir_.is_dir():
             raise FileNotFoundError(f"{datadir} is not a directory")
