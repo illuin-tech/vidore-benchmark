@@ -11,8 +11,8 @@ from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
 
 from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
-from vidore_benchmark.evaluation.evaluate import evaluate_dataset
 from vidore_benchmark.evaluation.interfaces import MetadataModel, ViDoReBenchmarkResults
+from vidore_benchmark.evaluation.vidore_evaluator import ViDoReEvaluator
 from vidore_benchmark.retrievers.registry_utils import load_vision_retriever_from_registry
 from vidore_benchmark.utils.logging_utils import setup_logging
 
@@ -48,12 +48,12 @@ def evaluate_retriever(
     model_class: Annotated[str, typer.Option(help="Model class")],
     pretrained_model_name_or_path: Annotated[
         Optional[str],
-        typer.Option(
-            "--model-name",
-            help="If model class is a Hf model, this arg is passed to the `model.from_pretrained` method.",
-        ),
+        typer.Option("--model-name", help="If Hf model, passed to the `model.from_pretrained` method."),
     ] = None,
-    dataset_name: Annotated[Optional[str], typer.Option(help="HuggingFace Hub dataset name")] = None,
+    dataset_name: Annotated[Optional[str], typer.Option(help="Hf Hub dataset name.")] = None,
+    dataset_format: Annotated[
+        str, typer.Option(help='Dataset format (e.g. "qa", "beir", ...) to use for evaluation')
+    ] = "qa",
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
     batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 8,
     batch_passage: Annotated[int, typer.Option(help="Batch size for passages embedding inference")] = 8,
@@ -90,6 +90,9 @@ def evaluate_retriever(
     # Get the pooling strategy
     embedding_pooler = HierarchicalEmbeddingPooler(pool_factor) if use_token_pooling else None
 
+    # Load the evaluator
+    vidore_evaluator = ViDoReEvaluator(vision_retriever=retriever, embedding_pooler=embedding_pooler)
+
     # Create the output directory if it doesn't exist
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -98,15 +101,25 @@ def evaluate_retriever(
         raise ValueError("Please provide a dataset name or collection name.")
 
     elif dataset_name is not None:
-        dataset = cast(Dataset, load_dataset(dataset_name, split=split))
+        print(f"Loading dataset: `{dataset_name}`")
+        if dataset_format == "qa":
+            dataset = load_dataset(dataset_name, split=split)
+        elif dataset_format == "beir":
+            dataset = {
+                "corpus": cast(Dataset, load_dataset(dataset_name, subset="corpus", split=split)),
+                "queries": cast(Dataset, load_dataset(dataset_name, subset="queries", split=split)),
+                "qrels": cast(Dataset, load_dataset(dataset_name, subset="qrels", split=split)),
+            }
+        else:
+            raise ValueError(f"Unsupported dataset format: {dataset_format}")
+
         metrics = {
-            dataset_name: evaluate_dataset(
-                retriever,
-                dataset,
+            dataset_name: vidore_evaluator.evaluate_dataset(
+                ds=dataset,
+                ds_format=dataset_format,
                 batch_query=batch_query,
                 batch_passage=batch_passage,
                 batch_score=batch_score,
-                embedding_pooler=embedding_pooler,
             )
         }
 
@@ -141,7 +154,7 @@ def evaluate_retriever(
             dataset_names = [dataset_item.item_id for dataset_item in collection.items]
 
         # Placeholder for all metrics
-        metrics_all: Dict[str, Dict[str, float]] = {}
+        metrics_all: Dict[str, Dict[str, Optional[float]]] = {}
         results_all: List[ViDoReBenchmarkResults] = []
 
         savedir = OUTPUT_DIR / model_id.replace("/", "_")
@@ -149,16 +162,16 @@ def evaluate_retriever(
 
         for dataset_name in dataset_names:
             print(f"\n---------------------------\nEvaluating {dataset_name}")
-            dataset = cast(Dataset, load_dataset(dataset_name, split=split))
+            dataset = load_dataset(dataset_name, split=split)
+
             dataset_name = dataset_name.replace(collection_name + "/", "")
             metrics = {
-                dataset_name: evaluate_dataset(
-                    retriever,
-                    dataset,
+                dataset_name: vidore_evaluator.evaluate_dataset(
+                    ds=dataset,
+                    ds_format=dataset_format,
                     batch_query=batch_query,
                     batch_passage=batch_passage,
                     batch_score=batch_score,
-                    embedding_pooler=embedding_pooler,
                 )
             }
             metrics_all.update(metrics)
