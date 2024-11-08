@@ -11,7 +11,6 @@ from PIL import Image
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from vidore_benchmark.evaluation.scoring import score_multi_vector
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.data_utils import ListDataset
@@ -75,14 +74,14 @@ class ColPaliRetriever(VisionRetriever):
             collate_fn=self.process_queries,
         )
 
-        qs: List[torch.Tensor] = []
+        query_embeddings: List[torch.Tensor] = []
 
         with torch.no_grad():
             for batch_query in tqdm(dataloader, desc="Forward pass queries...", leave=False):
-                embeddings_query = self.model(**batch_query)
-                qs.extend(list(torch.unbind(embeddings_query)))
+                embeddings_query = self.model(**batch_query).to("cpu")
+                query_embeddings.extend(list(torch.unbind(embeddings_query)))
 
-        return qs
+        return query_embeddings
 
     def forward_passages(self, passages: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
@@ -92,14 +91,14 @@ class ColPaliRetriever(VisionRetriever):
             collate_fn=self.process_images,
         )
 
-        ds: List[torch.Tensor] = []
+        passage_embeddings: List[torch.Tensor] = []
 
         with torch.no_grad():
             for batch_doc in tqdm(dataloader, desc="Forward pass documents...", leave=False):
-                embeddings_doc = self.model(**batch_doc)
-                ds.extend(list(torch.unbind(embeddings_doc)))
+                embeddings_doc = self.model(**batch_doc).to("cpu")
+                passage_embeddings.extend(list(torch.unbind(embeddings_doc)))
 
-        return ds
+        return passage_embeddings
 
     def get_scores(
         self,
@@ -109,5 +108,10 @@ class ColPaliRetriever(VisionRetriever):
     ) -> torch.Tensor:
         if batch_size is None:
             raise ValueError("`batch_size` must be provided for ColPaliRetriever's scoring")
-        scores = score_multi_vector(query_embeddings, passage_embeddings, batch_size=batch_size)
+        scores = self.processor.score(
+            query_embeddings,
+            passage_embeddings,
+            batch_size=batch_size,
+            device="cpu",
+        )
         return scores
