@@ -1,6 +1,8 @@
-from typing import List, Union
+from typing import Dict, List, Tuple, Union
 
 import torch
+from colpali_engine.trainer.eval_utils import CustomRetrievalEvaluator
+from datasets import Dataset
 
 
 def score_multi_vector(
@@ -47,3 +49,79 @@ def score_multi_vector(
         scores.append(batch_scores)
 
     return torch.cat(scores, dim=0)
+
+
+def get_relevant_docs_results(
+    ds: Dataset,
+    queries: List[str],
+    scores: torch.Tensor,
+) -> Tuple[Dict[str, float], Dict[str, Dict[str, float]]]:
+    """
+    Get the relevant passages and the results from the scores.
+
+    Outputs:
+    - relevant_docs: Dict[str, float]
+    {
+        "query_0": {"doc_0": 1},
+        "query_1": {"doc_1": 1},
+        ...
+    }
+    - results: Dict[str, Dict[str, float]] with shape:
+    {
+        "query_0": {"doc_i": 19.125, "doc_1": 18.75, ...},
+        "query_1": {"doc_j": 17.25, "doc_1": 16.75, ...},
+        ...
+    }
+    """
+    relevant_docs = {}
+    results = {}
+
+    query_to_filename = {query: image_filename for query, image_filename in zip(ds["query"], ds["image_filename"])}
+    passage_to_filename = {docidx: image_filename for docidx, image_filename in enumerate(ds["image_filename"])}
+
+    for query, score_per_query in zip(queries, scores):
+        relevant_docs[query] = {query_to_filename[query]: 1}
+
+        for docidx, score in enumerate(score_per_query):
+            filename = passage_to_filename[docidx]
+            score_passage = float(score.item())
+
+            if query in results:
+                current_score = results[query].get(filename, 0)
+                results[query][filename] = max(current_score, score_passage)
+            else:
+                results[query] = {filename: score_passage}
+
+    return relevant_docs, results
+
+
+def compute_retrieval_metrics(
+    relevant_docs: Dict[str, Dict[str, int]],
+    results: Dict[str, Dict[str, float]],
+    **kwargs,
+) -> Dict[str, float]:
+    """
+    Compute the MTEB metrics for retrieval.
+    """
+
+    mteb_evaluator = CustomRetrievalEvaluator()
+
+    ndcg, _map, recall, precision, naucs = mteb_evaluator.evaluate(
+        qrels=relevant_docs,
+        results=results,
+        k_values=mteb_evaluator.k_values,
+        ignore_identical_ids=kwargs.get("ignore_identical_ids", True),
+    )
+
+    mrr = mteb_evaluator.evaluate_custom(relevant_docs, results, mteb_evaluator.k_values, "mrr")
+
+    scores = {
+        **{f"ndcg_at_{k.split('@')[1]}": v for (k, v) in ndcg.items()},
+        **{f"map_at_{k.split('@')[1]}": v for (k, v) in _map.items()},
+        **{f"recall_at_{k.split('@')[1]}": v for (k, v) in recall.items()},
+        **{f"precision_at_{k.split('@')[1]}": v for (k, v) in precision.items()},
+        **{f"mrr_at_{k.split('@')[1]}": v for (k, v) in mrr[0].items()},
+        **{f"naucs_at_{k.split('@')[1]}": v for (k, v) in naucs.items()},
+    }
+
+    return scores
