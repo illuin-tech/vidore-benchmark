@@ -11,12 +11,10 @@ from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
 
 from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
-from vidore_benchmark.evaluation.evaluate import evaluate_dataset, get_top_k
+from vidore_benchmark.evaluation.evaluate import evaluate_dataset
 from vidore_benchmark.evaluation.interfaces import MetadataModel, ViDoReBenchmarkResults
 from vidore_benchmark.retrievers.registry_utils import load_vision_retriever_from_registry
-from vidore_benchmark.utils.image_utils import generate_dataset_from_img_folder
 from vidore_benchmark.utils.logging_utils import setup_logging
-from vidore_benchmark.utils.pdf_utils import convert_all_pdfs_to_images
 
 logger = logging.getLogger(__name__)
 
@@ -200,125 +198,6 @@ def evaluate_retriever(
             f.write(results_merged.model_dump_json(indent=4))
 
         print(f"Concatenated metrics saved to `{savepath_all}`")
-
-    print("Done.")
-
-
-@app.command()
-def retrieve_on_dataset(
-    model_class: Annotated[str, typer.Option(help="Model class")],
-    query: Annotated[str, typer.Option(help="Query to use for retrieval")],
-    k: Annotated[int, typer.Option(help="Number of passages to retrieve")],
-    dataset_name: Annotated[str, typer.Option(help="HuggingFace Hub dataset name")],
-    pretrained_model_name_or_path: Annotated[
-        Optional[str],
-        typer.Option(
-            "--model-name",
-            help="If model class is a Hf model, this arg is passed to the `model.from_pretrained` method.",
-        ),
-    ] = None,
-    split: Annotated[str, typer.Option(help="Dataset split")] = "test",
-    batch_passage: Annotated[int, typer.Option(help="Batch size for passages embedding inference")] = 4,
-    batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
-):
-    """
-    Retrieve the top-k passages according to the given query.
-    """
-
-    # Create the vision retriever
-    retriever = load_vision_retriever_from_registry(
-        model_class, pretrained_model_name_or_path=pretrained_model_name_or_path
-    )
-
-    # Load the dataset
-    ds = cast(Dataset, load_dataset(dataset_name, split=split))
-
-    # Get embeddings for the queries and passages
-    emb_queries = retriever.forward_queries([query], batch_size=1)
-    emb_passages = retriever.forward_passages(
-        list(ds["image"]) if retriever.use_visual_embedding else list(ds["text_description"]),
-        batch_size=batch_passage,
-    )
-
-    # Get the top-k passages
-    top_k = get_top_k(
-        retriever,
-        queries=[query],
-        emb_queries=emb_queries,
-        emb_passages=emb_passages,
-        file_names=list(ds["image_filename"]),
-        k=k,
-        batch_score=batch_score,
-    )
-
-    print(f"Top-{k} passages for the query '{query}':")
-    for passages, score in top_k[query].items():
-        print(f"- Document `{passages}` (score = {score})")
-
-    print("Done.")
-
-
-@app.command()
-def retrieve_on_pdfs(
-    model_class: Annotated[str, typer.Option(help="Model class")],
-    query: Annotated[str, typer.Option(help="Query to use for retrieval")],
-    k: Annotated[int, typer.Option(help="Number of passages to retrieve")],
-    data_dirpath: Annotated[
-        str, typer.Option(help="Path to the folder containing the PDFs to use as the retrieval corpus")
-    ],
-    pretrained_model_name_or_path: Annotated[
-        Optional[str],
-        typer.Option(
-            "--model-name",
-            help="If model class is a Hf model, this arg is passed to the `model.from_pretrained` method.",
-        ),
-    ] = None,
-    batch_passage: Annotated[int, typer.Option(help="Batch size for passages embedding inference")] = 4,
-    batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
-):
-    """
-    This script is used to ask a query and retrieve the top-k passages from a given folder containing PDFs.
-    The PDFs will be converted to a dataset of image pages and then used for retrieval.
-    """
-
-    if not Path(data_dirpath).is_dir():
-        raise FileNotFoundError(f"Invalid data directory: `{data_dirpath}`")
-
-    # Create the vision retriever
-    retriever = load_vision_retriever_from_registry(
-        model_class, pretrained_model_name_or_path=pretrained_model_name_or_path
-    )
-
-    # Convert the PDFs to a collection of images
-    convert_all_pdfs_to_images(data_dirpath)
-    image_files = list(Path(data_dirpath).rglob("*.jpg"))
-    print(f"Found {len(image_files)} images in the directory `{data_dirpath}`")
-
-    # Generate a dataset using the images
-    ds = generate_dataset_from_img_folder(data_dirpath)
-
-    # Get embeddings for the queries and passages
-    emb_queries = retriever.forward_queries([query], batch_size=1)
-    emb_passages = retriever.forward_passages(
-        list(ds["image"]),
-        batch_size=batch_passage,
-    )
-
-    # Get the top-k passages
-    top_k = get_top_k(
-        retriever,
-        queries=[query],
-        emb_queries=emb_queries,
-        emb_passages=emb_passages,
-        file_names=list(ds["image_filename"]),
-        k=k,
-        batch_score=batch_score,
-    )
-
-    print(f"Top-{k} documents for the query '{query}':")
-
-    for passages, score in top_k[query].items():
-        print(f"Document: {passages}, Score: {score}")
 
     print("Done.")
 
