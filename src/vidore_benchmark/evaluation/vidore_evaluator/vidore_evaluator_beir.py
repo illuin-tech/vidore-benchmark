@@ -36,7 +36,7 @@ class ViDoReEvaluatorBEIR(ViDoReEvaluatorBase):
         batch_passage: int,
         batch_score: Optional[int] = None,
         **kwargs,
-    ) -> Dict[str, float]:
+    ) -> Dict[str, Optional[float]]:
         """
         TODO: add documentation
         """

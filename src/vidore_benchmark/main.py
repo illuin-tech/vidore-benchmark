@@ -9,16 +9,20 @@ import huggingface_hub
 import typer
 from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
+from transformers import set_seed
 
-from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
+from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler, HierarchicalEmbeddingPooler
 from vidore_benchmark.evaluation.interfaces import MetadataModel, ViDoReBenchmarkResults
-from vidore_benchmark.evaluation.vidore_evaluator import ViDoReEvaluator
+from vidore_benchmark.evaluation.vidore_evaluator.vidore_evaluator_beir import ViDoReEvaluatorBEIR
+from vidore_benchmark.evaluation.vidore_evaluator.vidore_evaluator_qa import ViDoReEvaluatorQA
 from vidore_benchmark.retrievers.registry_utils import load_vision_retriever_from_registry
+from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.logging_utils import setup_logging
 
 logger = logging.getLogger(__name__)
 
 load_dotenv(override=True)
+set_seed(42)
 
 OUTPUT_DIR = Path("outputs")
 
@@ -28,13 +32,80 @@ app = typer.Typer(
 )
 
 
-def sanitize_model_id(model_class: str, pretrained_model_name_or_path: Optional[str] = None) -> str:
+def _sanitize_model_id(model_class: str, pretrained_model_name_or_path: Optional[str] = None) -> str:
     """
     Return sanitized model ID for saving metrics.
     """
     model_id = pretrained_model_name_or_path if pretrained_model_name_or_path is not None else model_class
     model_id = model_id.replace("/", "_")
     return model_id
+
+
+def _get_metrics_from_vidore_evaluator(
+    vision_retriever: VisionRetriever,
+    embedding_pooler: Optional[BaseEmbeddingPooler],
+    dataset_name: str,
+    dataset_format: str,
+    split: str,
+    batch_query: int,
+    batch_passage: int,
+    batch_score: Optional[int],
+) -> Dict[str, Dict[str, Optional[float]]]:
+    """
+    Rooter function to get metrics from the ViDoRe evaluator depending on the dataset format.
+
+    Args:
+        vision_retriever: VisionRetriever instance.
+        embedding_pooler: EmbeddingPooler instance.
+        dataset_name: HuggingFace Hub dataset name.
+        dataset_format: Dataset format (e.g. "qa", "beir", ...).
+        split: Dataset split.
+        batch_query: Batch size for query embedding inference.
+        batch_passage: Batch size for passages embedding inference.
+        batch_score: Batch size for score computation.
+
+    Returns:
+        Dict[str, Dict[str, Optional[float]]]: Dictionary of metrics
+    """
+    if dataset_format == "qa":
+        vidore_evaluator = ViDoReEvaluatorQA(
+            vision_retriever=vision_retriever,
+            embedding_pooler=embedding_pooler,
+        )
+        ds = load_dataset(dataset_name, split=split)
+        metrics = {
+            dataset_name: vidore_evaluator.evaluate_dataset(
+                ds=ds,
+                ds_format=dataset_format,
+                batch_query=batch_query,
+                batch_passage=batch_passage,
+                batch_score=batch_score,
+            )
+        }
+
+    elif dataset_format == "beir":
+        vidore_evaluator = ViDoReEvaluatorBEIR(
+            vision_retriever=vision_retriever,
+            embedding_pooler=embedding_pooler,
+        )
+        ds = {
+            "corpus": cast(Dataset, load_dataset(dataset_name, subset="corpus", split=split)),
+            "queries": cast(Dataset, load_dataset(dataset_name, subset="queries", split=split)),
+            "qrels": cast(Dataset, load_dataset(dataset_name, subset="qrels", split=split)),
+        }
+        metrics = {
+            dataset_name: vidore_evaluator.evaluate_dataset(
+                ds=ds,
+                ds_format=dataset_format,
+                batch_query=batch_query,
+                batch_passage=batch_passage,
+                batch_score=batch_score,
+            )
+        }
+    else:
+        raise ValueError(f"Unsupported dataset format: {dataset_format}")
+
+    return metrics
 
 
 @app.callback()
@@ -85,13 +156,10 @@ def evaluate_retriever(
     )
 
     # Sanitize the model ID to use as a filename
-    model_id = sanitize_model_id(model_class, pretrained_model_name_or_path)
+    model_id = _sanitize_model_id(model_class, pretrained_model_name_or_path)
 
     # Get the pooling strategy
     embedding_pooler = HierarchicalEmbeddingPooler(pool_factor) if use_token_pooling else None
-
-    # Load the evaluator
-    vidore_evaluator = ViDoReEvaluator(vision_retriever=retriever, embedding_pooler=embedding_pooler)
 
     # Create the output directory if it doesn't exist
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -101,27 +169,16 @@ def evaluate_retriever(
         raise ValueError("Please provide a dataset name or collection name.")
 
     elif dataset_name is not None:
-        print(f"Loading dataset: `{dataset_name}`")
-        if dataset_format == "qa":
-            dataset = load_dataset(dataset_name, split=split)
-        elif dataset_format == "beir":
-            dataset = {
-                "corpus": cast(Dataset, load_dataset(dataset_name, subset="corpus", split=split)),
-                "queries": cast(Dataset, load_dataset(dataset_name, subset="queries", split=split)),
-                "qrels": cast(Dataset, load_dataset(dataset_name, subset="qrels", split=split)),
-            }
-        else:
-            raise ValueError(f"Unsupported dataset format: {dataset_format}")
-
-        metrics = {
-            dataset_name: vidore_evaluator.evaluate_dataset(
-                ds=dataset,
-                ds_format=dataset_format,
-                batch_query=batch_query,
-                batch_passage=batch_passage,
-                batch_score=batch_score,
-            )
-        }
+        metrics = _get_metrics_from_vidore_evaluator(
+            vision_retriever=retriever,
+            embedding_pooler=embedding_pooler,
+            dataset_name=dataset_name,
+            dataset_format=dataset_format,
+            split=split,
+            batch_query=batch_query,
+            batch_passage=batch_passage,
+            batch_score=batch_score,
+        )
 
         if use_token_pooling:
             savepath = OUTPUT_DIR / f"{model_id}_metrics_pool_factor_{pool_factor}.json"
@@ -162,18 +219,18 @@ def evaluate_retriever(
 
         for dataset_name in dataset_names:
             print(f"\n---------------------------\nEvaluating {dataset_name}")
-            dataset = load_dataset(dataset_name, split=split)
 
-            dataset_name = dataset_name.replace(collection_name + "/", "")
-            metrics = {
-                dataset_name: vidore_evaluator.evaluate_dataset(
-                    ds=dataset,
-                    ds_format=dataset_format,
-                    batch_query=batch_query,
-                    batch_passage=batch_passage,
-                    batch_score=batch_score,
-                )
-            }
+            metrics = _get_metrics_from_vidore_evaluator(
+                vision_retriever=retriever,
+                embedding_pooler=embedding_pooler,
+                dataset_name=dataset_name,
+                dataset_format=dataset_format,
+                split=split,
+                batch_query=batch_query,
+                batch_passage=batch_passage,
+                batch_score=batch_score,
+            )
+
             metrics_all.update(metrics)
 
             # Sanitize the dataset item to use as a filename
