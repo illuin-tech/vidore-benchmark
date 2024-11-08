@@ -40,10 +40,10 @@ def evaluate_dataset(
         raise ValueError(f"Dataset should contain the following columns: {required_columns}")
 
     # Remove `None` queries (i.e. pages for which no question was generated) and duplicates
-    # queries = list(set(ds["query"]))
-    # --> old buggy behavior - this differs from colpali-engine implementation where duplicates are NOT removed
-    # for fairness with externally evaluated retrievers since bug, we maintain this behavior and remove duplicates
-    # This slightly boosts scores on docvqa typically
+    # NOTE: This logic differs from the eval in `colpali-engine` where duplicates are NOT removed.
+    # For fairness wrt externally evaluated retrievers since bug, we maintain this behavior and remove duplicates.
+    # This slightly boosts scores on some datasets, e.g. DocVQA typically.
+
     seen_queries = set()
     queries = []
     for query in ds["query"]:
