@@ -37,7 +37,7 @@ class ViDoReEvaluatorQA(ViDoReEvaluatorBase):
         batch_passage: int,
         batch_score: Optional[int] = None,
         **kwargs,
-    ) -> Dict[str, float]:
+    ) -> Dict[str, Optional[float]]:
         """
         Evaluate the model on a given dataset using the MTEB metrics.
 

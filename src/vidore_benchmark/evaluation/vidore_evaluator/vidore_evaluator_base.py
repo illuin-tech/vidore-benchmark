@@ -31,7 +31,7 @@ class ViDoReEvaluatorBase(ABC):
         batch_passage: int,
         batch_score: Optional[int] = None,
         **kwargs,
-    ) -> Dict[str, float]:
+    ) -> Dict[str, Optional[float]]:
         pass
 
     def _get_query_and_passage_embeddings(
@@ -83,7 +83,7 @@ class ViDoReEvaluatorBase(ABC):
         qrels: Dict[str, Dict[str, int]],
         results: Dict[str, Dict[str, float]],
         **kwargs,
-    ) -> Dict[str, float]:
+    ) -> Dict[str, Optional[float]]:
         """
         Compute the MTEB metrics for retrieval.
 
@@ -113,7 +113,7 @@ class ViDoReEvaluatorBase(ABC):
 
         mrr = mteb_evaluator.evaluate_custom(qrels, results, mteb_evaluator.k_values, "mrr")
 
-        scores = {
+        scores: Dict[str, Optional[float]] = {
             **{f"ndcg_at_{k.split('@')[1]}": v for (k, v) in ndcg.items()},
             **{f"map_at_{k.split('@')[1]}": v for (k, v) in _map.items()},
             **{f"recall_at_{k.split('@')[1]}": v for (k, v) in recall.items()},
