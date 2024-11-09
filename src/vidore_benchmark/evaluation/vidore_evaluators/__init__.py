@@ -1,0 +1,3 @@
+from .vidore_evaluator_base import ViDoReEvaluatorBase
+from .vidore_evaluator_beir import ViDoReEvaluatorBEIR
+from .vidore_evaluator_qa import ViDoReEvaluatorQA
