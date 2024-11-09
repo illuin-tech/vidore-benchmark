@@ -4,17 +4,19 @@ from typing import Dict, List, Optional
 
 import torch
 from datasets import Dataset
-from transformers import set_seed
 
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
 from vidore_benchmark.evaluation.vidore_evaluator.vidore_evaluator_base import ViDoReEvaluatorBase
 from vidore_benchmark.retrievers.bm25_retriever import BM25Retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
-set_seed(42)
-
 
 class ViDoReEvaluatorQA(ViDoReEvaluatorBase):
+    """
+    Evaluator for the ViDoRe benchmark for datasets with a question-answering (QA) format, i.e. where each
+    row in the dataset contains an optional query and a passage (image or text).
+    """
+
     def __init__(
         self,
         vision_retriever: VisionRetriever,
@@ -38,19 +40,8 @@ class ViDoReEvaluatorQA(ViDoReEvaluatorBase):
         batch_score: Optional[int] = None,
         **kwargs,
     ) -> Dict[str, Optional[float]]:
-        """
-        Evaluate the model on a given dataset using the MTEB metrics.
-
-        NOTE: The dataset should contain the following columns:
-        - query: the query text
-        - image_filename: the filename of the image
-        - image: the image (PIL.Image) if `use_visual_embedding` is True
-        - text_description: the text description (i.e. the page caption or the text chunks) if
-            `use_visual_embedding` is False
-        """
-
         # Get the deduplicated queries
-        deduped_queries = self._get_deduped_queries(ds[self.query_column])
+        deduped_queries = self._deduplicate_queries(ds[self.query_column])
         if len(deduped_queries) == 0:
             raise ValueError("No valid queries found in the dataset. Check if the queries are all set to `None`.")
 
@@ -96,14 +87,20 @@ class ViDoReEvaluatorQA(ViDoReEvaluatorBase):
 
         return metrics
 
-    def _get_deduped_queries(self, queries: List[str]) -> List[str]:
+    def _deduplicate_queries(self, queries: List[str]) -> List[str]:
         """
-        Remove `None` queries (i.e. pages for which no question was generated) and duplicates.
+        Remove duplicate queries and `None` queries (i.e. passages with no associated query).
 
-        Notes:
+        Important notes:
         - This logic differs from the eval in `colpali-engine` where duplicates are NOT removed.
         - For fairness wrt externally evaluated retrievers since bug, we maintain this behavior and remove duplicates.
           This slightly boosts scores on some datasets, e.g. DocVQA typically.
+
+        Args:
+            queries (List[str]): The list of queries to deduplicate.
+
+        Returns:
+            (List[str]): The deduplicated queries.
         """
         seen_queries = set()
         deduped_queries: List[str] = []
@@ -122,11 +119,16 @@ class ViDoReEvaluatorQA(ViDoReEvaluatorBase):
         scores: torch.Tensor,
     ) -> Dict[str, Dict[str, float]]:
         """
-        Get the retrieval results from the model's scores, i.e. the retrieval
-        scores for each document for each query.
+        Get the retrieval results from the model's scores, i.e. the retrieval scores
+        for each document for each query.
 
-        Outputs:
-            results: Dict[str, Dict[str, float]]
+        Args:
+            ds(Dataset): The dataset containing the queries and passages.
+            deduped_queries(List[str]): The deduplicated queries.
+            scores(torch.Tensor): The similarity scores between queries and passages.
+
+        Returns:
+            (Dict[str, Dict[str, float]]): The retrieval results.
 
         Example output:
             ```python
@@ -160,10 +162,13 @@ class ViDoReEvaluatorQA(ViDoReEvaluatorBase):
 
     def _get_qrels_from_qa_dataset(self, ds: Dataset) -> Dict[str, Dict[str, int]]:
         """
-        Get the relevant passages (qrels) from a QA dataset.
+        Get the query relevance judgments (qrels) from a dataset (QA format).
+
+        Args:
+            ds (Dataset): The dataset (QA format) containing the queries and passages.
 
         Returns:
-            qrels: Dict[str, Dict[str, int]]
+            Dict[str, Dict[str, int]]: The query relevance judgments (qrels).
 
         Example output:
             ```python
@@ -189,7 +194,7 @@ class ViDoReEvaluatorQA(ViDoReEvaluatorBase):
             for query, image_filename in zip(ds[self.query_column], ds[self.passage_filename_column])
         }
 
-        deduped_queries = self._get_deduped_queries(ds[self.query_column])
+        deduped_queries = self._deduplicate_queries(ds[self.query_column])
         for query in deduped_queries:
             qrels[query] = {query_to_filename[query]: 1}
 
