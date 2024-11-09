@@ -5,8 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog],
 and this project adheres to [Semantic Versioning].
 
-feat: add better soft dep handling + change `get_scores` signature + add `scoring` module + tweaks
-
 ## [Unreleased]
 
 ### Added
@@ -16,6 +14,7 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 - Add option to create an `EvalManager` instance from `ViDoReBenchmarkResults`
 - Add support for ColIdefics3 models
 - Add `num_workers` argument for dataloaders
+- Add support for the BEIR dataset format (keep support for the previous QA format)
 
 ### Changed
 
@@ -35,6 +34,7 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 - Rename `ColQwenRetriever` to `ColQwen2Retriever`
 - Rename `BiQwenRetriever` to `BiQwen2Retriever`
 - Change default checkpoints for ColPali and ColQwen2 retrievers
+- [Breaking] Revamp the `evaluate` module. Evaluation is now handled by the `ViDoReEvaluator` classes.
 
 ### Fixed
 
