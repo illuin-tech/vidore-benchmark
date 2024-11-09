@@ -13,8 +13,7 @@ from transformers import set_seed
 
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler, HierarchicalEmbeddingPooler
 from vidore_benchmark.evaluation.interfaces import MetadataModel, ViDoReBenchmarkResults
-from vidore_benchmark.evaluation.vidore_evaluator.vidore_evaluator_beir import ViDoReEvaluatorBEIR
-from vidore_benchmark.evaluation.vidore_evaluator.vidore_evaluator_qa import ViDoReEvaluatorQA
+from vidore_benchmark.evaluation.vidore_evaluators import ViDoReEvaluatorBEIR, ViDoReEvaluatorQA
 from vidore_benchmark.retrievers.registry_utils import load_vision_retriever_from_registry
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.logging_utils import setup_logging
@@ -122,17 +121,15 @@ def evaluate_retriever(
         typer.Option("--model-name", help="If Hf model, passed to the `model.from_pretrained` method."),
     ] = None,
     dataset_name: Annotated[Optional[str], typer.Option(help="Hf Hub dataset name.")] = None,
-    dataset_format: Annotated[
-        str, typer.Option(help='Dataset format (e.g. "qa", "beir", ...) to use for evaluation')
-    ] = "qa",
-    split: Annotated[str, typer.Option(help="Dataset split")] = "test",
-    batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 8,
-    batch_passage: Annotated[int, typer.Option(help="Batch size for passages embedding inference")] = 8,
-    batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 16,
     collection_name: Annotated[
         Optional[str],
         typer.Option(help="Dataset collection to use for evaluation. Can be a Hf collection id or a local dirpath."),
     ] = None,
+    dataset_format: Annotated[str, typer.Option(help='Dataset format ("qa" or "beir") to use for evaluation')] = "qa",
+    split: Annotated[str, typer.Option(help="Dataset split")] = "test",
+    batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 8,
+    batch_passage: Annotated[int, typer.Option(help="Batch size for passages embedding inference")] = 8,
+    batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 16,
     use_token_pooling: Annotated[bool, typer.Option(help="Whether to use token pooling for text embeddings")] = False,
     pool_factor: Annotated[int, typer.Option(help="Pooling factor for hierarchical token pooling")] = 3,
 ):
