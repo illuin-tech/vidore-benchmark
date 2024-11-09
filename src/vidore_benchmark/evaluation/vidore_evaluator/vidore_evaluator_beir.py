@@ -13,12 +13,31 @@ from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
 
 class BEIRDataset(TypedDict):
+    """
+    BEIR dataset type. A BEIR dataset must contain 3 subsets:
+        corpus: The dataset containing the corpus of documents.
+        queries: The dataset containing the queries.
+        qrels: The dataset containing the query relevance scores.
+
+    Each subset is associated to a key with the same name.
+    """
+
     corpus: Dataset
     queries: Dataset
     qrels: Dataset
 
 
 class ViDoReEvaluatorBEIR(ViDoReEvaluatorBase):
+    """
+    Evaluator for the ViDoRe benchmark for datasets with a BEIR format, i.e. where each
+    dataset contains 3 subsets:
+        corpus: The dataset containing the corpus of documents.
+        queries: The dataset containing the queries.
+        qrels: The dataset containing the query relevance scores.
+
+    Paper reference for BEIR: https://doi.org/10.48550/arXiv.2104.08663
+    """
+
     def __init__(
         self,
         vision_retriever: VisionRetriever,
@@ -37,9 +56,6 @@ class ViDoReEvaluatorBEIR(ViDoReEvaluatorBase):
         batch_score: Optional[int] = None,
         **kwargs,
     ) -> Dict[str, Optional[float]]:
-        """
-        TODO: add documentation
-        """
         # Load datasets
         ds_corpus = ds["corpus"]
         ds_queries = ds["queries"]
@@ -110,10 +126,16 @@ class ViDoReEvaluatorBEIR(ViDoReEvaluatorBase):
         scores: torch.Tensor,
     ) -> Dict[str, Dict[str, float]]:
         """
-        Get the retrieval results from the model's scores.
+        Get the retrieval results from the model's scores, i.e. the retrieval scores
+        for each document for each query.
 
-        Outputs:
-            results: Dict[str, Dict[str, float]]
+        Args:
+            query_ids (List[int]): The list of query IDs.
+            image_ids (List[int]): The list of image IDs.
+            scores (torch.Tensor): The model's scores.
+
+        Returns:
+            (Dict[str, Dict[str, float]]): The retrieval results.
 
         Example output:
             ```python
