@@ -15,6 +15,10 @@ from vidore_benchmark.utils.iter_utils import batched
 
 
 class ViDoReEvaluatorBase(ABC):
+    """
+    Base evaluator for the ViDoRe benchmark.
+    """
+
     def __init__(
         self,
         vision_retriever: VisionRetriever,
@@ -32,6 +36,26 @@ class ViDoReEvaluatorBase(ABC):
         batch_score: Optional[int] = None,
         **kwargs,
     ) -> Dict[str, Optional[float]]:
+        """
+        Evaluate the model on a given dataset using the MTEB retrieval metrics.
+
+        Args:
+            ds (Dataset): The dataset to evaluate the model on.
+            batch_query (int): The batch size for the queries.
+            batch_passage (int): The batch size for the passages.
+            batch_score (Optional[int]): The batch size for the scoring.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            (Dict[str, float]): The MTEB retrieval metrics.
+
+        NOTE: The `ds` dataset should contain the following columns:
+            query (str): The query text.
+            image_filename (str): The filename of the image.
+            (if `use_visual_embedding`) image (PIL.Image): The image of the document page.
+            (if not `use_visual_embedding`) text_description (str): The text of the document page,
+                plus eventual description of visual elements.
+        """
         pass
 
     def _get_query_and_passage_embeddings(
@@ -42,6 +66,21 @@ class ViDoReEvaluatorBase(ABC):
         batch_query: int,
         batch_passage: int,
     ) -> Tuple[Union[torch.Tensor, List[torch.Tensor]], Union[torch.Tensor, List[torch.Tensor]]]:
+        """
+        Get the query and passage embeddings for the given dataset using the retriever used during class
+        instance creation.
+
+        Args:
+            ds (Dataset): The dataset containing the queries and passages.
+            passage_column (str): The column name containing the passages (i.e. images or text).
+            queries (List[str]): The list of queries.
+            batch_query (int): The batch size for the queries.
+            batch_passage (int): The batch size for the passages.
+
+        Returns:
+            Tuple[Union[torch.Tensor, List[torch.Tensor]], Union[torch.Tensor, List[torch.Tensor]]]: The query
+                and passage embeddings.
+        """
         # Get the embeddings for the queries
         query_embeddings = self.vision_retriever.forward_queries(queries, batch_size=batch_query)
 
@@ -85,13 +124,13 @@ class ViDoReEvaluatorBase(ABC):
         **kwargs,
     ) -> Dict[str, Optional[float]]:
         """
-        Compute the MTEB metrics for retrieval.
+        Compute the MTEB retrieval metrics (NDCG, MAP, Recall, Precision, NDCG, MRR, NDCG, and NDCG).
 
         Args:
-            qrels: A dictionary containing the relevance judgments for each query.
+            qrels: A dictionary containing the degree of relevance between queries and documents,
+                following the BEIR convention (0: irrelevant, 1: relevant).
             results: A dictionary containing the retrieval results, i.e. the retrieval
                 scores for each document for each query.
-
                 Example input:
                 ```python
                 {
