@@ -55,7 +55,8 @@ def main(
         if row[image_filename_column] not in image_filenames_to_ds_idx:
             image_filenames_to_ds_idx[row[image_filename_column]] = idx_ds
 
-        if row[query_column] not in query_to_id:
+        if row[query_column] not in query_to_id and row[query_column] is not None:
+            # NOTE: We ignore the `None` queries.
             query_to_id[row[query_column]] = len(query_to_id)  # Assign a unique ID to each query
 
     print(f"Total unique images: {len(image_filenames_to_ds_idx)}")
