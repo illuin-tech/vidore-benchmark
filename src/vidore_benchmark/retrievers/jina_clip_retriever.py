@@ -21,7 +21,7 @@ class JinaClipRetriever(VisionRetriever):
         pretrained_model_name_or_path: str = "jinaai/jina-clip-v1",
         device: str = "auto",
     ):
-        super().__init__()
+        super().__init__(use_visual_embedding=True)
 
         try:
             import timm  # noqa: F401
@@ -42,10 +42,6 @@ class JinaClipRetriever(VisionRetriever):
             .to(self.device)
             .eval()
         )
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return True
 
     def forward_queries(self, queries, batch_size: int, **kwargs) -> torch.Tensor:
         list_emb_queries: List[torch.Tensor] = []

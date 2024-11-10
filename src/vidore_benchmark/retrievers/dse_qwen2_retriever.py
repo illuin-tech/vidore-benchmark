@@ -29,7 +29,7 @@ class DSEQwen2Retriever(VisionRetriever):
         num_image_tokens: int = 1024,  # 2560 is the original value
         device: str = "auto",
     ):
-        super().__init__()
+        super().__init__(use_visual_embedding=True)
 
         try:
             from qwen_vl_utils import process_vision_info
@@ -68,10 +68,6 @@ class DSEQwen2Retriever(VisionRetriever):
         reps = last_hidden_state[:, -1]
         reps = torch.nn.functional.normalize(reps[:, :dimension], p=2, dim=-1)
         return reps
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return True
 
     def forward_queries(
         self,

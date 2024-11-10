@@ -33,7 +33,7 @@ class BiQwen2Retriever(VisionRetriever):
         device: str = "auto",
         num_workers: Optional[int] = None,
     ):
-        super().__init__()
+        super().__init__(use_visual_embedding=True)
 
         try:
             from colpali_engine.models import BiQwen2, BiQwen2Processor
@@ -68,10 +68,6 @@ class BiQwen2Retriever(VisionRetriever):
                 self.num_workers = os.cpu_count() if os.cpu_count() is not None else 1
         else:
             self.num_workers = num_workers
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return True
 
     def process_images(self, images: List[Image.Image], **kwargs):
         return self.processor.process_images(images=images).to(self.device)

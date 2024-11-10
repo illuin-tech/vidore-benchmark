@@ -22,7 +22,7 @@ class BGEM3ColbertRetriever(VisionRetriever):
         pretrained_model_name_or_path: str = "BAAI/bge-m3",
         device: str = "auto",
     ):
-        super().__init__()
+        super().__init__(use_visual_embedding=False)
 
         try:
             from FlagEmbedding import BGEM3FlagModel
@@ -40,10 +40,6 @@ class BGEM3ColbertRetriever(VisionRetriever):
             device=self.device,
         )
         # NOTE: BGEM3FlagModel is already in eval mode
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return False
 
     def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
         list_emb_queries: List[torch.Tensor] = []
