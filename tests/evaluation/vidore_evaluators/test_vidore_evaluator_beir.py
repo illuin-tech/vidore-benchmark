@@ -100,7 +100,7 @@ def test_evaluate_dataset(evaluator, mock_beir_dataset):
     assert "mrr_at_1" in metrics
 
 
-def test_evaluate_dataset_with_bm25(mock_bm25_retriever, mock_dataset):
+def test_evaluate_dataset_with_bm25(mock_bm25_retriever, mock_beir_dataset):
     evaluator = ViDoReEvaluatorBEIR(vision_retriever=mock_bm25_retriever)
     metrics = evaluator.evaluate_dataset(
         ds=mock_beir_dataset,
