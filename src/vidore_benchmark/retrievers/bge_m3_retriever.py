@@ -5,14 +5,14 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
+from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 @register_vision_retriever("bge-m3")
-class BGEM3Retriever(VisionRetriever):
+class BGEM3Retriever(BaseVisionRetriever):
     """
     BGEM3Retriever class to retrieve embeddings the BGE-M3 model (dense embeddings).
     """

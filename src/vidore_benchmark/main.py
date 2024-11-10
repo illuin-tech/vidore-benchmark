@@ -14,8 +14,8 @@ from transformers import set_seed
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler, HierarchicalEmbeddingPooler
 from vidore_benchmark.evaluation.interfaces import MetadataModel, ViDoReBenchmarkResults
 from vidore_benchmark.evaluation.vidore_evaluators import ViDoReEvaluatorBEIR, ViDoReEvaluatorQA
+from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import load_vision_retriever_from_registry
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.logging_utils import setup_logging
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ def _sanitize_model_id(model_class: str, pretrained_model_name_or_path: Optional
 
 
 def _get_metrics_from_vidore_evaluator(
-    vision_retriever: VisionRetriever,
+    vision_retriever: BaseVisionRetriever,
     embedding_pooler: Optional[BaseEmbeddingPooler],
     dataset_name: str,
     dataset_format: str,

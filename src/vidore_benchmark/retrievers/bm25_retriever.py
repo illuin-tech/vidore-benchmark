@@ -4,13 +4,13 @@ import numpy as np
 import torch
 from PIL import Image
 
+from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 @register_vision_retriever("bm25")
-class BM25Retriever(VisionRetriever):
+class BM25Retriever(BaseVisionRetriever):
     def __init__(self, device: str = "auto"):
         super().__init__(use_visual_embedding=False)
 

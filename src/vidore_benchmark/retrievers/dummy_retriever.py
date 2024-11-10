@@ -6,12 +6,12 @@ import torch
 from PIL import Image
 from torch import Tensor
 
+from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
 
 @register_vision_retriever("dummy_retriever")
-class DummyRetriever(VisionRetriever):
+class DummyRetriever(BaseVisionRetriever):
     """
     Dummy retriever that generates random dense embeddings.
     """

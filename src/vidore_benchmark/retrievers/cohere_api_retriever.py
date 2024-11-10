@@ -11,15 +11,15 @@ from PIL import Image
 from tenacity import retry, stop_after_attempt, wait_exponential
 from tqdm import tqdm
 
+from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
 
 load_dotenv(override=True)
 
 
 @register_vision_retriever("cohere")
-class CohereAPIRetriever(VisionRetriever):
+class CohereAPIRetriever(BaseVisionRetriever):
     def __init__(
         self,
         pretrained_model_name_or_path: str = "embed-english-v3.0",
