@@ -1,4 +1,4 @@
-from typing import Annotated, Dict, List, Optional, TypedDict, cast
+from typing import Annotated, Dict, Generator, List, Optional, TypedDict, cast
 
 import typer
 from datasets import Dataset, load_dataset
@@ -41,36 +41,41 @@ def main(
     ds = cast(Dataset, load_dataset(source_dataset, split=split))
 
     # Initialize placeholders
-    filename_to_image_path: Dict[str, str] = {}
+    # NOTE: We will map the image filenames to the index in the dataset to efficiently
+    # retrieve the image data later without overloading the RAM.
+    image_filenames_to_ds_idx: Dict[str, int] = {}
     query_to_id: Dict[str, int] = {}
     image_filename_to_id: Dict[str, int] = {}
 
     # Process the dataset
-    for row in tqdm(ds, desc="Processing dataset entries..."):
-        if row[image_filename_column] in filename_to_image_path:
-            raise ValueError(f"Duplicate image filename found: {row[image_filename_column]}")
-        filename_to_image_path[row[image_filename_column]] = row[image_column]
+    for idx_ds, row in tqdm(enumerate(ds), total=len(ds), desc="Processing dataset entries..."):
+        if row[image_filename_column] not in image_filenames_to_ds_idx:
+            image_filenames_to_ds_idx[row[image_filename_column]] = idx_ds
 
         if row[query_column] not in query_to_id:
             query_to_id[row[query_column]] = len(query_to_id)  # Assign a unique ID to each query
 
-    print(f"Total unique images: {len(filename_to_image_path)}")
+    print(f"Total unique images: {len(image_filenames_to_ds_idx)}")
     print(f"Total unique queries: {len(query_to_id)}")
 
     # Create image to ID mapping
-    for idx, name in enumerate(filename_to_image_path.keys()):
+    for idx, name in enumerate(image_filenames_to_ds_idx):
         image_filename_to_id[name] = idx
 
     # Build corpus
     print("Building corpus...")
 
     CorpusItem = TypedDict("CorpusItem", {"corpus-id": int, "image": str})
-    corpus: List[CorpusItem] = []
 
-    for name, image in filename_to_image_path.items():
-        corpus.append({"corpus-id": image_filename_to_id[name], "image": image})
+    # NOTE: To prevent RAM overflow, we use a generator to create the corpus dataset
+    # as images are much larger than text data.
 
-    ds_corpus = Dataset.from_list(corpus, split="test")
+    def corpus_generator() -> Generator[CorpusItem, None, None]:
+        for name in image_filenames_to_ds_idx:
+            image = ds[image_filenames_to_ds_idx[name]][image_column]
+            yield {"corpus-id": image_filename_to_id[name], "image": image}
+
+    ds_corpus = Dataset.from_generator(corpus_generator, split="test")
 
     # Build queries
     print("Building queries...")
