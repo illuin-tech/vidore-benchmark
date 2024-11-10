@@ -41,9 +41,16 @@ class VisionRetriever(ABC):
         """
         Preprocess and forward pass the queries through the model.
 
-        NOTE: This method can either:
-        - return a single tensor where the first dimension corresponds to the number of queries.
-        - return a list of tensors where each tensor corresponds to a query.
+        Args:
+            queries (Any): The queries to forward pass.
+            batch_size (int): The batch size for the queries
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Union[torch.Tensor, List[torch.Tensor]]: The query embeddings.
+                This can either be:
+                - a single tensor where the first dimension corresponds to the number of queries.
+                - a list of tensors where each tensor corresponds to a query.
         """
         pass
 
@@ -58,9 +65,16 @@ class VisionRetriever(ABC):
         Preprocess and forward pass the passages through the model. A passage can a text chunk (e.g. BM25) or
         an image of a document page (e.g. ColPali).
 
-        NOTE: This method can either:
-        - return a single tensor where the first dimension corresponds to the number of passages.
-        - return a list of tensors where each tensor corresponds to a passage.
+        Args:
+            passages (Any): The passages to forward pass.
+            batch_size (int): The batch size for the passages.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Union[torch.Tensor, List[torch.Tensor]]: The passage embeddings.
+                This can either be:
+                - a single tensor where the first dimension corresponds to the number of passages.
+                - a list of tensors where each tensor corresponds to a passage.
         """
         pass
 
@@ -74,12 +88,18 @@ class VisionRetriever(ABC):
         """
         Get the scores between queries and passages.
 
-        Inputs:
-        - query_embeddings: torch.Tensor (n_queries, emb_dim_query) or List[torch.Tensor] (emb_dim_query)
-        - passage_embeddings: torch.Tensor (n_passages, emb_dim_doc) or List[torch.Tensor] (emb_dim_doc)
-        - batch_size: Optional[int]
+        Args:
+            query_embeddings (Union[torch.Tensor, List[torch.Tensor]]): The query embeddings.
+                This can either be:
+                - a single tensor where the first dimension corresponds to the number of queries.
+                - a list of tensors where each tensor corresponds to a query.
+            passage_embeddings (Union[torch.Tensor, List[torch.Tensor]]): The passage embeddings.
+                This can either be:
+                - a single tensor where the first dimension corresponds to the number of passages.
+                - a list of tensors where each tensor corresponds to a passage.
+            batch_size (Optional[int]): The batch size for the scoring.
 
-        Output:
-        - scores: torch.Tensor (n_queries, n_passages)
+        Returns:
+            torch.Tensor: The similarity scores between queries and passages. Shape: (n_queries, n_passages).
         """
         pass
