@@ -10,7 +10,7 @@ from datasets import Dataset
 from tqdm import tqdm
 
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
 
 
@@ -21,7 +21,7 @@ class BaseViDoReEvaluator(ABC):
 
     def __init__(
         self,
-        vision_retriever: VisionRetriever,
+        vision_retriever: BaseVisionRetriever,
         embedding_pooler: Optional[BaseEmbeddingPooler] = None,
     ):
         self.vision_retriever = vision_retriever

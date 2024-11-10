@@ -8,8 +8,8 @@ from datasets import Dataset
 
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
 from vidore_benchmark.evaluation.vidore_evaluators.vidore_evaluator_base import BaseViDoReEvaluator
+from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.bm25_retriever import BM25Retriever
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
 
 class BEIRDataset(TypedDict):
@@ -40,7 +40,7 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
 
     def __init__(
         self,
-        vision_retriever: VisionRetriever,
+        vision_retriever: BaseVisionRetriever,
         embedding_pooler: Optional[BaseEmbeddingPooler] = None,
     ):
         super().__init__(
