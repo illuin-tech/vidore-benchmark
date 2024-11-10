@@ -2,7 +2,10 @@ from typing import Annotated, Dict, Generator, List, Optional, TypedDict, cast
 
 import typer
 from datasets import Dataset, load_dataset
+from dotenv import load_dotenv
 from tqdm import tqdm
+
+load_dotenv()
 
 
 def main(
