@@ -3,7 +3,6 @@ import torch
 from datasets import Dataset
 from PIL import Image
 
-from vidore_benchmark.evaluation.vidore_evaluators.vidore_evaluator_beir import ViDoReEvaluatorBEIR
 from vidore_benchmark.evaluation.vidore_evaluators.vidore_evaluator_qa import ViDoReEvaluatorQA
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.bm25_retriever import BM25Retriever
@@ -44,9 +43,7 @@ def evaluator():
 
 
 def test_init(evaluator):
-    assert evaluator.query_column == "query"
-    assert evaluator.passage_column == "image"
-    assert evaluator.passage_filename_column == "image_filename"
+    assert isinstance(evaluator.vision_retriever, BaseVisionRetriever)
 
 
 def test_deduplicate_queries(evaluator, mock_dataset):
@@ -98,7 +95,7 @@ def test_evaluate_dataset(evaluator, mock_dataset):
 
 
 def test_evaluate_dataset_with_bm25(mock_dataset):
-    evaluator = ViDoReEvaluatorBEIR(vision_retriever=BM25Retriever())
+    evaluator = ViDoReEvaluatorQA(vision_retriever=BM25Retriever())
     metrics = evaluator.evaluate_dataset(
         ds=mock_dataset,
         batch_query=2,
