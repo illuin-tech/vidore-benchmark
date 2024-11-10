@@ -23,8 +23,6 @@ logger = logging.getLogger(__name__)
 load_dotenv(override=True)
 set_seed(42)
 
-OUTPUT_DIR = Path("outputs")
-
 app = typer.Typer(
     help="CLI for evaluating retrievers on the ViDoRe benchmark.",
     no_args_is_help=True,
@@ -132,6 +130,7 @@ def evaluate_retriever(
     batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 16,
     use_token_pooling: Annotated[bool, typer.Option(help="Whether to use token pooling for text embeddings")] = False,
     pool_factor: Annotated[int, typer.Option(help="Pooling factor for hierarchical token pooling")] = 3,
+    output_dir: Annotated[str, typer.Option(help="Directory to save the metrics")] = "outputs",
 ):
     """
     Evaluate the retriever on the given dataset or collection.
@@ -159,7 +158,8 @@ def evaluate_retriever(
     embedding_pooler = HierarchicalEmbeddingPooler(pool_factor) if use_token_pooling else None
 
     # Create the output directory if it doesn't exist
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
 
     # Load the dataset(s) and evaluate
     if dataset_name is None and collection_name is None:
@@ -178,9 +178,9 @@ def evaluate_retriever(
         )
 
         if use_token_pooling:
-            savepath = OUTPUT_DIR / f"{model_id}_metrics_pool_factor_{pool_factor}.json"
+            savepath = output_path / f"{model_id}_metrics_pool_factor_{pool_factor}.json"
         else:
-            savepath = OUTPUT_DIR / f"{model_id}_metrics.json"
+            savepath = output_path / f"{model_id}_metrics.json"
 
         print(f"nDCG@5 for {model_id} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
 
@@ -211,7 +211,7 @@ def evaluate_retriever(
         metrics_all: Dict[str, Dict[str, Optional[float]]] = {}
         results_all: List[ViDoReBenchmarkResults] = []
 
-        savedir = OUTPUT_DIR / model_id.replace("/", "_")
+        savedir = output_path / model_id.replace("/", "_")
         savedir.mkdir(parents=True, exist_ok=True)
 
         for dataset_name in dataset_names:
@@ -255,9 +255,9 @@ def evaluate_retriever(
             print(f"Benchmark results saved to `{savepath}`")
 
         if use_token_pooling:
-            savepath_all = OUTPUT_DIR / f"{model_id}_all_metrics_pool_factor_{pool_factor}.json"
+            savepath_all = output_path / f"{model_id}_all_metrics_pool_factor_{pool_factor}.json"
         else:
-            savepath_all = OUTPUT_DIR / f"{model_id}_all_metrics.json"
+            savepath_all = output_path / f"{model_id}_all_metrics.json"
 
         results_merged = ViDoReBenchmarkResults.merge(results_all)
 
