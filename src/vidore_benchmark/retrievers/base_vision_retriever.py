@@ -9,9 +9,9 @@ import torch
 logger = logging.getLogger(__name__)
 
 
-class VisionRetriever(ABC):
+class BaseVisionRetriever(ABC):
     """
-    Abstract class for vision retrievers used in the ViDoRe benchmark.
+    Base class for vision retrievers used in the ViDoRe benchmark.
     """
 
     def __init__(self, use_visual_embedding: bool, **kwargs):
