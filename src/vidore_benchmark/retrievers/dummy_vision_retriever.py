@@ -10,8 +10,8 @@ from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetrieve
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 
 
-@register_vision_retriever("dummy_retriever")
-class DummyRetriever(BaseVisionRetriever):
+@register_vision_retriever("dummy_vision_retriever")
+class DummyVisionRetriever(BaseVisionRetriever):
     """
     Dummy retriever that generates random dense embeddings.
     """
