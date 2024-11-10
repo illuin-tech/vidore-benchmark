@@ -6,7 +6,7 @@ import torch
 from datasets import Dataset
 
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
-from vidore_benchmark.evaluation.vidore_evaluators.vidore_evaluator_base import BaseViDoReEvaluator
+from vidore_benchmark.evaluation.vidore_evaluators.base_vidore_evaluator import BaseViDoReEvaluator
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.bm25_retriever import BM25Retriever
 
