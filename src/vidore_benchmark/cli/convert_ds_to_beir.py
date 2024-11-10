@@ -88,7 +88,8 @@ def main(
     queries: List[QueryItem] = []
 
     for query, idx in query_to_id.items():
-        queries.append({"query-id": idx, "query": query})
+        if query is not None:
+            queries.append({"query-id": idx, "query": query})
 
     ds_queries = Dataset.from_list(queries, split="test")
 
@@ -99,13 +100,14 @@ def main(
     qrels: List[QrelsItem] = []
 
     for row in ds:
-        qrels.append(
-            {
-                "query-id": query_to_id[row[query_column]],
-                "corpus-id": image_filename_to_id[row[image_filename_column]],
-                "score": 1.0,
-            }
-        )
+        if row[query_column] is not None:
+            qrels.append(
+                {
+                    "query-id": query_to_id[row[query_column]],
+                    "corpus-id": image_filename_to_id[row[image_filename_column]],
+                    "score": 1.0,
+                }
+            )
 
     ds_qrels = Dataset.from_list(qrels, split="test")
 
