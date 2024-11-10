@@ -22,15 +22,10 @@ class DummyRetriever(VisionRetriever):
         emb_dim_doc: int = 16,
         device: str = "cpu",
     ):
-        super().__init__()
-
+        super().__init__(use_visual_embedding=True)
         self.emb_dim_query = emb_dim_query
         self.emb_dim_doc = emb_dim_doc
         self.device = device
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return True
 
     def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> Tensor:
         return torch.randn(len(queries), self.emb_dim_query).to(self.device)

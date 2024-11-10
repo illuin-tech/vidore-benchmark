@@ -31,7 +31,7 @@ class ColPaliRetriever(VisionRetriever):
         pretrained_model_name_or_path: str,
         device: str = "auto",
     ):
-        super().__init__()
+        super().__init__(use_visual_embedding=True)
 
         try:
             from colpali_engine.models import ColPali, ColPaliProcessor
@@ -59,10 +59,6 @@ class ColPaliRetriever(VisionRetriever):
             ColPaliProcessor,
             ColPaliProcessor.from_pretrained(pretrained_model_name_or_path),
         )
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return True
 
     def process_images(self, images: List[Image.Image], **kwargs):
         return self.processor.process_images(images=images).to(self.device)

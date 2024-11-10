@@ -24,7 +24,8 @@ class CohereAPIRetriever(VisionRetriever):
         self,
         pretrained_model_name_or_path: str = "embed-english-v3.0",
     ):
-        super().__init__()
+
+        super().__init__(use_visual_embedding=True)
 
         try:
             import cohere
@@ -40,10 +41,6 @@ class CohereAPIRetriever(VisionRetriever):
 
         self.pretrained_model_name_or_path = pretrained_model_name_or_path
         self.co = cohere.ClientV2(api_key)
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return True
 
     @staticmethod
     def convert_image_to_base64(image: Image.Image) -> str:

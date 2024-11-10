@@ -14,22 +14,17 @@ class VisionRetriever(ABC):
     Abstract class for vision retrievers used in the ViDoRe benchmark.
     """
 
-    @abstractmethod
-    def __init__(self, **kwargs):
+    def __init__(self, use_visual_embedding: bool, **kwargs):
         """
         Initialize the VisionRetriever.
-        """
-        pass
 
-    @property
-    @abstractmethod
-    def use_visual_embedding(self) -> bool:
+        Args:
+            use_visual_embedding (bool): Whether the retriever uses visual embeddings.
+                Set to:
+                - True if the retriever uses native visual embeddings (e.g. JINA-Clip, ColPali)
+                - False if the retriever uses text embeddings and possibly VLM-generated captions (e.g. BM25).
         """
-        The child class should instantiate the `use_visual_embedding` property:
-        - True if the retriever uses native visual embeddings (e.g. JINA-Clip, ColPali)
-        - False if the retriever uses text embeddings and possibly VLM-generated captions (e.g. BM25).
-        """
-        pass
+        self.use_visual_embedding = use_visual_embedding
 
     @abstractmethod
     def forward_queries(
