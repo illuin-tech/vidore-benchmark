@@ -85,7 +85,7 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
 
         # Edge case: using the BM25Retriever
         if isinstance(self.vision_retriever, BM25Retriever):
-            passages = ds_corpus["text_description"]
+            passages = ds_corpus[self.passage_column]
             scores = self.vision_retriever.get_scores_bm25(
                 queries=queries,
                 passages=passages,
@@ -139,7 +139,7 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
         Args:
             query_ids (List[int]): The list of query IDs.
             image_ids (List[int]): The list of image IDs.
-            scores (torch.Tensor): The model's scores.
+            scores(torch.Tensor): The similarity scores between queries and passages (shape: n_queries, n_passages).
 
         Returns:
             (Dict[str, Dict[str, float]]): The retrieval results.
