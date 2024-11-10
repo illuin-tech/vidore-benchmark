@@ -125,7 +125,7 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         Args:
             ds(Dataset): The dataset containing the queries and passages.
             deduped_queries(List[str]): The deduplicated queries.
-            scores(torch.Tensor): The similarity scores between queries and passages.
+            scores(torch.Tensor): The similarity scores between queries and passages (shape: n_queries, n_passages).
 
         Returns:
             (Dict[str, Dict[str, float]]): The retrieval results.
