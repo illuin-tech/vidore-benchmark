@@ -23,7 +23,7 @@ class SigLIPRetriever(VisionRetriever):
         pretrained_model_name_or_path: str = "google/siglip-so400m-patch14-384",
         device: str = "auto",
     ):
-        super().__init__()
+        super().__init__(use_visual_embedding=True)
 
         try:
             import proto  # noqa: F401
@@ -37,10 +37,6 @@ class SigLIPRetriever(VisionRetriever):
 
         self.model = AutoModel.from_pretrained(pretrained_model_name_or_path).to(self.device).eval()
         self.processor = AutoProcessor.from_pretrained(pretrained_model_name_or_path)
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return True
 
     def forward_queries(self, queries, batch_size: int, **kwargs) -> List[torch.Tensor]:
         list_emb_queries: List[torch.Tensor] = []

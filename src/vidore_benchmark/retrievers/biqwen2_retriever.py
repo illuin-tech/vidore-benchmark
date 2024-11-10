@@ -31,7 +31,7 @@ class BiQwen2Retriever(VisionRetriever):
         pretrained_model_name_or_path: str,
         device: str = "auto",
     ):
-        super().__init__()
+        super().__init__(use_visual_embedding=True)
 
         try:
             from colpali_engine.models import BiQwen2, BiQwen2Processor
@@ -58,10 +58,6 @@ class BiQwen2Retriever(VisionRetriever):
         # Load the processor
         self.processor = cast(BiQwen2Processor, BiQwen2Processor.from_pretrained(pretrained_model_name_or_path))
         print("Loaded custom processor.\n")
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return True
 
     def process_images(self, images: List[Image.Image], **kwargs):
         return self.processor.process_images(images=images).to(self.device)
