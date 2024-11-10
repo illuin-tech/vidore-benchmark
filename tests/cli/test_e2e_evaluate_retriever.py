@@ -12,7 +12,7 @@ from vidore_benchmark.main import app
 def output_dir():
     """Fixture to create and clean up the output directory."""
     output_path = Path("outputs/test_artifacts/")
-    output_path.mkdir(exist_ok=True)
+    output_path.mkdir(parents=True, exist_ok=True)
     yield output_path
 
     # Clean up output files after test
