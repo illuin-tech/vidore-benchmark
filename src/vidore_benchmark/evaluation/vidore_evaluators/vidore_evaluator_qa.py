@@ -6,12 +6,12 @@ import torch
 from datasets import Dataset
 
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
-from vidore_benchmark.evaluation.vidore_evaluators.vidore_evaluator_base import ViDoReEvaluatorBase
+from vidore_benchmark.evaluation.vidore_evaluators.vidore_evaluator_base import BaseViDoReEvaluator
 from vidore_benchmark.retrievers.bm25_retriever import BM25Retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
 
-class ViDoReEvaluatorQA(ViDoReEvaluatorBase):
+class ViDoReEvaluatorQA(BaseViDoReEvaluator):
     """
     Evaluator for the ViDoRe benchmark for datasets with a question-answering (QA) format, i.e. where each
     row in the dataset contains an optional query and a passage (image or text).

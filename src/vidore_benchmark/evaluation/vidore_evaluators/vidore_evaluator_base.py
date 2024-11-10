@@ -14,7 +14,7 @@ from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
 
 
-class ViDoReEvaluatorBase(ABC):
+class BaseViDoReEvaluator(ABC):
     """
     Base evaluator for the ViDoRe benchmark.
     """
