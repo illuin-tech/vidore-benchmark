@@ -48,6 +48,13 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
             embedding_pooler=embedding_pooler,
         )
 
+        # Dataset column names
+        self.corpus_id_column = "corpus-id"
+        self.query_id_column = "query-id"
+        self.query_column = "query"
+        self.passage_column = "image" if self.vision_retriever.use_visual_embedding else "text_description"
+        self.score_column = "score"
+
     def evaluate_dataset(
         self,
         ds: BEIRDataset,
@@ -62,19 +69,19 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
         ds_qrels = ds["qrels"]
 
         # Get image data
-        image_ids: List[int] = list(ds_corpus["corpus-id"])
+        image_ids: List[int] = list(ds_corpus[self.corpus_id_column])
 
         # Get deduplicated query data
-        query_ids: List[int] = ds_queries["query-id"]
-        queries: List[str] = ds_queries["query"]
+        query_ids: List[int] = ds_queries[self.query_id_column]
+        queries: List[str] = ds_queries[self.query_column]
 
         # Get query relevance data
         qrels: Dict[str, Dict[str, int]] = defaultdict(dict)
         for qrel in ds_qrels:
             # NOTE: The IDs are stored as integers in the dataset.
-            query_id = str(qrel["query-id"])
-            corpus_id = str(qrel["corpus-id"])
-            qrels[query_id][corpus_id] = int(qrel["score"])
+            query_id = str(qrel[self.query_id_column])
+            corpus_id = str(qrel[self.corpus_id_column])
+            qrels[query_id][corpus_id] = int(qrel[self.score_column])
 
         # Edge case: using the BM25Retriever
         if isinstance(self.vision_retriever, BM25Retriever):
@@ -94,7 +101,7 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
         # Get the embeddings for the queries and passages
         query_embeddings, passage_embeddings = self._get_query_and_passage_embeddings(
             ds=ds_corpus,
-            passage_column="image",
+            passage_column=self.passage_column,
             queries=queries,
             batch_query=batch_query,
             batch_passage=batch_passage,
