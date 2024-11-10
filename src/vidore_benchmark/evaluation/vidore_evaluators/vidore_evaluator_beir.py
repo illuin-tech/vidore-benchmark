@@ -153,13 +153,17 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
             }
             ```
         """
-        results: Dict[str, Dict[str, float]] = defaultdict(dict)
+        results: Dict[str, Dict[str, float]] = {}
 
-        for i, query_id in enumerate(query_ids):
-            query_id = str(query_id)
-            _, indices = torch.sort(scores[i], descending=True)
-            for idx in indices:
-                corpus_id = str(image_ids[idx])
-                results[query_id][corpus_id] = scores[i][idx].item()
+        for query_idx, query_id in enumerate(query_ids):
+            for image_idx, score in enumerate(scores[query_idx]):
+                image_id = image_ids[image_idx]
+                score_passage = float(score.item())
+
+                if str(query_id) in results:
+                    current_score = results[str(query_id)].get(str(image_id), 0)
+                    results[str(query_id)][str(image_id)] = max(current_score, score_passage)
+                else:
+                    results[str(query_id)] = {str(image_id): score_passage}
 
         return results
