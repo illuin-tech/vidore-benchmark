@@ -4,7 +4,6 @@ from typing import List, Optional, Union
 
 import torch
 from PIL import Image
-from torch import Tensor
 
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
@@ -27,11 +26,21 @@ class DummyVisionRetriever(BaseVisionRetriever):
         self.emb_dim_doc = emb_dim_doc
         self.device = device
 
-    def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> Tensor:
-        return torch.randn(len(queries), self.emb_dim_query).to(self.device)
+    def forward_queries(
+        self,
+        queries: List[str],
+        batch_size: int,
+        **kwargs,
+    ) -> torch.Tensor:
+        return torch.randn(len(queries), self.emb_dim_query)
 
-    def forward_passages(self, passages: List[Image.Image], batch_size: int, **kwargs) -> Tensor:
-        return torch.randn(len(passages), self.emb_dim_doc).to(self.device)
+    def forward_passages(
+        self,
+        passages: List[Image.Image],
+        batch_size: int,
+        **kwargs,
+    ) -> torch.Tensor:
+        return torch.randn(len(passages), self.emb_dim_doc)
 
     def get_scores(
         self,
