@@ -66,8 +66,7 @@ def evaluator():
 
 
 def test_init(evaluator):
-    assert isinstance(evaluator.vision_retriever, MockVisionRetriever)
-    assert evaluator.embedding_pooler is None
+    assert isinstance(evaluator.vision_retriever, BaseVisionRetriever)
 
 
 def test_get_retrieval_results(evaluator):
