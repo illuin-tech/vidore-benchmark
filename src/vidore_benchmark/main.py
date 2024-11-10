@@ -88,9 +88,9 @@ def _get_metrics_from_vidore_evaluator(
             embedding_pooler=embedding_pooler,
         )
         ds = {
-            "corpus": cast(Dataset, load_dataset(dataset_name, subset="corpus", split=split)),
-            "queries": cast(Dataset, load_dataset(dataset_name, subset="queries", split=split)),
-            "qrels": cast(Dataset, load_dataset(dataset_name, subset="qrels", split=split)),
+            "corpus": cast(Dataset, load_dataset(dataset_name, name="corpus", split=split)),
+            "queries": cast(Dataset, load_dataset(dataset_name, name="queries", split=split)),
+            "qrels": cast(Dataset, load_dataset(dataset_name, name="qrels", split=split)),
         }
         metrics = {
             dataset_name: vidore_evaluator.evaluate_dataset(
