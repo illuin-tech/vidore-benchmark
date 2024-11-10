@@ -5,7 +5,6 @@ from PIL import Image
 
 from vidore_benchmark.evaluation.vidore_evaluators.vidore_evaluator_qa import ViDoReEvaluatorQA
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
-from vidore_benchmark.retrievers.bm25_retriever import BM25Retriever
 
 
 class MockVisionRetriever(BaseVisionRetriever):
@@ -94,8 +93,8 @@ def test_evaluate_dataset(evaluator, mock_dataset):
     assert "mrr_at_1" in metrics
 
 
-def test_evaluate_dataset_with_bm25(mock_dataset):
-    evaluator = ViDoReEvaluatorQA(vision_retriever=BM25Retriever())
+def test_evaluate_dataset_with_bm25(mock_bm25_retriever, mock_dataset):
+    evaluator = ViDoReEvaluatorQA(vision_retriever=mock_bm25_retriever)
     metrics = evaluator.evaluate_dataset(
         ds=mock_dataset,
         batch_query=2,
