@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import logging
 import math
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 import torch
 from colpali_engine.trainer.eval_utils import CustomRetrievalEvaluator
@@ -12,6 +13,8 @@ from tqdm import tqdm
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
+
+logger = logging.getLogger(__name__)
 
 
 class BaseViDoReEvaluator(ABC):
@@ -58,33 +61,52 @@ class BaseViDoReEvaluator(ABC):
         """
         pass
 
-    def _get_query_and_passage_embeddings(
+    def _get_query_embeddings(
+        self,
+        ds: Dataset,
+        query_column: str,
+        batch_query: int,
+        **kwargs,
+    ) -> Union[torch.Tensor, List[torch.Tensor]]:
+        """
+        Get the query embeddings for the input queries using the retriever used during class instance creation.
+
+        Args:
+            ds (Dataset): The dataset containing the queries and passages.
+            query_column (str): The name of the column containing the queries.
+            batch_query (int): The batch size for the queries.
+
+        Returns:
+            Union[torch.Tensor, List[torch.Tensor]]: The query embeddings.
+        """
+        query_embeddings = self.vision_retriever.forward_queries(
+            queries=ds[query_column],
+            batch_size=batch_query,
+        )
+        return query_embeddings
+
+    def _get_passage_embeddings(
         self,
         ds: Dataset,
         passage_column: str,
-        queries: List[str],
-        batch_query: int,
         batch_passage: int,
-    ) -> Tuple[Union[torch.Tensor, List[torch.Tensor]], Union[torch.Tensor, List[torch.Tensor]]]:
+        dataloader_prebatch_size: Optional[int] = None,
+        **kwargs,
+    ) -> Union[torch.Tensor, List[torch.Tensor]]:
         """
-        Get the query and passage embeddings for the given dataset using the retriever used during class
+        Get the passage embeddings for the given dataset using the retriever used during class
         instance creation.
 
         Args:
             ds (Dataset): The dataset containing the queries and passages.
-            passage_column (str): The column name containing the passages (i.e. images or text).
-            queries (List[str]): The list of queries.
-            batch_query (int): The batch size for the queries.
+            passage_column (str): The name of the column containing the passages (i.e. images or text chunks).
             batch_passage (int): The batch size for the passages.
+            dataloader_prebatch_size (Optional[int]): The pre-batch size for the dataloader. If set, must be
+                greater than or equal to `batch_passage`.
 
         Returns:
-            Tuple[Union[torch.Tensor, List[torch.Tensor]], Union[torch.Tensor, List[torch.Tensor]]]: The query
-                and passage embeddings.
+            Union[torch.Tensor, List[torch.Tensor]]: The passage embeddings.
         """
-        # Get the embeddings for the queries
-        query_embeddings = self.vision_retriever.forward_queries(queries, batch_size=batch_query)
-
-        # Get the embeddings for the passages
         passage_embeddings: List[torch.Tensor] = []
 
         # NOTE: To prevent overloading the RAM for large datasets, we will load the passages (images)
@@ -92,7 +114,14 @@ class BaseViDoReEvaluator(ABC):
         # is negligible. This optimization is about efficient data loading, and is not related to the model's
         # forward pass which is also batched.
 
-        dataloader_prebatch_size = 10 * batch_passage
+        if dataloader_prebatch_size is None:
+            dataloader_prebatch_size = 10 * batch_passage
+        if dataloader_prebatch_size < batch_passage:
+            logger.warning(
+                f"`dataloader_prebatch_size` ({dataloader_prebatch_size}) is smaller than `batch_passage` "
+                f"({batch_passage}). Setting the pre-batch size to the passager batch size."
+            )
+            dataloader_prebatch_size = batch_passage
 
         for ds_batch in tqdm(
             batched(ds, n=dataloader_prebatch_size),
@@ -100,14 +129,18 @@ class BaseViDoReEvaluator(ABC):
             total=math.ceil(len(ds) / (dataloader_prebatch_size)),
         ):
             passages: List[Any] = [batch[passage_column] for batch in ds_batch]
-            batch_emb_passages = self.vision_retriever.forward_passages(passages, batch_size=batch_passage)
+
+            batch_emb_passages = self.vision_retriever.forward_passages(
+                passages=passages,
+                batch_size=batch_passage,
+            )
+
             if isinstance(batch_emb_passages, torch.Tensor):
                 batch_emb_passages = list(torch.unbind(batch_emb_passages))
                 passage_embeddings.extend(batch_emb_passages)
             else:
                 passage_embeddings.extend(batch_emb_passages)
 
-        # Pool the document embeddings
         if self.embedding_pooler is not None:
             for idx, emb_document in tqdm(
                 enumerate(passage_embeddings), total=len(passage_embeddings), desc="Pooling embeddings..."
@@ -115,7 +148,7 @@ class BaseViDoReEvaluator(ABC):
                 emb_document, _ = self.embedding_pooler.pool_embeddings(emb_document)
                 passage_embeddings[idx] = emb_document
 
-        return query_embeddings, passage_embeddings
+        return passage_embeddings
 
     @staticmethod
     def compute_retrieval_scores(
