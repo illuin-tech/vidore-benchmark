@@ -89,12 +89,7 @@ def test_get_retrieval_results(evaluator, mock_dataset):
 
 
 def test_get_qrels_from_qa_dataset(evaluator, mock_dataset):
-    ds_queries = mock_dataset.remove_columns(
-        [col for col in mock_dataset.column_names if col != evaluator.query_column]
-    )
-    ds_deduped_queries = evaluator._deduplicate_dataset_rows(ds=ds_queries, target_column=evaluator.query_column)
-
-    qrels = evaluator._get_qrels_from_qa_dataset(ds=mock_dataset, ds_deduped_queries=ds_deduped_queries)
+    qrels = evaluator._get_qrels_from_qa_dataset(ds=mock_dataset)
 
     # Check structure and content
     assert isinstance(qrels, dict)
@@ -106,6 +101,7 @@ def test_get_qrels_from_qa_dataset(evaluator, mock_dataset):
     # Check specific mappings
     assert "query1" in qrels
     assert "img1.jpg" in qrels["query1"]
+    assert "img3.jpg" in qrels["query1"]
     assert "query2" in qrels
     assert "img2.jpg" in qrels["query2"]
 
