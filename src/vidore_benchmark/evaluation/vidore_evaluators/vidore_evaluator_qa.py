@@ -17,23 +17,22 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
     Evaluator for the ViDoRe benchmark for datasets with a question-answering (QA) format, i.e. where each
     row in the dataset contains an optional query and a passage (image or text).
 
-    Use this evaluator for the ViDoRe (v1) leaderboard: https://huggingface.co/spaces/vidore/vidore-leaderboard.
-
-    **IMPORTANT**: The `ViDoReEvaluatorQA` removes duplicate queries. For fairness wrt externally evaluated retrievers
-    since bug, we maintain this behavior and remove duplicates. This slightly boosts scores on some datasets (e.g.
-    DocVQA) compared to the `colpali-engine` evaluation or the BEIR evaluation (cf `ViDoReEvaluatorBEIR`) where
-    duplicates are NOT removed.
+    **IMPORTANT**: The old ViDoRe evaluation (<5.0.0) had a bug when computing `qrels`. This would slightly boost scores
+    on some datasets (e.g. DocVQA). To reproduce the old behavior, set `is_legacy=True`.
     """
 
     def __init__(
         self,
         vision_retriever: BaseVisionRetriever,
         embedding_pooler: Optional[BaseEmbeddingPooler] = None,
+        is_legacy: bool = False,
     ):
         super().__init__(
             vision_retriever=vision_retriever,
             embedding_pooler=embedding_pooler,
         )
+
+        self.is_legacy = is_legacy
 
         # Dataset column names
         self.query_column = "query"
@@ -216,8 +215,14 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
 
         qrels: Dict[str, Dict[str, int]] = defaultdict(dict)
 
-        for query, passage_filename in zip(ds[self.query_column], ds[self.passage_filename_column]):
-            if query is not None and query in ds[self.query_column]:
-                qrels[query][passage_filename] = 1
+        if self.is_legacy:
+            # Legacy behavior (bug): only keep the last occurrence of a query.
+            for query, passage_filename in zip(ds[self.query_column], ds[self.passage_filename_column]):
+                if query is not None and query in ds[self.query_column]:
+                    qrels[query] = {passage_filename: 1}
+        else:
+            for query, passage_filename in zip(ds[self.query_column], ds[self.passage_filename_column]):
+                if query is not None and query in ds[self.query_column]:
+                    qrels[query][passage_filename] = 1
 
         return qrels
