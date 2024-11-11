@@ -59,11 +59,14 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
             return metrics
 
         # Get the embeddings for the queries and passages
-        query_embeddings, passage_embeddings = self._get_query_and_passage_embeddings(
-            ds=ds,
-            passage_column=self.passage_column,
-            queries=deduped_queries,
+        query_embeddings = self._get_query_embeddings(
+            ds=ds_deduped_queries,
+            query_column=self.query_column,
             batch_query=batch_query,
+        )
+        passage_embeddings = self._get_passage_embeddings(
+            ds=ds_passages,
+            passage_column=self.passage_column,
             batch_passage=batch_passage,
         )
 
