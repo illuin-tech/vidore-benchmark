@@ -35,7 +35,8 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
         queries: The dataset containing the queries.
         qrels: The dataset containing the query relevance scores.
 
-    Paper reference for BEIR: https://doi.org/10.48550/arXiv.2104.08663
+    **Important**: Do NOT use this evaluator for the ViDoRe (v1) leaderboard as the handling of duplicates
+    slightly differs from the `ViDoReEvaluatorQA` evaluator.
     """
 
     def __init__(

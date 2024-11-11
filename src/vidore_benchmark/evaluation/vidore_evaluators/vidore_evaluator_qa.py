@@ -17,6 +17,8 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
     Evaluator for the ViDoRe benchmark for datasets with a question-answering (QA) format, i.e. where each
     row in the dataset contains an optional query and a passage (image or text).
 
+    Use this evaluator for the ViDoRe (v1) leaderboard: https://huggingface.co/spaces/vidore/vidore-leaderboard.
+
     **IMPORTANT**: The `ViDoReEvaluatorQA` removes duplicate queries. For fairness wrt externally evaluated retrievers
     since bug, we maintain this behavior and remove duplicates. This slightly boosts scores on some datasets (e.g.
     DocVQA) compared to the `colpali-engine` evaluation or the BEIR evaluation (cf `ViDoReEvaluatorBEIR`) where
