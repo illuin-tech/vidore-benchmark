@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from collections import defaultdict
+from typing import Dict, Optional
 
 import torch
 from datasets import Dataset
@@ -15,6 +16,11 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
     """
     Evaluator for the ViDoRe benchmark for datasets with a question-answering (QA) format, i.e. where each
     row in the dataset contains an optional query and a passage (image or text).
+
+    **IMPORTANT**: The `ViDoReEvaluatorQA` removes duplicate queries. For fairness wrt externally evaluated retrievers
+    since bug, we maintain this behavior and remove duplicates. This slightly boosts scores on some datasets (e.g.
+    DocVQA) compared to the `colpali-engine` evaluation or the BEIR evaluation (cf `ViDoReEvaluatorBEIR`) where
+    duplicates are NOT removed.
     """
 
     def __init__(
@@ -40,22 +46,35 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         batch_score: Optional[int] = None,
         **kwargs,
     ) -> Dict[str, Optional[float]]:
-        # Get the deduplicated queries
-        deduped_queries = self._deduplicate_queries(ds[self.query_column])
-        if len(deduped_queries) == 0:
+        ds_passages = ds.remove_columns(
+            [col for col in ds.column_names if col not in [self.passage_column, self.passage_filename_column]]
+        )
+
+        ds_queries = ds.remove_columns([col for col in ds.column_names if col != self.query_column])
+        ds_deduped_queries = self._deduplicate_dataset_rows(ds=ds_queries, target_column=self.query_column)
+
+        if len(ds_deduped_queries) == 0:
             raise ValueError("No valid queries found in the dataset. Check if the queries are all set to `None`.")
 
         # Edge case: using the BM25Retriever
         if isinstance(self.vision_retriever, BM25Retriever):
-            passages = ds["text_description"]
-            scores = self.vision_retriever.get_scores_bm25(queries=deduped_queries, passages=passages)
-            qrels = self._get_qrels_from_qa_dataset(ds=ds)
-            results = self._get_retrieval_results(
+            scores = self.vision_retriever.get_scores_bm25(
+                queries=ds_deduped_queries[self.query_column],
+                passages=ds_passages[self.passage_column],
+            )
+
+            qrels = self._get_qrels_from_qa_dataset(
                 ds=ds,
-                deduped_queries=deduped_queries,
+                ds_deduped_queries=ds_deduped_queries,
+            )
+            results = self._get_retrieval_results(
+                ds_passages=ds_passages,
+                ds_deduped_queries=ds_deduped_queries,
                 scores=scores,
             )
-            metrics = self.compute_retrieval_scores(qrels, results)
+
+            metrics = self.compute_retrieval_scores(qrels=qrels, results=results)
+
             return metrics
 
         # Get the embeddings for the queries and passages
@@ -78,10 +97,13 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         )
 
         # Get the relevant passages and results
-        qrels = self._get_qrels_from_qa_dataset(ds=ds)
-        results = self._get_retrieval_results(
+        qrels = self._get_qrels_from_qa_dataset(
             ds=ds,
-            deduped_queries=deduped_queries,
+            ds_deduped_queries=ds_deduped_queries,
+        )
+        results = self._get_retrieval_results(
+            ds_passages=ds_passages,
+            ds_deduped_queries=ds_deduped_queries,
             scores=scores,
         )
 
@@ -90,35 +112,40 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
 
         return metrics
 
-    def _deduplicate_queries(self, queries: List[str]) -> List[str]:
+    def _deduplicate_dataset_rows(self, ds: Dataset, target_column: str) -> Dataset:
         """
-        Remove duplicate queries and `None` queries (i.e. passages with no associated query).
-
-        Important notes:
-        - This logic differs from the eval in `colpali-engine` where duplicates are NOT removed.
-        - For fairness wrt externally evaluated retrievers since bug, we maintain this behavior and remove duplicates.
-          This slightly boosts scores on some datasets, e.g. DocVQA typically.
+        Remove duplicate rows from a dataset based on values in a target column.
 
         Args:
-            queries (List[str]): The list of queries to deduplicate.
+            ds (Dataset): The dataset to deduplicate.
+            target_column (str): The column to use for deduplication.
 
         Returns:
-            (List[str]): The deduplicated queries.
+            Dataset: The deduplicated dataset.
         """
-        seen_queries = set()
-        deduped_queries: List[str] = []
+        if target_column not in ds.column_names:
+            raise ValueError(f"Column '{target_column}' not found in dataset.")
 
-        for query in queries:
-            if query is not None and query not in seen_queries:
-                deduped_queries.append(query)
-                seen_queries.add(query)
+        seen_values = set()
+        keep_mask = []
 
-        return deduped_queries
+        for value in ds[target_column]:
+            if value is None:
+                keep_mask.append(False)
+                continue
+
+            if value not in seen_values:
+                seen_values.add(value)
+                keep_mask.append(True)
+            else:
+                keep_mask.append(False)
+
+        return ds.select([i for i, keep in enumerate(keep_mask) if keep])
 
     def _get_retrieval_results(
         self,
-        ds: Dataset,
-        deduped_queries: List[str],
+        ds_passages: Dataset,
+        ds_deduped_queries: Dataset,
         scores: torch.Tensor,
     ) -> Dict[str, Dict[str, float]]:
         """
@@ -126,8 +153,8 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         for each document for each query.
 
         Args:
-            ds(Dataset): The dataset containing the queries and passages.
-            deduped_queries(List[str]): The deduplicated queries.
+            ds_passages (Dataset): The dataset containing the passages.
+            ds_queries (Dataset): The dataset containing the deduplicated queries.
             scores(torch.Tensor): The similarity scores between queries and passages (shape: n_queries, n_passages).
 
         Returns:
@@ -144,13 +171,14 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         """
         # Get the mapping
         passage_id_to_filename: Dict[int, str] = {
-            passage_id: image_filename for passage_id, image_filename in enumerate(ds[self.passage_filename_column])
+            passage_id: image_filename
+            for passage_id, image_filename in enumerate(ds_passages[self.passage_filename_column])
         }
 
         # Placeholders
         results: Dict[str, Dict[str, float]] = {}
 
-        for query, score_per_query in zip(deduped_queries, scores):
+        for query, score_per_query in zip(ds_deduped_queries[self.query_column], scores):
             for doc_idx, score in enumerate(score_per_query):
                 filename = passage_id_to_filename[doc_idx]
                 score_passage = float(score.item())
@@ -163,12 +191,17 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
 
         return results
 
-    def _get_qrels_from_qa_dataset(self, ds: Dataset) -> Dict[str, Dict[str, int]]:
+    def _get_qrels_from_qa_dataset(
+        self,
+        ds: Dataset,
+        ds_deduped_queries: Dataset,
+    ) -> Dict[str, Dict[str, int]]:
         """
         Get the query relevance judgments (qrels) from a dataset (QA format).
 
         Args:
-            ds (Dataset): The dataset (QA format) containing the queries and passages.
+            ds (Dataset): The dataset containing the queries and passages.
+            ds_deduped_queries (Dataset): The dataset containing the deduplicated queries.
 
         Returns:
             Dict[str, Dict[str, int]]: The query relevance judgments (qrels).
@@ -183,22 +216,21 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
             ```
         """
         # Sanity checks
-        if self.query_column not in ds.column_names:
-            raise ValueError(f"Query column name '{self.query_column}' not found in the dataset.")
         if self.passage_filename_column not in ds.column_names:
             raise ValueError(f"Passage filename column name '{self.passage_filename_column}' not found in the dataset.")
+        if self.query_column not in ds.column_names:
+            raise ValueError(f"Query column name '{self.query_column}' not found in the dataset.")
 
         # Placeholder
-        qrels: Dict[str, Dict[str, int]] = {}
+        qrels: Dict[str, Dict[str, int]] = defaultdict(dict)
 
         # Get the mappings
         query_to_filename: Dict[str, str] = {
             query: image_filename
-            for query, image_filename in zip(ds[self.query_column], ds[self.passage_filename_column])
+            for query, image_filename in zip(ds_deduped_queries[self.query_column], ds[self.passage_filename_column])
         }
 
-        deduped_queries = self._deduplicate_queries(ds[self.query_column])
-        for query in deduped_queries:
-            qrels[query] = {query_to_filename[query]: 1}
+        for query in ds_deduped_queries[self.query_column]:
+            qrels[query][query_to_filename[query]] = 1
 
         return qrels
