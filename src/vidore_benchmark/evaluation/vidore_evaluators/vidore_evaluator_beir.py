@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, TypedDict
 
 import torch
 from datasets import Dataset
+from tqdm import tqdm
 
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
 from vidore_benchmark.evaluation.vidore_evaluators.base_vidore_evaluator import BaseViDoReEvaluator
@@ -110,6 +111,14 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
             passage_column=self.passage_column,
             batch_passage=batch_passage,
         )
+
+        # Use token pooling (optional)
+        if self.embedding_pooler is not None:
+            for idx, passage_embedding in tqdm(
+                enumerate(passage_embeddings), total=len(passage_embeddings), desc="Pooling embeddings..."
+            ):
+                passage_embedding, _ = self.embedding_pooler.pool_embeddings(passage_embedding)
+                passage_embeddings[idx] = passage_embedding
 
         # Get the similarity scores
         scores = self.vision_retriever.get_scores(

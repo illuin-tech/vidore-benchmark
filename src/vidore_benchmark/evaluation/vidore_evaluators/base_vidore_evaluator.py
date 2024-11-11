@@ -20,6 +20,10 @@ logger = logging.getLogger(__name__)
 class BaseViDoReEvaluator(ABC):
     """
     Base evaluator for the ViDoRe benchmark.
+
+    Args:
+        vision_retriever (BaseVisionRetriever): The vision retriever used to retrieve the embeddings.
+        embedding_pooler (Optional[BaseEmbeddingPooler]): The embedding pooler used to pool the passage embeddings.
     """
 
     def __init__(
@@ -140,13 +144,6 @@ class BaseViDoReEvaluator(ABC):
                 passage_embeddings.extend(batch_emb_passages)
             else:
                 passage_embeddings.extend(batch_emb_passages)
-
-        if self.embedding_pooler is not None:
-            for idx, emb_document in tqdm(
-                enumerate(passage_embeddings), total=len(passage_embeddings), desc="Pooling embeddings..."
-            ):
-                emb_document, _ = self.embedding_pooler.pool_embeddings(emb_document)
-                passage_embeddings[idx] = emb_document
 
         return passage_embeddings
 
