@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning].
 - Fix `DummyRetriever`'s `get_scores` method
 - Fix processor output not being sent to the correct device in `ColQwen2Retriever`
 - Fix bugs in `BiQwen2Retriever`
+- Fix bug when computing `relavant_docs`/`qrels` (https://github.com/illuin-tech/vidore-benchmark/issues/69)
 
 ### Removed
 
