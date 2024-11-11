@@ -128,9 +128,11 @@ def evaluate_retriever(
     batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 8,
     batch_passage: Annotated[int, typer.Option(help="Batch size for passages embedding inference")] = 8,
     batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 16,
-    use_token_pooling: Annotated[bool, typer.Option(help="Whether to use token pooling for text embeddings")] = False,
+    use_token_pooling: Annotated[
+        bool, typer.Option(help="Whether to use token pooling for passage embeddings")
+    ] = False,
     pool_factor: Annotated[int, typer.Option(help="Pooling factor for hierarchical token pooling")] = 3,
-    output_dir: Annotated[str, typer.Option(help="Directory to save the metrics")] = "outputs",
+    output_dir: Annotated[str, typer.Option(help="Directory where to save the metrics")] = "outputs",
 ):
     """
     Evaluate the retriever on the given dataset or collection.
