@@ -65,10 +65,7 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
                 passages=ds_passages[self.passage_column],
             )
 
-            qrels = self._get_qrels_from_qa_dataset(
-                ds=ds,
-                ds_deduped_queries=ds_deduped_queries,
-            )
+            qrels = self._get_qrels_from_qa_dataset(ds=ds)
             results = self._get_retrieval_results(
                 ds_passages=ds_passages,
                 ds_deduped_queries=ds_deduped_queries,
@@ -99,10 +96,7 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         )
 
         # Get the relevant passages and results
-        qrels = self._get_qrels_from_qa_dataset(
-            ds=ds,
-            ds_deduped_queries=ds_deduped_queries,
-        )
+        qrels = self._get_qrels_from_qa_dataset(ds=ds)
         results = self._get_retrieval_results(
             ds_passages=ds_passages,
             ds_deduped_queries=ds_deduped_queries,
@@ -196,14 +190,12 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
     def _get_qrels_from_qa_dataset(
         self,
         ds: Dataset,
-        ds_deduped_queries: Dataset,
     ) -> Dict[str, Dict[str, int]]:
         """
         Get the query relevance judgments (qrels) from a dataset (QA format).
 
         Args:
             ds (Dataset): The dataset containing the queries and passages.
-            ds_deduped_queries (Dataset): The dataset containing the deduplicated queries.
 
         Returns:
             Dict[str, Dict[str, int]]: The query relevance judgments (qrels).
@@ -217,22 +209,15 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
             }
             ```
         """
-        # Sanity checks
         if self.passage_filename_column not in ds.column_names:
             raise ValueError(f"Passage filename column name '{self.passage_filename_column}' not found in the dataset.")
         if self.query_column not in ds.column_names:
             raise ValueError(f"Query column name '{self.query_column}' not found in the dataset.")
 
-        # Placeholder
         qrels: Dict[str, Dict[str, int]] = defaultdict(dict)
 
-        # Get the mappings
-        query_to_filename: Dict[str, str] = {
-            query: image_filename
-            for query, image_filename in zip(ds_deduped_queries[self.query_column], ds[self.passage_filename_column])
-        }
-
-        for query in ds_deduped_queries[self.query_column]:
-            qrels[query][query_to_filename[query]] = 1
+        for query, passage_filename in zip(ds[self.query_column], ds[self.passage_filename_column]):
+            if query is not None and query in ds[self.query_column]:
+                qrels[query][passage_filename] = 1
 
         return qrels
