@@ -46,6 +46,7 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         batch_query: int,
         batch_passage: int,
         batch_score: Optional[int] = None,
+        dataloader_prebatch_size: Optional[int] = None,
         **kwargs,
     ) -> Dict[str, Optional[float]]:
         ds_passages = ds.remove_columns(
@@ -86,6 +87,7 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
             ds=ds_passages,
             passage_column=self.passage_column,
             batch_passage=batch_passage,
+            dataloader_prebatch_size=dataloader_prebatch_size,
         )
 
         # Use token pooling (optional)

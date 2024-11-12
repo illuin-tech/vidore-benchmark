@@ -63,6 +63,7 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
         batch_query: int,
         batch_passage: int,
         batch_score: Optional[int] = None,
+        dataloader_prebatch_size: Optional[int] = None,
         **kwargs,
     ) -> Dict[str, Optional[float]]:
         # Load datasets
@@ -110,6 +111,7 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
             ds=ds_corpus,
             passage_column=self.passage_column,
             batch_passage=batch_passage,
+            dataloader_prebatch_size=dataloader_prebatch_size,
         )
 
         # Use token pooling (optional)

@@ -47,6 +47,7 @@ def _get_metrics_from_vidore_evaluator(
     batch_query: int,
     batch_passage: int,
     batch_score: Optional[int],
+    dataloader_prebatch_size: Optional[int],
 ) -> Dict[str, Dict[str, Optional[float]]]:
     """
     Rooter function to get metrics from the ViDoRe evaluator depending on the dataset format.
@@ -77,6 +78,7 @@ def _get_metrics_from_vidore_evaluator(
                 batch_query=batch_query,
                 batch_passage=batch_passage,
                 batch_score=batch_score,
+                dataloader_prebatch_size=dataloader_prebatch_size,
             )
         }
 
@@ -97,6 +99,7 @@ def _get_metrics_from_vidore_evaluator(
                 batch_query=batch_query,
                 batch_passage=batch_passage,
                 batch_score=batch_score,
+                dataloader_prebatch_size=dataloader_prebatch_size,
             )
         }
     else:
@@ -128,6 +131,7 @@ def evaluate_retriever(
     batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 8,
     batch_passage: Annotated[int, typer.Option(help="Batch size for passages embedding inference")] = 8,
     batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 16,
+    dataloader_prebatch_size: Annotated[Optional[int], typer.Option(help="Prebatch size for the dataloader")] = None,
     use_token_pooling: Annotated[
         bool, typer.Option(help="Whether to use token pooling for passage embeddings")
     ] = False,
@@ -177,6 +181,7 @@ def evaluate_retriever(
             batch_query=batch_query,
             batch_passage=batch_passage,
             batch_score=batch_score,
+            dataloader_prebatch_size=dataloader_prebatch_size,
         )
 
         if use_token_pooling:
@@ -228,6 +233,7 @@ def evaluate_retriever(
                 batch_query=batch_query,
                 batch_passage=batch_passage,
                 batch_score=batch_score,
+                dataloader_prebatch_size=dataloader_prebatch_size,
             )
 
             metrics_all.update(metrics)
