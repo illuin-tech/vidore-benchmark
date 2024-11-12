@@ -65,64 +65,6 @@ class BaseViDoReEvaluator(ABC):
         """
         pass
 
-    @torch.no_grad()
-    def _get_query_embeddings(
-        self,
-        ds: Dataset,
-        query_column: str,
-        batch_query: int,
-        dataloader_prebatch_size: Optional[int] = None,
-        **kwargs,
-    ) -> Union[torch.Tensor, List[torch.Tensor]]:
-        """
-        Get the query embeddings for the input queries using the retriever used during class instance creation.
-
-        Args:
-            ds (Dataset): The dataset containing the queries and passages.
-            query_column (str): The name of the column containing the queries.
-            batch_query (int): The batch size for the queries.
-            dataloader_prebatch_size (Optional[int]): The pre-batch size for the dataloader. If set, must be
-                greater than or equal to `batch_query`.
-
-        Returns:
-            Union[torch.Tensor, List[torch.Tensor]]: The query embeddings.
-        """
-        query_embeddings: List[torch.Tensor] = []
-
-        # NOTE: To prevent overloading the RAM for large datasets, we will load the passages (images)
-        # that will be fed to the model in batches (this should be fine for queries as their memory footprint
-        # is negligible. This optimization is about efficient data loading, and is not related to the model's
-        # forward pass which is also batched.
-
-        if dataloader_prebatch_size is None:
-            dataloader_prebatch_size = batch_query
-        if dataloader_prebatch_size < batch_query:
-            logger.warning(
-                f"`dataloader_prebatch_size` ({dataloader_prebatch_size}) is smaller than `batch_query` "
-                f"({batch_query}). Setting the pre-batch size to the passager batch size."
-            )
-            dataloader_prebatch_size = batch_query
-
-        for ds_batch in tqdm(
-            batched(ds, n=dataloader_prebatch_size),
-            desc="Dataloader pre-batching for queries",
-            total=math.ceil(len(ds) / (dataloader_prebatch_size)),
-        ):
-            queries: List[Any] = [batch[query_column] for batch in ds_batch]
-            batch_embedding_queries = self.vision_retriever.forward_queries(
-                queries=queries,
-                batch_size=batch_query,
-            )
-
-            if isinstance(batch_embedding_queries, torch.Tensor):
-                batch_embedding_queries = list(torch.unbind(batch_embedding_queries.to("cpu")))
-                query_embeddings.extend(batch_embedding_queries)
-            else:
-                for embedding_query in batch_embedding_queries:
-                    query_embeddings.append(embedding_query.to("cpu"))
-
-        return query_embeddings
-
     def _get_passage_embeddings(
         self,
         ds: Dataset,
@@ -181,6 +123,64 @@ class BaseViDoReEvaluator(ABC):
                     passage_embeddings.append(embedding_passage.to("cpu"))
 
         return passage_embeddings
+
+    @torch.no_grad()
+    def _get_query_embeddings(
+        self,
+        ds: Dataset,
+        query_column: str,
+        batch_query: int,
+        dataloader_prebatch_size: Optional[int] = None,
+        **kwargs,
+    ) -> Union[torch.Tensor, List[torch.Tensor]]:
+        """
+        Get the query embeddings for the input queries using the retriever used during class instance creation.
+
+        Args:
+            ds (Dataset): The dataset containing the queries and passages.
+            query_column (str): The name of the column containing the queries.
+            batch_query (int): The batch size for the queries.
+            dataloader_prebatch_size (Optional[int]): The pre-batch size for the dataloader. If set, must be
+                greater than or equal to `batch_query`.
+
+        Returns:
+            Union[torch.Tensor, List[torch.Tensor]]: The query embeddings.
+        """
+        query_embeddings: List[torch.Tensor] = []
+
+        # NOTE: To prevent overloading the RAM for large datasets, we will load the passages (images)
+        # that will be fed to the model in batches (this should be fine for queries as their memory footprint
+        # is negligible. This optimization is about efficient data loading, and is not related to the model's
+        # forward pass which is also batched.
+
+        if dataloader_prebatch_size is None:
+            dataloader_prebatch_size = batch_query
+        if dataloader_prebatch_size < batch_query:
+            logger.warning(
+                f"`dataloader_prebatch_size` ({dataloader_prebatch_size}) is smaller than `batch_query` "
+                f"({batch_query}). Setting the pre-batch size to the passager batch size."
+            )
+            dataloader_prebatch_size = batch_query
+
+        for ds_batch in tqdm(
+            batched(ds, n=dataloader_prebatch_size),
+            desc="Dataloader pre-batching for queries",
+            total=math.ceil(len(ds) / (dataloader_prebatch_size)),
+        ):
+            queries: List[Any] = [batch[query_column] for batch in ds_batch]
+            batch_embedding_queries = self.vision_retriever.forward_queries(
+                queries=queries,
+                batch_size=batch_query,
+            )
+
+            if isinstance(batch_embedding_queries, torch.Tensor):
+                batch_embedding_queries = list(torch.unbind(batch_embedding_queries.to("cpu")))
+                query_embeddings.extend(batch_embedding_queries)
+            else:
+                for embedding_query in batch_embedding_queries:
+                    query_embeddings.append(embedding_query.to("cpu"))
+
+        return query_embeddings
 
     @staticmethod
     def compute_retrieval_scores(
