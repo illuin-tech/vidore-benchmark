@@ -106,6 +106,7 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
             ds=ds_queries,
             query_column=self.query_column,
             batch_query=batch_query,
+            dataloader_prebatch_size=dataloader_prebatch_size,
         )
         passage_embeddings = self._get_passage_embeddings(
             ds=ds_corpus,
