@@ -65,6 +65,7 @@ class BaseViDoReEvaluator(ABC):
         """
         pass
 
+    @torch.no_grad()
     def _get_query_embeddings(
         self,
         ds: Dataset,
@@ -104,21 +105,21 @@ class BaseViDoReEvaluator(ABC):
 
         for ds_batch in tqdm(
             batched(ds, n=dataloader_prebatch_size),
-            desc="Dataloader pre-batching",
+            desc="Dataloader pre-batching for queries",
             total=math.ceil(len(ds) / (dataloader_prebatch_size)),
         ):
             queries: List[Any] = [batch[query_column] for batch in ds_batch]
-
-            batch_emb_queries = self.vision_retriever.forward_queries(
+            batch_embedding_queries = self.vision_retriever.forward_queries(
                 queries=queries,
                 batch_size=batch_query,
             )
 
-            if isinstance(batch_emb_queries, torch.Tensor):
-                batch_emb_queries = list(torch.unbind(batch_emb_queries))
-                query_embeddings.extend(batch_emb_queries)
+            if isinstance(batch_embedding_queries, torch.Tensor):
+                batch_embedding_queries = list(torch.unbind(batch_embedding_queries.to("cpu")))
+                query_embeddings.extend(batch_embedding_queries)
             else:
-                query_embeddings.extend(batch_emb_queries)
+                for embedding_query in batch_embedding_queries:
+                    query_embeddings.append(embedding_query.to("cpu"))
 
         return query_embeddings
 
@@ -162,21 +163,22 @@ class BaseViDoReEvaluator(ABC):
 
         for ds_batch in tqdm(
             batched(ds, n=dataloader_prebatch_size),
-            desc="Dataloader pre-batching",
+            desc="Dataloader pre-batching for passages",
             total=math.ceil(len(ds) / (dataloader_prebatch_size)),
         ):
             passages: List[Any] = [batch[passage_column] for batch in ds_batch]
 
-            batch_emb_passages = self.vision_retriever.forward_passages(
+            batch_embedding_passages = self.vision_retriever.forward_passages(
                 passages=passages,
                 batch_size=batch_passage,
             )
 
-            if isinstance(batch_emb_passages, torch.Tensor):
-                batch_emb_passages = list(torch.unbind(batch_emb_passages))
-                passage_embeddings.extend(batch_emb_passages)
+            if isinstance(batch_embedding_passages, torch.Tensor):
+                batch_embedding_passages = list(torch.unbind(batch_embedding_passages.to("cpu")))
+                passage_embeddings.extend(batch_embedding_passages)
             else:
-                passage_embeddings.extend(batch_emb_passages)
+                for embedding_passage in batch_embedding_passages:
+                    passage_embeddings.append(embedding_passage.to("cpu"))
 
         return passage_embeddings
 
