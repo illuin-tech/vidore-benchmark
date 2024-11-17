@@ -28,7 +28,7 @@ class ColQwen2Retriever(BaseVisionRetriever):
 
     def __init__(
         self,
-        pretrained_model_name_or_path: str = "vidore/colqwen2-v0.1",
+        pretrained_model_name_or_path: str = "vidore/colqwen2-v1.0",
         device: str = "auto",
     ):
         super().__init__(use_visual_embedding=True)
