@@ -1,11 +1,26 @@
+import hashlib
 from typing import Annotated, Dict, Generator, List, Optional, TypedDict, cast
 
 import typer
 from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
+from PIL import Image
 from tqdm import tqdm
 
 load_dotenv()
+
+
+def hash_image(image: Image.Image) -> str:
+    """
+    Hash a PILLOW image using MD5.
+
+    Args:
+        image (Image.Image): PIL Image object.
+
+    Returns:
+        str: MD5 hash of the image.
+    """
+    return hashlib.md5(image.tobytes()).hexdigest()
 
 
 def main(
@@ -21,16 +36,10 @@ def main(
         ),
     ] = None,
     query_column: Annotated[str, typer.Option(help="Name of the column containing the query.")] = "query",
-    image_column: Annotated[str, typer.Option(help="Name of the column containing the image filename.")] = "image",
-    image_filename_column: Annotated[
-        str, typer.Option(help="Name of the column containing the image filename.")
-    ] = "image_filename",
+    image_column: Annotated[str, typer.Option(help="Name of the column containing the image.")] = "image",
 ):
     """
     Convert a dataset from the QA format to the standard BEIR format.
-
-    NOTE: To convert the OCR dataset from the "ViDoRe Chunk OCR (baseline)" collection, you should set
-    `image_filename_column` to `"text_description"`.
     """
 
     if target_dataset is None:
@@ -43,28 +52,33 @@ def main(
     print(f"Loading source dataset '{source_dataset}'...")
     ds = cast(Dataset, load_dataset(source_dataset, split=split))
 
+    print(f"Total entries in the dataset: {len(ds)}")
+
     # Initialize placeholders
     # NOTE: We will map the image filenames to the index in the dataset to efficiently
     # retrieve the image data later without overloading the RAM.
-    image_filenames_to_ds_idx: Dict[str, int] = {}
+    image_hashes_to_ds_idx: Dict[str, int] = {}  # Maps image hash to first occurrence in dataset
     query_to_id: Dict[str, int] = {}
-    image_filename_to_id: Dict[str, int] = {}
+    image_hash_to_id: Dict[str, int] = {}  # Maps image hash to corpus ID
 
     # Process the dataset
     for idx_ds, row in tqdm(enumerate(ds), total=len(ds), desc="Processing dataset entries..."):
-        if row[image_filename_column] not in image_filenames_to_ds_idx:
-            image_filenames_to_ds_idx[row[image_filename_column]] = idx_ds
+        # Hash the image data to identify duplicates
+        image_hash = hash_image(row[image_column])
+
+        if image_hash not in image_hashes_to_ds_idx:
+            image_hashes_to_ds_idx[image_hash] = idx_ds
 
         if row[query_column] not in query_to_id and row[query_column] is not None:
             # NOTE: We ignore the `None` queries.
             query_to_id[row[query_column]] = len(query_to_id)  # Assign a unique ID to each query
 
-    print(f"Total unique images: {len(image_filenames_to_ds_idx)}")
+    print(f"Total unique images: {len(image_hashes_to_ds_idx)}")
     print(f"Total unique queries: {len(query_to_id)}")
 
-    # Create image to ID mapping
-    for idx, name in enumerate(image_filenames_to_ds_idx):
-        image_filename_to_id[name] = idx
+    # Create image hash to ID mapping
+    for idx, hash_value in enumerate(image_hashes_to_ds_idx):
+        image_hash_to_id[hash_value] = idx
 
     # Build corpus
     print("Building corpus...")
@@ -75,9 +89,9 @@ def main(
     # as images are much larger than text data.
 
     def corpus_generator() -> Generator[CorpusItem, None, None]:
-        for name in image_filenames_to_ds_idx:
-            image = ds[image_filenames_to_ds_idx[name]][image_column]
-            yield {"corpus-id": image_filename_to_id[name], "image": image}
+        for hash_value in image_hashes_to_ds_idx:
+            image = ds[image_hashes_to_ds_idx[hash_value]][image_column]
+            yield {"corpus-id": image_hash_to_id[hash_value], "image": image}
 
     ds_corpus = Dataset.from_generator(corpus_generator, split="test")
 
@@ -85,11 +99,9 @@ def main(
     print("Building queries...")
 
     QueryItem = TypedDict("QueryItem", {"query-id": int, "query": str})
-    queries: List[QueryItem] = []
-
-    for query, idx in query_to_id.items():
-        if query is not None:
-            queries.append({"query-id": idx, "query": query})
+    queries: List[QueryItem] = [
+        {"query-id": idx, "query": query} for query, idx in query_to_id.items() if query is not None
+    ]
 
     ds_queries = Dataset.from_list(queries, split="test")
 
@@ -101,10 +113,11 @@ def main(
 
     for row in ds:
         if row[query_column] is not None:
+            image_hash = hash_image(row[image_column])
             qrels.append(
                 {
                     "query-id": query_to_id[row[query_column]],
-                    "corpus-id": image_filename_to_id[row[image_filename_column]],
+                    "corpus-id": image_hash_to_id[image_hash],
                     "score": 1.0,
                 }
             )
