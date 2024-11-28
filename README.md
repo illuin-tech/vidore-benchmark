@@ -49,12 +49,6 @@ Or if you want to evaluate all the off-the-shelf retrievers:
 pip install "vidore-benchmark[all-retrievers]"
 ```
 
-Finally, if you are willing to reproduce the results from the ColPali paper, you should clone the repository, checkout to the `3.3.0` tag or below, and use the `requirements-dev.txt` file to install the dependencies used at test time:
-
-```bash
-pip install -r requirements-dev.txt
-```
-
 ## Available retrievers
 
 The list of available retrievers can be found [here](https://github.com/illuin-tech/vidore-benchmark/tree/main/src/vidore_benchmark/retrievers). Read [this section](###Implement-your-own-retriever) to learn how to create, use, and evaluate your own retriever.
@@ -206,3 +200,5 @@ Authors: **Manuel Faysse**\*, **Hugues Sibille**\*, **Tony Wu**\*, Bilel Omrani,
       url={https://arxiv.org/abs/2407.01449}, 
 }
 ```
+
+If you want to reproduce the results from the ColPali paper, please read the [`REPRODUCIBILITY.md`](REPRODUCIBILITY.md) file for more information.
