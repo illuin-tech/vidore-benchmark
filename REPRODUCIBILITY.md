@@ -1,3 +1,26 @@
+# Paper reproduction instructions
+
+## Instructions
+
+If you are willing to reproduce the results from the ColPali paper, you should:
+
+- clone the repository
+- checkout to the `3.3.0` tag or below
+- create a new virtual environment
+- copy the list of package versions from this file to a `requirements-dev.txt` file
+- install the dependencies using the following command:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+Then, you can run the CLI commands to evaluate the models and reproduce the results from the paper.
+
+## Package versions
+
+`requirements-dev.txt`:
+
+```
 accelerate==0.30.1
 aiofiles==23.2.1
 aiohttp==3.9.5
@@ -158,3 +181,4 @@ wcwidth==0.2.13
 websockets==11.0.3
 xxhash==3.4.1
 yarl==1.9.4
+```
