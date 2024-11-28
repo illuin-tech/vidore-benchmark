@@ -25,6 +25,7 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 - Rename `DSERetriever` into `DSEQwen2Retriever`
 - Speed up tests by using smaller inputs
 - [Breaking] Rename args in CLI script
+- When available, use `processor.get_scores` instead of custom scoring snippet
 
 ### Fixed
 
