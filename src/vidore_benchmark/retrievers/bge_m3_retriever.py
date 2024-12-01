@@ -87,6 +87,9 @@ class BGEM3Retriever(VisionRetriever):
         passage_embeddings: Union[torch.Tensor, List[torch.Tensor]],
         batch_size: Optional[int] = None,
     ) -> torch.Tensor:
+        """
+        Dot-product similarity between queries and passages.
+        """
         if isinstance(query_embeddings, list):
             query_embeddings = torch.stack(query_embeddings)
         if isinstance(passage_embeddings, list):
