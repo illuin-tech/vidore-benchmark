@@ -1,6 +1,7 @@
 import logging
 import os
 from datetime import datetime
+from importlib.metadata import version
 from pathlib import Path
 from typing import Annotated, Dict, List, Optional, cast
 
@@ -121,7 +122,7 @@ def evaluate_retriever(
         results = ViDoReBenchmarkResults(
             metadata=MetadataModel(
                 timestamp=datetime.now(),
-                vidore_benchmark_hash=os.popen("git rev-parse HEAD").read().strip(),
+                vidore_benchmark_version=version("vidore_benchmark"),
             ),
             metrics={dataset_name: MetricsModel(**metrics[dataset_name])},
         )
@@ -177,7 +178,7 @@ def evaluate_retriever(
             results = ViDoReBenchmarkResults(
                 metadata=MetadataModel(
                     timestamp=datetime.now(),
-                    vidore_benchmark_hash=os.popen("git rev-parse HEAD").read().strip(),
+                    vidore_benchmark_version=os.popen("git rev-parse HEAD").read().strip(),
                 ),
                 metrics={dataset_name: MetricsModel(**metrics[dataset_name])},
             )

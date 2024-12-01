@@ -84,7 +84,7 @@ class MetadataModel(BaseModel):
     """
 
     timestamp: datetime
-    vidore_benchmark_hash: str
+    vidore_benchmark_version: str
 
     class Config:
         extra = "allow"

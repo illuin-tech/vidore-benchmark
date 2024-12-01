@@ -12,7 +12,7 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 ### Added
 
 - Add support for ColQwen2, DSEQwen2, and Cohere API embedding models
-- Add Pydantic models for storing the ViDoRe benchmark results and metadata (includes package hash)
+- Add Pydantic models for storing the ViDoRe benchmark results and metadata (includes `vidore-benchmark` version)
 - Add option to create an `EvalManager` instance from `ViDoReBenchmarkResults`
 
 ### Changed

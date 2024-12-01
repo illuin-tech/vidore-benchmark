@@ -92,7 +92,7 @@ class TestEvalManagerInitialization(TestEvalManagerBase):
         results = ViDoReBenchmarkResults(
             metadata=MetadataModel(
                 timestamp=datetime.now(),
-                vidore_benchmark_hash="1234567890abcdef",
+                vidore_benchmark_version="0.0.1.dev7+g462dc4f.d20241102",
             ),
             metrics={
                 "dataset1": MetricsModel(ndcg_at_1=0.8, ndcg_at_3=0.7),
