@@ -177,9 +177,9 @@ class DSEQwen2Retriever(VisionRetriever):
         Dot-product similarity between queries and passages.
         """
         if isinstance(query_embeddings, list):
-            query_embeddings = torch.stack(query_embeddings).to(self.device)
+            query_embeddings = torch.stack(query_embeddings)
         if isinstance(passage_embeddings, list):
-            passage_embeddings = torch.stack(passage_embeddings).to(self.device)
+            passage_embeddings = torch.stack(passage_embeddings)
 
         scores = torch.einsum("bd,cd->bc", query_embeddings, passage_embeddings)
 
