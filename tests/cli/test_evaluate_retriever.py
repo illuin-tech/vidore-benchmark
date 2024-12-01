@@ -28,9 +28,9 @@ def cli_runner():
     return CliRunner()
 
 
-def test_evaluate_retriever_e2e(cli_runner, output_dir):
+def test_evaluate_retriever(cli_runner, output_dir):
     """
-    End-to-end test for evaluate_retriever command using a dummy dataset and model.
+    CLI test for the `evaluate_retriever` command using a dummy dataset and model.
     """
     # Arrange
     dataset_name = "vidore/syntheticDocQA_dummy"
