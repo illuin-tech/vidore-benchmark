@@ -117,7 +117,7 @@ def evaluate_retriever(
         else:
             savepath = OUTPUT_DIR / f"{model_id}_metrics.json"
 
-        print(f"NDCG@5 for {model_id} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
+        print(f"nDCG@5 for {model_id} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
 
         results = ViDoReBenchmarkResults(
             metadata=MetadataModel(
@@ -173,7 +173,7 @@ def evaluate_retriever(
             else:
                 savepath = savedir / f"{dataset_item_id}_metrics.json"
 
-            print(f"NDCG@5 for {model_id} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
+            print(f"nDCG@5 for {model_id} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
 
             results = ViDoReBenchmarkResults(
                 metadata=MetadataModel(

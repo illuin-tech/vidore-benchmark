@@ -9,7 +9,7 @@ class MetricsModel(BaseModel):
     Metrics model for the ViDoRe benchmark results. Contains the default MTER metrics.
     """
 
-    # NDCG metrics
+    # nDCG metrics
     ndcg_at_1: Optional[float] = None
     ndcg_at_3: Optional[float] = None
     ndcg_at_5: Optional[float] = None

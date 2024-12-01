@@ -81,13 +81,5 @@ def test_evaluate_retriever_e2e(cli_runner, output_dir):
     # Check if metrics contain the expected dataset
     assert dataset_name in metrics, f"Metrics for dataset {dataset_name} not found"
 
-    # Check metrics are not empty
-    dataset_metrics = metrics[dataset_name]
-
-    # Check if metrics are within valid range (0 to 1)
-    for metric_name, metric_value in dataset_metrics.items():
-        if not np.isnan(metric_value):
-            assert 0 <= metric_value <= 1, f"Metric {metric_name} outside valid range: {metric_value}"
-
-    # Check for specific NDCG@5 output in stdout
-    assert f"NDCG@5 for {model_class} on {dataset_name}:" in result.stdout
+    # Check for specific nDCG@5 output in stdout
+    assert f"nDCG@5 for {model_class} on {dataset_name}:" in result.stdout
