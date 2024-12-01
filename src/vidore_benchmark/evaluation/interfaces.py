@@ -6,7 +6,19 @@ from pydantic import BaseModel
 
 class MetricsModel(BaseModel):
     """
-    Metrics model for the ViDoRe benchmark results. Contains the default MTER metrics.
+    Metrics model for the ViDoRe benchmark results.
+    Contains the default MTEB metrics: nDCG, MAP, Recall, Precision, MRR, and NAUCS.
+
+    Example usage:
+
+    ```python
+    >>> metrics = MetricsModel(
+            ndcg_at_1=0.5,
+            ndcg_at_3=0.7,
+            map_at_1=0.4,
+        )
+    >>> # Serialize the model to JSON
+    >>> json_data = metrics.model_dump_json()
     """
 
     # nDCG metrics
@@ -80,19 +92,36 @@ class MetricsModel(BaseModel):
 
 class MetadataModel(BaseModel):
     """
-    Metadata for the ViDoRe benchmark results.
+    Metadata data for the ViDoRe benchmark results.
+
+    Example usage:
+
+    ```python
+    >>> from datetime import datetime
+    >>> metadata = MetadataModel(
+            timestamp=datetime.now(),
+            vidore_benchmark_version="0.0.1.dev7+g462dc4f.d20241102",
+        )
+    >>> # Serialize the model to JSON
+    >>> json_data = metadata.model_dump_json()
+    ```
     """
 
     timestamp: datetime
     vidore_benchmark_version: str
 
+    # NOTE: `Config` is used to allow extra fields in the model
     class Config:
         extra = "allow"
 
 
 class ViDoReBenchmarkResults(BaseModel):
     """
-    A Pydantic model for the ViDoRe benchmark results.
+    ViDoRe benchmark results.
+
+    This Pydantic model contains:
+    - Metadata: Information about the benchmark run, including the timestamp and the `vidore-benchmark` package version.
+    - Metrics: Dictionary of metrics: the keys are the dataset names and the values are the metrics for that dataset.
 
     Example usage:
 
@@ -100,7 +129,7 @@ class ViDoReBenchmarkResults(BaseModel):
     >>> root = RootModel(
             metadata=Metadata(
                 timestamp=datetime.now(),
-                vidore_benchmark_hash="1234567890abcdef",
+                vidore_benchmark_version="0.0.1.dev7+g462dc4f.d20241102",
             ),
             metrics={
                 "vidore/syntheticDocQA_dummy": MetricsModel(
@@ -109,6 +138,7 @@ class ViDoReBenchmarkResults(BaseModel):
                 )
             }
         )
+    >>> # Serialize the model to JSON
     >>> json_data = root.model_dump_json()
     ```
     """
@@ -119,7 +149,8 @@ class ViDoReBenchmarkResults(BaseModel):
     @classmethod
     def merge(cls, results: List["ViDoReBenchmarkResults"]) -> "ViDoReBenchmarkResults":
         """
-        Merge multiple ViDoReBenchmarkResults instances into a single one.
+        Merge multiple `ViDoReBenchmarkResults` instances into a single one.
+
         Uses the latest timestamp from the input results and combines all metrics.
         If there are conflicting metrics for the same benchmark, the last one in the list takes precedence.
 
@@ -127,7 +158,7 @@ class ViDoReBenchmarkResults(BaseModel):
             results: List of ViDoReBenchmarkResults to merge
 
         Returns:
-            A new ViDoReBenchmarkResults instance containing the merged data
+            A new `ViDoReBenchmarkResults` instance containing the merged data
 
         Raises:
             ValueError: If the input list is empty
