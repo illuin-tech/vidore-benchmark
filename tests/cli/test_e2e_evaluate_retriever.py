@@ -1,10 +1,10 @@
 import json
 from pathlib import Path
 
-import numpy as np
 import pytest
 from typer.testing import CliRunner
 
+from vidore_benchmark.evaluation.interfaces import ViDoReBenchmarkResults
 from vidore_benchmark.main import app
 
 
@@ -59,13 +59,24 @@ def test_evaluate_retriever_e2e(cli_runner, output_dir):
     # Assert
     assert result.exit_code == 0, f"CLI command failed with error: {result.stdout}"
 
-    # Check if metrics file was created
-    metrics_file = output_dir / f"{model_class}_metrics.json"
-    assert metrics_file.exists(), "Metrics file was not created"
+    # Check if result file was created
+    vidore_results_file = output_dir / f"{model_class}_metrics.json"
+    assert vidore_results_file.exists(), "Metrics file was not created"
 
-    # Load and validate metrics
-    with open(metrics_file, "r", encoding="utf-8") as f:
-        metrics = json.load(f)
+    # Load JSON
+    try:
+        with open(vidore_results_file, "r", encoding="utf-8") as f:
+            vidore_results = json.load(f)
+    except Exception as e:
+        pytest.fail(f"Failed to load JSON file: {e}")
+
+    # Load results using the ViDoReBenchmarkResults format
+    try:
+        vidore_results = ViDoReBenchmarkResults(**vidore_results)
+    except Exception as e:
+        pytest.fail(f"Failed to load results using the `ViDoReBenchmarkResults` format: {e}")
+
+    metrics = vidore_results.metrics
 
     # Check if metrics contain the expected dataset
     assert dataset_name in metrics, f"Metrics for dataset {dataset_name} not found"
