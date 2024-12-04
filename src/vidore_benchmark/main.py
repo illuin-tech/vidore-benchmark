@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 
 from vidore_benchmark.compression.token_pooling import HierarchicalEmbeddingPooler
 from vidore_benchmark.evaluation.evaluate import evaluate_dataset, get_top_k
-from vidore_benchmark.evaluation.interfaces import MetadataModel, MetricsModel, ViDoReBenchmarkResults
+from vidore_benchmark.evaluation.interfaces import MetadataModel, ViDoReBenchmarkResults
 from vidore_benchmark.retrievers.registry_utils import load_vision_retriever_from_registry
 from vidore_benchmark.utils.image_utils import generate_dataset_from_img_folder
 from vidore_benchmark.utils.logging_utils import setup_logging
@@ -124,7 +124,7 @@ def evaluate_retriever(
                 timestamp=datetime.now(),
                 vidore_benchmark_version=version("vidore_benchmark"),
             ),
-            metrics={dataset_name: MetricsModel(**metrics[dataset_name])},
+            metrics={dataset_name: metrics[dataset_name]},
         )
 
         with open(str(savepath), "w", encoding="utf-8") as f:
@@ -180,7 +180,7 @@ def evaluate_retriever(
                     timestamp=datetime.now(),
                     vidore_benchmark_version=os.popen("git rev-parse HEAD").read().strip(),
                 ),
-                metrics={dataset_name: MetricsModel(**metrics[dataset_name])},
+                metrics={dataset_name: metrics[dataset_name]},
             )
             results_all.append(results)
 

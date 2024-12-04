@@ -6,7 +6,7 @@ import pytest
 from pandas.testing import assert_frame_equal
 
 from vidore_benchmark.evaluation.eval_manager import EvalManager
-from vidore_benchmark.evaluation.interfaces import MetadataModel, MetricsModel, ViDoReBenchmarkResults
+from vidore_benchmark.evaluation.interfaces import MetadataModel, ViDoReBenchmarkResults
 
 
 class TestEvalManagerBase:
@@ -95,8 +95,8 @@ class TestEvalManagerInitialization(TestEvalManagerBase):
                 vidore_benchmark_version="0.0.1.dev7+g462dc4f.d20241102",
             ),
             metrics={
-                "dataset1": MetricsModel(ndcg_at_1=0.8, ndcg_at_3=0.7),
-                "dataset2": MetricsModel(ndcg_at_1=0.9, ndcg_at_3=0.85),
+                "dataset1": {"ndcg_at_1": 0.8, "ndcg_at_3": 0.7},
+                "dataset2": {"ndcg_at_1": 0.9, "ndcg_at_3": 0.85},
             },
         )
         eval_manager = EvalManager.from_vidore_results(results, model_name="test_model")

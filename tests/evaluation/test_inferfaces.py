@@ -2,22 +2,10 @@ from datetime import datetime
 
 import pytest
 
-from vidore_benchmark.evaluation.interfaces import MetadataModel, MetricsModel, ViDoReBenchmarkResults
+from vidore_benchmark.evaluation.interfaces import MetadataModel, ViDoReBenchmarkResults
 
 
 class TestViDoReBenchmarkCreation:
-    def test_metrics_model_creation(self):
-        """Test basic creation of MetricsModel with valid data"""
-        metrics = MetricsModel(
-            ndcg_at_1=0.5,
-            ndcg_at_3=0.7,
-            map_at_1=0.4,
-        )
-
-        assert metrics.ndcg_at_1 == 0.5
-        assert metrics.ndcg_at_3 == 0.7
-        assert metrics.map_at_1 == 0.4
-
     def test_metadata_creation(self):
         """Test creation of Metadata with required fields"""
         current_time = datetime.now()
@@ -50,14 +38,14 @@ class TestViDoReBenchmarkCreation:
                 vidore_benchmark_version="0.0.1.dev7+g462dc4f.d20241102",
             ),
             metrics={
-                "test_dataset": MetricsModel(ndcg_at_1=0.5, ndcg_at_3=0.7),
+                "test_dataset": {"ndcg_at_1": 0.5, "ndcg_at_3": 0.7},
             },
         )
 
         assert results.metadata.timestamp == current_time
         assert results.metadata.vidore_benchmark_version == "0.0.1.dev7+g462dc4f.d20241102"
-        assert results.metrics["test_dataset"].ndcg_at_1 == 0.5
-        assert results.metrics["test_dataset"].ndcg_at_3 == 0.7
+        assert results.metrics["test_dataset"]["ndcg_at_1"] == 0.5
+        assert results.metrics["test_dataset"]["ndcg_at_3"] == 0.7
 
 
 class TestViDoReBenchmarkMerging:
@@ -68,7 +56,7 @@ class TestViDoReBenchmarkMerging:
                 timestamp=datetime(2024, 1, 1),
                 vidore_benchmark_version="0.0.1-dev1",
             ),
-            metrics={"benchmark1": MetricsModel(ndcg_at_1=0.5)},
+            metrics={"benchmark1": {"ndcg_at_1": 0.5}},
         )
 
         result2 = ViDoReBenchmarkResults(
@@ -76,7 +64,7 @@ class TestViDoReBenchmarkMerging:
                 timestamp=datetime(2024, 2, 1),
                 vidore_benchmark_version="0.0.1-dev2",
             ),
-            metrics={"benchmark2": MetricsModel(ndcg_at_1=0.7)},
+            metrics={"benchmark2": {"ndcg_at_1": 0.7}},
         )
 
         merged = ViDoReBenchmarkResults.merge([result1, result2])
@@ -87,8 +75,8 @@ class TestViDoReBenchmarkMerging:
 
         # Check that metrics from both results are present
         assert len(merged.metrics) == 2
-        assert merged.metrics["benchmark1"].ndcg_at_1 == 0.5
-        assert merged.metrics["benchmark2"].ndcg_at_1 == 0.7
+        assert merged.metrics["benchmark1"]["ndcg_at_1"] == 0.5
+        assert merged.metrics["benchmark2"]["ndcg_at_1"] == 0.7
 
     def test_merge_duplicate_keys_error(self):
         """Test that merging results with duplicate benchmark keys raises ValueError."""
@@ -98,8 +86,8 @@ class TestViDoReBenchmarkMerging:
                 vidore_benchmark_version="0.0.1-dev1",
             ),
             metrics={
-                "benchmark1": MetricsModel(ndcg_at_1=0.5),
-                "benchmark2": MetricsModel(ndcg_at_1=0.6),
+                "benchmark1": {"ndcg_at_1": 0.5},
+                "benchmark2": {"ndcg_at_1": 0.6},
             },
         )
 
@@ -109,8 +97,8 @@ class TestViDoReBenchmarkMerging:
                 vidore_benchmark_version="0.0.1-dev2",
             ),
             metrics={
-                "benchmark2": MetricsModel(ndcg_at_1=0.7),  # Duplicate key with result1
-                "benchmark3": MetricsModel(ndcg_at_1=0.8),
+                "benchmark2": {"ndcg_at_1": 0.7},  # Duplicate key with result1
+                "benchmark3": {"ndcg_at_1": 0.8},
             },
         )
 
