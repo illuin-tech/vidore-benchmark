@@ -137,7 +137,7 @@ class VisionRetriever(ABC):
         relevant_docs: Any,
         results: Any,
         **kwargs,
-    ):
+    ) -> Dict[str, Optional[float]]:
         """
         Compute the MTEB metrics.
 

@@ -12,6 +12,8 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 ### Added
 
 - Add support for ColQwen2, DSEQwen2, and Cohere API embedding models
+- Add Pydantic models for storing the ViDoRe benchmark results and metadata (includes `vidore-benchmark` version)
+- Add option to create an `EvalManager` instance from `ViDoReBenchmarkResults`
 
 ### Changed
 
@@ -45,6 +47,8 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 - Add fixtures in retriever tests to speed up testing
 - Add tests for `evaluate_dataset` method
 - Add E2E test for cli command `evaluate-retriever`
+- Add tests for `ViDoReBenchmarkResults`
+- Add tests for `EvalManager`
 
 ## [4.0.2] - 2024-10-17
 

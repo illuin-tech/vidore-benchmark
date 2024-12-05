@@ -21,7 +21,7 @@ def evaluate_dataset(
     batch_passage: int,
     batch_score: Optional[int] = None,
     embedding_pooler: Optional[BaseEmbeddingPooler] = None,
-) -> Dict[str, float]:
+) -> Dict[str, Optional[float]]:
     """
     Evaluate the model on a given dataset using the MTEB metrics.
 

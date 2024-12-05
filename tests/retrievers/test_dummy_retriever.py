@@ -12,19 +12,16 @@ def retriever() -> Generator[DummyRetriever, None, None]:
     tear_down_torch()
 
 
-@pytest.mark.slow
 def test_forward_queries(retriever: DummyRetriever, queries_fixture):
     embeddings_queries = retriever.forward_queries(queries_fixture, batch_size=1)
     assert len(embeddings_queries) == len(queries_fixture)
 
 
-@pytest.mark.slow
 def test_forward_documents(retriever: DummyRetriever, image_passage_fixture):
     embeddings_docs = retriever.forward_passages(image_passage_fixture, batch_size=1)
     assert len(embeddings_docs) == len(image_passage_fixture)
 
 
-@pytest.mark.slow
 def test_get_scores(
     retriever: DummyRetriever,
     query_single_vector_embeddings_fixture,
