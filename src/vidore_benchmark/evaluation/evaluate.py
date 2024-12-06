@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections import OrderedDict
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import torch
 from datasets import Dataset
@@ -102,47 +101,3 @@ def evaluate_dataset(
     metrics = vision_retriever.compute_metrics(relevant_docs, results)
 
     return metrics
-
-
-def get_top_k(
-    vision_retriever: VisionRetriever,
-    queries: List[str],
-    emb_queries: Union[torch.Tensor, List[torch.Tensor]],
-    emb_passages: Union[torch.Tensor, List[torch.Tensor]],
-    file_names: List[str],
-    k: int,
-    batch_score: Optional[int] = None,
-) -> Dict[str, OrderedDict[str, float]]:
-    """
-    Get the top-k passages for a given query.
-
-    Output:
-    {
-        query_1: {
-            passage_1: score_1,
-            ...
-        },
-        ...
-    }
-    """
-    scores = vision_retriever.get_scores(emb_queries, emb_passages, batch_size=batch_score)
-    passages2filename = {doc_idx: image_filename for doc_idx, image_filename in enumerate(file_names)}
-    query_to_score = {}
-
-    for query, score_per_query in zip(queries, scores):
-        for docidx, score in enumerate(score_per_query):
-            filename = passages2filename[docidx]
-            score_passage = float(score.item())
-
-            if query in query_to_score:
-                query_to_score[query][filename] = max(query_to_score[query].get(filename, 0), score_passage)
-            else:
-                query_to_score[query] = {filename: score_passage}
-
-    # Get the top-k passages
-    for query in query_to_score:
-        query_to_score[query] = OrderedDict(
-            sorted(query_to_score[query].items(), key=lambda item: item[1], reverse=True)[:k]
-        )
-
-    return query_to_score

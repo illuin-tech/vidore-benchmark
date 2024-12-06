@@ -39,7 +39,6 @@ dependencies = [
     "GPUtil>=1.4.0,<2.0.0",
     "mteb>=1.16.0,<1.17.0",
     "numpy>=1.21.2,<2.0.0",
-    "pdf2image>=1.17.0,<2.0.0",
     "pydantic>=2.0.0,<3.0.0",
     "python-dotenv>=1.0.1,<2.0.0",
     "sentence-transformers>=3.0.1,<4.0.0",

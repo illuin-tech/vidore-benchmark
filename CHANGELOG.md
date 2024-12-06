@@ -40,6 +40,9 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 - Remove experimental quantization
 - Remove the `interpretability` module. The interpretability code has been moved and improved as part of the [`colpali-engine==0.3.2`](https://github.com/illuin-tech/colpali/releases/tag/v0.3.2) release.
 - Replace `loguru` with built-in `logging` module
+- Remove the `retrieve_on_dataset` and `retrieve_on_pdfs` entrypoint scripts
+- Remove the `pdf_utils` module
+- Remove the `get_top_k` method from the `evaluate` module
 
 ### Tests
 
