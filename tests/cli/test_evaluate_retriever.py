@@ -22,7 +22,11 @@ def cli_runner():
         ("vidore/syntheticDocQA_beir_dummy", "beir"),
     ],
 )
-def test_evaluate_retriever(cli_runner, dataset_name, dataset_format):
+def test_evaluate_retriever(
+    cli_runner: CliRunner,
+    dataset_name: str,
+    dataset_format: str,
+):
     """
     End-to-end test for the `evaluate_retriever` command.
     """
