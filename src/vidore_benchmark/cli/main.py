@@ -24,14 +24,17 @@ load_dotenv(override=True)
 set_seed(42)
 
 app = typer.Typer(
-    help="CLI for evaluating retrievers on the ViDoRe benchmark.",
+    help="""
+    CLI for evaluating vision retrievers.
+    Can be used to evaluate on the ViDoRe benchmark and to generate metrics for the ViDoRe leaderboard.
+    """,
     no_args_is_help=True,
 )
 
 
 def _sanitize_model_id(model_class: str, pretrained_model_name_or_path: Optional[str] = None) -> str:
     """
-    Return sanitized model ID for saving metrics.
+    Return sanitized model ID for properly saving metrics as files.
     """
     model_id = pretrained_model_name_or_path if pretrained_model_name_or_path is not None else model_class
     model_id = model_id.replace("/", "_")
@@ -53,17 +56,19 @@ def _get_metrics_from_vidore_evaluator(
     Rooter function to get metrics from the ViDoRe evaluator depending on the dataset format.
 
     Args:
-        vision_retriever: VisionRetriever instance.
-        embedding_pooler: EmbeddingPooler instance.
-        dataset_name: HuggingFace Hub dataset name.
-        dataset_format: Dataset format (e.g. "qa", "beir", ...).
-        split: Dataset split.
-        batch_query: Batch size for query embedding inference.
-        batch_passage: Batch size for passages embedding inference.
-        batch_score: Batch size for score computation.
+        vision_retriever (BaseVisionRetriever)
+        embedding_pooler (Optional[BaseEmbeddingPooler])
+        dataset_name (str): Dataset name
+        dataset_format (str): Dataset format
+        split (str): Dataset split
+        batch_query (int): Batch size for query embedding inference
+        batch_passage (int): Batch size for passages embedding inference
+        batch_score (Optional[int]): Batch size for score computation
+        dataloader_prebatch_size (Optional[int]): Prebatch size for the dataloader
 
     Returns:
-        Dict[str, Dict[str, Optional[float]]]: Dictionary of metrics
+        Dict[str, Dict[str, Optional[float]]]: Metrics per dataset.
+            Example: {"dataset_name": {"ndcg_at_5": 0.5, "ndcg_at_10": 0.6}}
     """
     if dataset_format == "qa":
         vidore_evaluator = ViDoReEvaluatorQA(
@@ -139,8 +144,8 @@ def evaluate_retriever(
     output_dir: Annotated[str, typer.Option(help="Directory where to save the metrics")] = "outputs",
 ):
     """
-    Evaluate the retriever on the given dataset or collection.
-    The metrics are saved to a JSON file.
+    Evaluate the vision retriever on the given dataset or dataset collection.
+    The metrics are saved to a JSON file and follow the `ViDoReBenchmarkResults` schema.
     """
 
     logging.info(f"Evaluating retriever `{model_class}`")
