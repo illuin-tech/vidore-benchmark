@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
+from vidore_benchmark.cli.main import app
 from vidore_benchmark.evaluation.interfaces import ViDoReBenchmarkResults
-from vidore_benchmark.main import app
 
 
 @pytest.fixture
