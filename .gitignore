@@ -1,6 +1,5 @@
 # Custom
 .DS_Store
-/.env
 /.vscode/
 /logs/
 /data/**
