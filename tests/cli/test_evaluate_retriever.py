@@ -1,4 +1,5 @@
 import json
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -9,77 +10,74 @@ from vidore_benchmark.main import app
 
 
 @pytest.fixture
-def output_dir():
-    """Fixture to create and clean up the output directory."""
-    output_path = Path("outputs")
-    output_path.mkdir(exist_ok=True)
-    yield output_path
-
-    # Clean up output files after test
-    if output_path.exists():
-        for file in output_path.glob("*"):
-            file.unlink()
-        output_path.rmdir()
-
-
-@pytest.fixture
 def cli_runner():
     """Fixture for typer CLI runner."""
     return CliRunner()
 
 
-def test_evaluate_retriever(cli_runner, output_dir):
+@pytest.mark.parametrize(
+    "dataset_name,dataset_format",
+    [
+        ("vidore/syntheticDocQA_dummy", "qa"),
+        ("vidore/syntheticDocQA_beir_dummy", "beir"),
+    ],
+)
+def test_evaluate_retriever(cli_runner, dataset_name, dataset_format):
     """
-    CLI test for the `evaluate_retriever` command using a dummy dataset and model.
+    End-to-end test for the `evaluate_retriever` command.
     """
-    # Arrange
-    dataset_name = "vidore/syntheticDocQA_dummy"
-    model_class = "dummy_retriever"
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Define the model class
+        model_class = "dummy_vision_retriever"
 
-    # Act
-    result = cli_runner.invoke(
-        app,
-        [
-            "evaluate-retriever",
-            "--model-class",
-            model_class,
-            "--dataset-name",
-            dataset_name,
-            "--split",
-            "test",
-            "--batch-query",
-            "2",
-            "--batch-passage",
-            "2",
-            "--batch-score",
-            "2",
-        ],
-    )
+        # Run the CLI command
+        result = cli_runner.invoke(
+            app,
+            [
+                "evaluate-retriever",
+                "--model-class",
+                model_class,
+                "--dataset-name",
+                dataset_name,
+                "--dataset-format",
+                dataset_format,
+                "--split",
+                "test",
+                "--batch-query",
+                "2",
+                "--batch-passage",
+                "2",
+                "--batch-score",
+                "2",
+                "--output-dir",
+                temp_dir,
+            ],
+        )
 
-    # Assert
-    assert result.exit_code == 0, f"CLI command failed with error: {result.stdout}"
+        # Assert
+        assert result.exit_code == 0, f"CLI command failed with error: {result.stdout}"
 
-    # Check if result file was created
-    vidore_results_file = output_dir / f"{model_class}_metrics.json"
-    assert vidore_results_file.exists(), "Metrics file was not created"
+        # Check if result file was created
+        vidore_results_file = Path(temp_dir) / f"{model_class}_metrics.json"
+        assert vidore_results_file.exists(), "Metrics file was not created"
 
-    # Load JSON
-    try:
-        with open(vidore_results_file, "r", encoding="utf-8") as f:
-            vidore_results = json.load(f)
-    except Exception as e:
-        pytest.fail(f"Failed to load JSON file: {e}")
+        # Load JSON
+        try:
+            with open(vidore_results_file, "r", encoding="utf-8") as f:
+                vidore_results = json.load(f)
+        except Exception as e:
+            pytest.fail(f"Failed to load JSON file: {e}")
 
-    # Load results using the ViDoReBenchmarkResults format
-    try:
-        vidore_results = ViDoReBenchmarkResults(**vidore_results)
-    except Exception as e:
-        pytest.fail(f"Failed to load results using the `ViDoReBenchmarkResults` format: {e}")
+        # Load results using the ViDoReBenchmarkResults format
+        try:
+            vidore_results = ViDoReBenchmarkResults(**vidore_results)
+        except Exception as e:
+            pytest.fail(f"Failed to load results using the `ViDoReBenchmarkResults` format: {e}")
 
-    metrics = vidore_results.metrics
+        metrics = vidore_results.metrics
 
-    # Check if metrics contain the expected dataset
-    assert dataset_name in metrics, f"Metrics for dataset {dataset_name} not found"
+        # Check if metrics contain the expected dataset
+        assert dataset_name in metrics, f"Metrics for dataset {dataset_name} not found"
 
-    # Check for specific nDCG@5 output in stdout
-    assert f"nDCG@5 for {model_class} on {dataset_name}:" in result.stdout
+        # Check for specific nDCG@5 output in stdout
+        assert f"nDCG@5 for {model_class} on {dataset_name}:" in result.stdout
