@@ -43,6 +43,7 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 - Remove the `retrieve_on_dataset` and `retrieve_on_pdfs` entrypoint scripts
 - Remove the `pdf_utils` module
 - Remove the `get_top_k` method from the `evaluate` module
+- Remove the `experiments` directory
 
 ### Tests
 
