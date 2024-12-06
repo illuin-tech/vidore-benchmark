@@ -32,11 +32,16 @@ app = typer.Typer(
 )
 
 
-def _sanitize_model_id(model_class: str, pretrained_model_name_or_path: Optional[str] = None) -> str:
+def _sanitize_model_id(
+    model_class: str,
+    pretrained_model_name_or_path: Optional[str] = None,
+) -> str:
     """
     Return sanitized model ID for properly saving metrics as files.
     """
-    model_id = pretrained_model_name_or_path if pretrained_model_name_or_path is not None else model_class
+    model_id = model_class
+    if pretrained_model_name_or_path is not None:
+        model_id += f"_{pretrained_model_name_or_path}"
     model_id = model_id.replace("/", "_")
     return model_id
 
