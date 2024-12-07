@@ -22,7 +22,7 @@ load_dotenv(override=True)
 @register_vision_retriever("colqwen2")
 class ColQwen2Retriever(VisionRetriever):
     """
-    ColPali Retriever that implements the model from "ColPali: Efficient Document Retrieval
+    ColQwen2 retriever that implements the model from "ColPali: Efficient Document Retrieval
     with Vision Language Models".
     """
 
