@@ -26,6 +26,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[bm25,dev]"
 
+      - name: Download NLTK data
+        run: |
+          python -m nltk.downloader punkt punkt_tab stopwords
+
       - name: Run tests with pytest (except "slow" tests)
         run: |
           pytest -m "not slow"
