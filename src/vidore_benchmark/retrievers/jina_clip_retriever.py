@@ -26,7 +26,10 @@ class JinaClipRetriever(VisionRetriever):
         try:
             import timm  # noqa: F401
         except ImportError:
-            raise ImportError("Please install the `timm` package to use JinaClipRetriever.")
+            raise ImportError(
+                'Install the missing dependencies with `pip install "vidore-benchmark[jina-clip]"` '
+                "to use JinaClipRetriever."
+            )
 
         self.pretrained_model_name_or_path = pretrained_model_name_or_path
         self.device = get_torch_device(device)

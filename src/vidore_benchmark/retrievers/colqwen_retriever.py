@@ -4,7 +4,6 @@ import logging
 from typing import ClassVar, List, Optional, Union, cast
 
 import torch
-from colpali_engine.models import ColQwen2, ColQwen2Processor
 from dotenv import load_dotenv
 from PIL import Image
 from torch.utils.data import DataLoader
@@ -37,6 +36,14 @@ class ColQwenRetriever(VisionRetriever):
     ):
         super().__init__()
 
+        try:
+            from colpali_engine.models import ColQwen2, ColQwen2Processor
+        except ImportError:
+            raise ImportError(
+                'Install the missing dependencies with `pip install "vidore-benchmark[colpali-engine]"` '
+                "to use ColQwen2Retriever."
+            )
+
         self.device = get_torch_device(device)
         logger.info(f"Using device: {self.device}")
 
@@ -52,7 +59,10 @@ class ColQwenRetriever(VisionRetriever):
         )
 
         # Load the processor
-        self.processor = cast(ColQwen2Processor, ColQwen2Processor.from_pretrained(pretrained_model_name_or_path))
+        self.processor = cast(
+            ColQwen2Processor,
+            ColQwen2Processor.from_pretrained(pretrained_model_name_or_path),
+        )
         print("Loaded custom processor.\n")
 
     @property

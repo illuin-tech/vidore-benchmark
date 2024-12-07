@@ -24,13 +24,15 @@ class CohereAPIRetriever(VisionRetriever):
         self,
         pretrained_model_name_or_path: str = "embed-english-v3.0",
     ):
-
         super().__init__()
 
         try:
             import cohere
         except ImportError:
-            raise ImportError("Please install the `cohere` package to use CohereAPIRetriever.")
+            raise ImportError(
+                'Install the missing dependencies with `pip install "vidore-benchmark[cohere]"` '
+                "to use CohereAPIRetriever."
+            )
 
         api_key = os.getenv("COHERE_API_KEY", None)
         if api_key is None:

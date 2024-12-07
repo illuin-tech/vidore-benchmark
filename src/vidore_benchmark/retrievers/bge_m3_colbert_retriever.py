@@ -27,7 +27,9 @@ class BGEM3ColbertRetriever(VisionRetriever):
         try:
             from FlagEmbedding import BGEM3FlagModel
         except ImportError:
-            raise ImportError("Please install the `FlagEmbedding` package to use BGEM3ColbertRetriever.")
+            raise ImportError(
+                'Install the missing dependencies with `pip install "vidore-benchmark[bge-m3]"` to use BGEM3ColbertRetriever.'
+            )
 
         self.device = get_torch_device(device)
 

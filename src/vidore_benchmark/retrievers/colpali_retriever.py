@@ -4,7 +4,6 @@ import logging
 from typing import ClassVar, List, Optional, Union, cast
 
 import torch
-from colpali_engine.models import ColPali, ColPaliProcessor
 from dotenv import load_dotenv
 from PIL import Image
 from torch.utils.data import DataLoader
@@ -36,6 +35,14 @@ class ColPaliRetriever(VisionRetriever):
         device: str = "auto",
     ):
         super().__init__()
+
+        try:
+            from colpali_engine.models import ColPali, ColPaliProcessor
+        except ImportError:
+            raise ImportError(
+                'Install the missing dependencies with `pip install "vidore-benchmark[colpali-engine]"` '
+                "to use ColPaliRetriever."
+            )
 
         self.device = get_torch_device(device)
         logger.info(f"Using device: {self.device}")

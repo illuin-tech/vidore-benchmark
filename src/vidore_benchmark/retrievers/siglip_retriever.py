@@ -24,6 +24,14 @@ class SigLIPRetriever(VisionRetriever):
         device: str = "auto",
     ):
         super().__init__()
+
+        try:
+            import proto
+        except ImportError:
+            raise ImportError(
+                'Install the missing dependencies with `pip install "vidore-benchmark[siglip]"` to use SigLIPRetriever.'
+            )
+
         self.pretrained_model_name_or_path = pretrained_model_name_or_path
         self.device = get_torch_device(device)
 
