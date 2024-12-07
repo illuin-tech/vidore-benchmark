@@ -18,7 +18,7 @@ def cli_runner():
 @pytest.mark.parametrize(
     "dataset_name,dataset_format",
     [
-        ("vidore/syntheticDocQA_dummy", "qa"),
+        ("vidore/vidore_benchmark_qa_dummy", "qa"),
         ("vidore/syntheticDocQA_beir_dummy", "beir"),
     ],
 )
