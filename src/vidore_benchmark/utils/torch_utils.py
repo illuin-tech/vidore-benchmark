@@ -34,5 +34,7 @@ def tear_down_torch():
     Clears GPU cache for both CUDA and MPS.
     """
     gc.collect()
-    torch.cuda.empty_cache()
-    torch.mps.empty_cache()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    if torch.backends.mps.is_available():
+        torch.mps.empty_cache()
