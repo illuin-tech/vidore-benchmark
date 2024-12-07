@@ -28,12 +28,18 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 - Speed up tests by using smaller inputs
 - [Breaking] Rename args in CLI script
 - When available, use `processor.get_scores` instead of custom scoring snippet
+- Improve soft dependency handling in retriever classes
+- Make `colpali-engine` dependency optional
+- Rename `ColQwenRetriever` to `ColQwen2Retriever`
+- Rename `BiQwenRetriever` to `BiQwen2Retriever`
 
 ### Fixed
 
 - Fix `evaluate_dataset` when used with the BM25 retriever
 - Fix issue when no `pretrained_model_name_or_path` is `None` in `load_vision_retriever_from_registry`
 - Fix `DummyRetriever`'s `get_scores` method
+- Fix processor output not being sent to the correct device in `ColQwen2Retriever`
+- Fix bugs in `BiQwen2Retriever`
 
 ### Removed
 
@@ -44,6 +50,7 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 - Remove the `pdf_utils` module
 - Remove the `get_top_k` method from the `evaluate` module
 - Remove the `experiments` directory
+- Remove the `plot_utils` and `test_utils` modules
 
 ### Tests
 
@@ -53,6 +60,7 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 - Add E2E test for cli command `evaluate-retriever`
 - Add tests for `ViDoReBenchmarkResults`
 - Add tests for `EvalManager`
+- Add tests for `BiQwen2Retriever`
 
 ## [4.0.2] - 2024-10-17
 
