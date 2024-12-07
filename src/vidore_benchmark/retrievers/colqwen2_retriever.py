@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar, List, Optional, Union, cast
+from typing import List, Optional, Union, cast
 
 import torch
 from dotenv import load_dotenv
@@ -20,14 +20,11 @@ load_dotenv(override=True)
 
 
 @register_vision_retriever("colqwen2")
-class ColQwenRetriever(VisionRetriever):
+class ColQwen2Retriever(VisionRetriever):
     """
     ColPali Retriever that implements the model from "ColPali: Efficient Document Retrieval
     with Vision Language Models".
     """
-
-    emb_dim_query: ClassVar[int] = 128
-    emb_dim_doc: ClassVar[int] = 128
 
     def __init__(
         self,
@@ -53,7 +50,7 @@ class ColQwenRetriever(VisionRetriever):
             ColQwen2.from_pretrained(
                 pretrained_model_name_or_path,
                 torch_dtype=torch.bfloat16,
-                device_map=device,
+                device_map=self.device,
                 attn_implementation="flash_attention_2" if torch.cuda.is_available() else None,
             ).eval(),
         )
