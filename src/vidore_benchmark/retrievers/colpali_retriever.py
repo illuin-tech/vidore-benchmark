@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar, List, Optional, Union, cast
+from typing import List, Optional, Union, cast
 
 import torch
 from dotenv import load_dotenv
@@ -25,9 +25,6 @@ class ColPaliRetriever(VisionRetriever):
     ColPali retriever that implements the model from "ColPali: Efficient Document Retrieval
     with Vision Language Models".
     """
-
-    emb_dim_query: ClassVar[int] = 128
-    emb_dim_doc: ClassVar[int] = 128
 
     def __init__(
         self,

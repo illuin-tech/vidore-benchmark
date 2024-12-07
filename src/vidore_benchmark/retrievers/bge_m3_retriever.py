@@ -40,9 +40,6 @@ class BGEM3Retriever(VisionRetriever):
         )
         # NOTE: BGEM3FlagModel is already in eval mode
 
-        self.emb_dim_query = 1024
-        self.emb_dim_doc = 1024
-
     @property
     def use_visual_embedding(self) -> bool:
         return False

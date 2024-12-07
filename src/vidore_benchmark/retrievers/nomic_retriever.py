@@ -42,9 +42,6 @@ class NomicVisionRetriever(VisionRetriever):
             trust_remote_code=True,
         )
 
-        self.emb_dim_query = 768
-        self.emb_dim_doc = 768
-
     @property
     def use_visual_embedding(self) -> bool:
         return True
