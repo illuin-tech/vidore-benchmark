@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from vidore_benchmark.cli.main import app
+from vidore_benchmark.cli.main import _sanitize_model_id, app
 from vidore_benchmark.evaluation.interfaces import ViDoReBenchmarkResults
 
 
@@ -62,7 +62,8 @@ def test_evaluate_retriever(
         assert result.exit_code == 0, f"CLI command failed with error: {result.stdout}"
 
         # Check if result file was created
-        vidore_results_file = Path(temp_dir) / f"{model_class}_metrics.json"
+        model_id = _sanitize_model_id(model_class)
+        vidore_results_file = Path(temp_dir) / f"{model_id}_metrics.json"
         assert vidore_results_file.exists(), "Metrics file was not created"
 
         # Load JSON
