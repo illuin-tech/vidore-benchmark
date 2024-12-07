@@ -16,14 +16,16 @@ def cli_runner():
 
 
 @pytest.mark.parametrize(
-    "dataset_name,dataset_format",
+    "model_class,dataset_name,dataset_format",
     [
-        ("vidore/vidore_benchmark_qa_dummy", "qa"),
-        ("vidore_benchmark_beir_dummy", "beir"),
+        ("dummy_vision_retriever", "vidore/vidore_benchmark_qa_dummy", "qa"),
+        ("bm25", "vidore/vidore_benchmark_ocr_qa_dummy", "qa"),
+        ("dummy_vision_retriever", "vidore/vidore_benchmark_beir_dummy", "beir"),
     ],
 )
 def test_evaluate_retriever(
     cli_runner: CliRunner,
+    model_class: str,
     dataset_name: str,
     dataset_format: str,
 ):
@@ -31,9 +33,6 @@ def test_evaluate_retriever(
     End-to-end test for the `evaluate_retriever` command.
     """
     with tempfile.TemporaryDirectory() as temp_dir:
-        # Define the model class
-        model_class = "dummy_vision_retriever"
-
         # Run the CLI command
         result = cli_runner.invoke(
             app,
