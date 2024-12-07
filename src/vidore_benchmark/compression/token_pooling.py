@@ -2,8 +2,9 @@ from abc import ABC, abstractmethod
 from typing import Dict, Tuple
 
 import torch
-from colpali_engine.utils.torch_utils import get_torch_device
 from scipy.cluster.hierarchy import fcluster, linkage
+
+from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 class BaseEmbeddingPooler(ABC):

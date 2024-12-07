@@ -5,7 +5,6 @@ import math
 from typing import List, Optional, Union
 
 import torch
-from colpali_engine.utils.torch_utils import get_torch_device
 from dotenv import load_dotenv
 from PIL import Image
 from tqdm import tqdm
@@ -14,6 +13,7 @@ from transformers import AutoProcessor, Qwen2VLForConditionalGeneration
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
+from vidore_benchmark.utils.torch_utils import get_torch_device
 
 logger = logging.getLogger(__name__)
 

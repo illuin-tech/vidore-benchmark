@@ -5,7 +5,6 @@ from typing import ClassVar, List, Optional, Union, cast
 
 import torch
 from colpali_engine.models import ColQwen2, ColQwen2Processor
-from colpali_engine.utils.torch_utils import get_torch_device
 from dotenv import load_dotenv
 from PIL import Image
 from torch.utils.data import DataLoader
@@ -14,6 +13,7 @@ from tqdm import tqdm
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.data_utils import ListDataset
+from vidore_benchmark.utils.torch_utils import get_torch_device
 
 logger = logging.getLogger(__name__)
 

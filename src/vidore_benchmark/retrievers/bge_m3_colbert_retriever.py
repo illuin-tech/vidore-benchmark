@@ -2,13 +2,13 @@ import math
 from typing import List, Optional, Union, cast
 
 import torch
-from colpali_engine.utils.torch_utils import get_torch_device
 from tqdm import tqdm
 
 from vidore_benchmark.evaluation.scoring import score_multi_vector
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
+from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 @register_vision_retriever("bge-m3-colbert")
