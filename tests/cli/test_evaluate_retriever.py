@@ -19,7 +19,7 @@ def cli_runner():
     "dataset_name,dataset_format",
     [
         ("vidore/vidore_benchmark_qa_dummy", "qa"),
-        ("vidore/syntheticDocQA_beir_dummy", "beir"),
+        ("vidore_benchmark_beir_dummy", "beir"),
     ],
 )
 def test_evaluate_retriever(
