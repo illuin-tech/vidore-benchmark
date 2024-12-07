@@ -26,7 +26,7 @@ class SigLIPRetriever(VisionRetriever):
         super().__init__()
 
         try:
-            import proto
+            import proto  # noqa: F401
         except ImportError:
             raise ImportError(
                 'Install the missing dependencies with `pip install "vidore-benchmark[siglip]"` to use SigLIPRetriever.'
