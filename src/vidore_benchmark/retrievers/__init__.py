@@ -1,6 +1,6 @@
 from .bge_m3_colbert_retriever import BGEM3ColbertRetriever
 from .bge_m3_retriever import BGEM3Retriever
-from .biqwen_retriever import BiQwenRetriever
+from .biqwen2_retriever import BiQwen2Retriever
 from .bm25_retriever import BM25Retriever
 from .cohere_api_retriever import CohereAPIRetriever
 from .colpali_retriever import ColPaliRetriever
