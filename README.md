@@ -49,6 +49,13 @@ Or if you want to evaluate all the off-the-shelf retrievers:
 pip install "vidore-benchmark[all-retrievers]"
 ```
 
+Note that in order to use `BM25Retriever`, you will need to download the `nltk` resources too:
+
+```bash
+pip install "vidore-benchmark[bm25]"
+python -m nltk.downloader punkt punkt_tab stopwords
+```
+
 ## Available retrievers
 
 The list of available retrievers can be found [here](https://github.com/illuin-tech/vidore-benchmark/tree/main/src/vidore_benchmark/retrievers). Read [this section](###Implement-your-own-retriever) to learn how to create, use, and evaluate your own retriever.
