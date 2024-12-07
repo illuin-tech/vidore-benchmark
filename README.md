@@ -160,7 +160,7 @@ def main():
     """
     # Load the model and the dataset
     my_retriever = JinaClipRetriever("jinaai/jina-clip-v1")
-    ds = load_dataset("vidore/syntheticDocQA_dummy", split="test")
+    ds = load_dataset("vidore/vidore_benchmark_qa_dummy", split="test")
 
     # Load the ViDoRe Evaluator
     vidore_evaluator = ViDoReEvaluatorQA(vision_retriever=my_retriever)
