@@ -49,6 +49,13 @@ Or if you want to evaluate all the off-the-shelf retrievers:
 pip install "vidore-benchmark[all-retrievers]"
 ```
 
+Note that in order to use `BM25Retriever`, you will need to download the `nltk` resources too:
+
+```bash
+pip install "vidore-benchmark[bm25]"
+python -m nltk.downloader punkt punkt_tab stopwords
+```
+
 ## Available retrievers
 
 The list of available retrievers can be found [here](https://github.com/illuin-tech/vidore-benchmark/tree/main/src/vidore_benchmark/retrievers). Read [this section](###Implement-your-own-retriever) to learn how to create, use, and evaluate your own retriever.
@@ -64,7 +71,8 @@ can evaluate the ColPali model on the ViDoRe benchmark to reproduce the results 
 vidore-benchmark evaluate-retriever \
     --model-class colpali \
     --model-name vidore/colpali-v1.2 \
-    --collection-name "vidore/vidore-benchmark-667173f98e70a1c0fa4db00d" \
+    --collection-name vidore/vidore-benchmark-667173f98e70a1c0fa4db00d \
+    --dataset-format qa \
     --split test
 ```
 
@@ -78,6 +86,7 @@ vidore-benchmark evaluate-retriever \
     --model-class colpali \
     --model-name vidore/colpali-v1.2 \
     --dataset-name vidore/docvqa_test_subsampled \
+    --dataset-format qa \
     --split test
 ```
 
@@ -88,6 +97,7 @@ vidore-benchmark evaluate-retriever \
     --model-class bge-m3 \
     --model-name BAAI/bge-m3 \
     --dataset-name vidore/docvqa_test_subsampled_tesseract \
+    --dataset-format qa \
     --split test
 ```
 
@@ -102,6 +112,7 @@ vidore-benchmark evaluate-retriever \
     --model-class colpali \
     --model-name vidore/colpali-v1.2 \
     --dataset-name vidore/docvqa_test_subsampled \
+    --dataset-format qa \
     --split test \
     --use-token-pooling \
     --pool-factor 3
@@ -145,7 +156,7 @@ vidore-benchmark --help
 ```python
 from datasets import load_dataset
 from dotenv import load_dotenv
-from vidore_benchmark.evaluation import evaluate_dataset
+from vidore_benchmark.evaluation.vidore_evaluators import ViDoReEvaluatorQA
 from vidore_benchmark.retrievers.jina_clip_retriever import JinaClipRetriever
 
 load_dotenv(override=True)
@@ -154,9 +165,20 @@ def main():
     """
     Example script for a Python usage of the Vidore Benchmark.
     """
+    # Load the model and the dataset
     my_retriever = JinaClipRetriever("jinaai/jina-clip-v1")
-    dataset = load_dataset("vidore/syntheticDocQA_dummy", split="test")
-    metrics = evaluate_dataset(my_retriever, dataset, batch_query=4, batch_passage=4)
+    ds = load_dataset("vidore/vidore_benchmark_qa_dummy", split="test")
+
+    # Load the ViDoRe Evaluator
+    vidore_evaluator = ViDoReEvaluatorQA(vision_retriever=my_retriever)
+
+    # Get the MTEB metrics for retrieval
+    metrics = vidore_evaluator.evaluate_dataset(
+        ds=ds,
+        batch_query=8,
+        batch_passage=8,
+        batch_score=16,
+    )
     print(metrics)
 ```
 

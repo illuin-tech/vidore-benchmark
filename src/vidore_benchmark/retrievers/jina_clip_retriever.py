@@ -8,20 +8,20 @@ import torch
 from tqdm import tqdm
 from transformers import AutoModel
 
+from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 @register_vision_retriever("jina-clip-v1")
-class JinaClipRetriever(VisionRetriever):
+class JinaClipRetriever(BaseVisionRetriever):
     def __init__(
         self,
         pretrained_model_name_or_path: str = "jinaai/jina-clip-v1",
         device: str = "auto",
     ):
-        super().__init__()
+        super().__init__(use_visual_embedding=True)
 
         try:
             import timm  # noqa: F401
@@ -42,10 +42,6 @@ class JinaClipRetriever(VisionRetriever):
             .to(self.device)
             .eval()
         )
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return True
 
     def forward_queries(self, queries, batch_size: int, **kwargs) -> torch.Tensor:
         list_emb_queries: List[torch.Tensor] = []

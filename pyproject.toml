@@ -73,7 +73,7 @@ skypilot = ["skypilot==0.6.1,<1.0.0"]
 homepage = "https://github.com/illuin-tech/vidore-benchmark"
 
 [project.scripts]
-vidore-benchmark = "vidore_benchmark.main:app"
+vidore-benchmark = "vidore_benchmark.cli.main:app"
 
 [tool.pytest.ini_options]
 filterwarnings = ["ignore::Warning"]
