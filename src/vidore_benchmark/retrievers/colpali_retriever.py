@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar, List, Optional, Union, cast
+from typing import List, Optional, Union, cast
 
 import torch
-from colpali_engine.models import ColPali, ColPaliProcessor
-from colpali_engine.utils.torch_utils import get_torch_device
 from dotenv import load_dotenv
 from PIL import Image
 from torch.utils.data import DataLoader
@@ -14,6 +12,7 @@ from tqdm import tqdm
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.data_utils import ListDataset
+from vidore_benchmark.utils.torch_utils import get_torch_device
 
 logger = logging.getLogger(__name__)
 
@@ -27,15 +26,20 @@ class ColPaliRetriever(VisionRetriever):
     with Vision Language Models".
     """
 
-    emb_dim_query: ClassVar[int] = 128
-    emb_dim_doc: ClassVar[int] = 128
-
     def __init__(
         self,
         pretrained_model_name_or_path: str,
         device: str = "auto",
     ):
         super().__init__()
+
+        try:
+            from colpali_engine.models import ColPali, ColPaliProcessor
+        except ImportError:
+            raise ImportError(
+                'Install the missing dependencies with `pip install "vidore-benchmark[colpali-engine]"` '
+                "to use ColPaliRetriever."
+            )
 
         self.device = get_torch_device(device)
         logger.info(f"Using device: {self.device}")

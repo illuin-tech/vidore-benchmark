@@ -3,12 +3,12 @@ from typing import List, Optional, Union, cast
 
 import numpy as np
 import torch
-from colpali_engine.utils.torch_utils import get_torch_device
 from tqdm import tqdm
 
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
+from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 @register_vision_retriever("bge-m3")
@@ -27,7 +27,9 @@ class BGEM3Retriever(VisionRetriever):
         try:
             from FlagEmbedding import BGEM3FlagModel
         except ImportError:
-            raise ImportError("Please install the `FlagEmbedding` package to use BGEM3Retriever.")
+            raise ImportError(
+                'Install the missing dependencies with `pip install "vidore-benchmark[bge-m3]"` to use BGEM3Retriever.'
+            )
 
         self.device = get_torch_device(device)
 
@@ -37,9 +39,6 @@ class BGEM3Retriever(VisionRetriever):
             device=self.device,
         )
         # NOTE: BGEM3FlagModel is already in eval mode
-
-        self.emb_dim_query = 1024
-        self.emb_dim_doc = 1024
 
     @property
     def use_visual_embedding(self) -> bool:

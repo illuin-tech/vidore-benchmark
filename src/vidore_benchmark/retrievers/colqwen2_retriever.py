@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar, List, Optional, Union, cast
+from typing import List, Optional, Union, cast
 
 import torch
-from colpali_engine.models import ColQwen2, ColQwen2Processor
-from colpali_engine.utils.torch_utils import get_torch_device
 from dotenv import load_dotenv
 from PIL import Image
 from torch.utils.data import DataLoader
@@ -14,6 +12,7 @@ from tqdm import tqdm
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.data_utils import ListDataset
+from vidore_benchmark.utils.torch_utils import get_torch_device
 
 logger = logging.getLogger(__name__)
 
@@ -21,14 +20,11 @@ load_dotenv(override=True)
 
 
 @register_vision_retriever("colqwen2")
-class ColQwenRetriever(VisionRetriever):
+class ColQwen2Retriever(VisionRetriever):
     """
-    ColPali Retriever that implements the model from "ColPali: Efficient Document Retrieval
+    ColQwen2 retriever that implements the model from "ColPali: Efficient Document Retrieval
     with Vision Language Models".
     """
-
-    emb_dim_query: ClassVar[int] = 128
-    emb_dim_doc: ClassVar[int] = 128
 
     def __init__(
         self,
@@ -36,6 +32,14 @@ class ColQwenRetriever(VisionRetriever):
         device: str = "auto",
     ):
         super().__init__()
+
+        try:
+            from colpali_engine.models import ColQwen2, ColQwen2Processor
+        except ImportError:
+            raise ImportError(
+                'Install the missing dependencies with `pip install "vidore-benchmark[colpali-engine]"` '
+                "to use ColQwen2Retriever."
+            )
 
         self.device = get_torch_device(device)
         logger.info(f"Using device: {self.device}")
@@ -46,13 +50,16 @@ class ColQwenRetriever(VisionRetriever):
             ColQwen2.from_pretrained(
                 pretrained_model_name_or_path,
                 torch_dtype=torch.bfloat16,
-                device_map=device,
+                device_map=self.device,
                 attn_implementation="flash_attention_2" if torch.cuda.is_available() else None,
             ).eval(),
         )
 
         # Load the processor
-        self.processor = cast(ColQwen2Processor, ColQwen2Processor.from_pretrained(pretrained_model_name_or_path))
+        self.processor = cast(
+            ColQwen2Processor,
+            ColQwen2Processor.from_pretrained(pretrained_model_name_or_path),
+        )
         print("Loaded custom processor.\n")
 
     @property
@@ -60,10 +67,10 @@ class ColQwenRetriever(VisionRetriever):
         return True
 
     def process_images(self, images: List[Image.Image], **kwargs):
-        return self.processor.process_images(images=images)
+        return self.processor.process_images(images=images).to(self.device)
 
     def process_queries(self, queries: List[str], **kwargs):
-        return self.processor.process_queries(queries=queries)
+        return self.processor.process_queries(queries=queries).to(self.device)
 
     def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(

@@ -5,8 +5,9 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
-from colpali_engine.trainer.eval_utils import CustomRetrievalEvaluator
 from datasets import Dataset
+
+from vidore_benchmark.evaluation.eval_utils import CustomRetrievalEvaluator
 
 logger = logging.getLogger(__name__)
 

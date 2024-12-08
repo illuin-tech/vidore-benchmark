@@ -5,7 +5,6 @@ import math
 from typing import List, Optional, Union
 
 import torch
-from colpali_engine.utils.torch_utils import get_torch_device
 from dotenv import load_dotenv
 from PIL import Image
 from tqdm import tqdm
@@ -14,6 +13,7 @@ from transformers import AutoProcessor, Qwen2VLForConditionalGeneration
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
+from vidore_benchmark.utils.torch_utils import get_torch_device
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,14 @@ class DSEQwen2Retriever(VisionRetriever):
     ):
         super().__init__()
 
+        try:
+            from qwen_vl_utils import process_vision_info
+        except ImportError:
+            raise ImportError(
+                'Install the missing dependencies with `pip install "vidore-benchmark[dse]"` '
+                "to use DSEQwen2Retriever."
+            )
+
         self.device = get_torch_device(device)
         logger.info(f"Using device: {self.device}")
 
@@ -40,6 +48,8 @@ class DSEQwen2Retriever(VisionRetriever):
         self.processor = AutoProcessor.from_pretrained(
             pretrained_model_name_or_path, min_pixels=min_pixels, max_pixels=max_pixels
         )
+        self.process_vision_info = process_vision_info
+
         self.model = (
             Qwen2VLForConditionalGeneration.from_pretrained(
                 pretrained_model_name_or_path,
@@ -69,12 +79,8 @@ class DSEQwen2Retriever(VisionRetriever):
         batch_size: int,
         **kwargs,
     ) -> List[torch.Tensor]:
-        try:
-            from qwen_vl_utils import process_vision_info
-        except ImportError:
-            raise ImportError("Please install the `qwen-vl-utils` package to use DSERetriever.")
-
         qs = []
+
         for batch_query in tqdm(
             batched(queries, batch_size),
             desc="Forwarding query batches",
@@ -82,6 +88,7 @@ class DSEQwen2Retriever(VisionRetriever):
             leave=False,
         ):
             query_messages = []
+
             for query in batch_query:
                 message = [
                     {
@@ -99,11 +106,13 @@ class DSEQwen2Retriever(VisionRetriever):
                     }
                 ]
                 query_messages.append(message)
+
             query_texts = [
                 self.processor.apply_chat_template(msg, tokenize=False, add_generation_prompt=True) + "<|endoftext|>"
                 for msg in query_messages
             ]
-            query_image_inputs, query_video_inputs = process_vision_info(query_messages)
+            query_image_inputs, query_video_inputs = self.process_vision_info(query_messages)
+
             query_inputs = self.processor(
                 text=query_texts,
                 images=query_image_inputs,
@@ -111,24 +120,28 @@ class DSEQwen2Retriever(VisionRetriever):
                 padding="longest",
                 return_tensors="pt",
             ).to(self.device)
+
             cache_position = torch.arange(0, len(query_texts))
             query_inputs = self.model.prepare_inputs_for_generation(
                 **query_inputs, cache_position=cache_position, use_cache=False
             )
+
             with torch.no_grad():
                 output = self.model(**query_inputs, return_dict=True, output_hidden_states=True)
             query_embeddings = self.get_embedding(output.hidden_states[-1], 1536)
+
             qs.extend(list(torch.unbind(query_embeddings.to("cpu"))))
 
         return qs
 
-    def forward_passages(self, passages: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
-        try:
-            from qwen_vl_utils import process_vision_info
-        except ImportError:
-            raise ImportError("Please install the `qwen-vl-utils` package to use DSERetriever.")
-
+    def forward_passages(
+        self,
+        passages: List[Image.Image],
+        batch_size: int,
+        **kwargs,
+    ) -> List[torch.Tensor]:
         ds = []
+
         for batch_doc in tqdm(
             batched(passages, batch_size),
             desc="Forwarding passage batches",
@@ -136,6 +149,7 @@ class DSEQwen2Retriever(VisionRetriever):
             leave=False,
         ):
             doc_messages = []
+
             for doc in batch_doc:
                 message = [
                     {
@@ -148,23 +162,28 @@ class DSEQwen2Retriever(VisionRetriever):
                     }
                 ]
                 doc_messages.append(message)
+
             doc_texts = [
                 self.processor.apply_chat_template(msg, tokenize=False, add_generation_prompt=True) + "<|endoftext|>"
                 for msg in doc_messages
             ]
-            doc_image_inputs, doc_video_inputs = process_vision_info(doc_messages)
+
+            doc_image_inputs, doc_video_inputs = self.process_vision_info(doc_messages)
             doc_inputs = self.processor(
                 text=doc_texts, images=doc_image_inputs, videos=doc_video_inputs, padding="longest", return_tensors="pt"
             ).to(self.device)
+
             cache_position = torch.arange(0, len(doc_texts))
             doc_inputs = self.model.prepare_inputs_for_generation(
                 **doc_inputs, cache_position=cache_position, use_cache=False
             )
+
             with torch.no_grad():
                 output = self.model(**doc_inputs, return_dict=True, output_hidden_states=True)
             doc_embeddings = self.get_embedding(output.hidden_states[-1], 1536)
 
             ds.extend(list(torch.unbind(doc_embeddings.to("cpu"))))
+
         return ds
 
     def get_scores(

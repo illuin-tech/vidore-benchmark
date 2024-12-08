@@ -2,7 +2,6 @@ import math
 from typing import List, Optional, Union, cast
 
 import torch
-from colpali_engine.utils.torch_utils import get_torch_device
 from PIL import Image
 from tqdm import tqdm
 from transformers import AutoModel, AutoProcessor
@@ -10,6 +9,7 @@ from transformers import AutoModel, AutoProcessor
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
+from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 @register_vision_retriever("siglip")
@@ -24,6 +24,14 @@ class SigLIPRetriever(VisionRetriever):
         device: str = "auto",
     ):
         super().__init__()
+
+        try:
+            import proto  # noqa: F401
+        except ImportError:
+            raise ImportError(
+                'Install the missing dependencies with `pip install "vidore-benchmark[siglip]"` to use SigLIPRetriever.'
+            )
+
         self.pretrained_model_name_or_path = pretrained_model_name_or_path
         self.device = get_torch_device(device)
 

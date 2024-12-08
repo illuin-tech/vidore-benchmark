@@ -4,7 +4,7 @@ import pytest
 
 from vidore_benchmark.retrievers.jina_clip_retriever import JinaClipRetriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
-from vidore_benchmark.utils.testing_utils import tear_down_torch
+from vidore_benchmark.utils.torch_utils import tear_down_torch
 
 
 @pytest.fixture(scope="module")

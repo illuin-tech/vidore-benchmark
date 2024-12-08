@@ -2,17 +2,31 @@ from typing import Dict, List, Optional, Union, cast
 
 import numpy as np
 import torch
-from colpali_engine.utils.torch_utils import get_torch_device
 from PIL import Image
 
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 @register_vision_retriever("bm25")
 class BM25Retriever(VisionRetriever):
     def __init__(self, device: str = "auto"):
         super().__init__()
+
+        try:
+            from nltk.corpus import stopwords
+            from nltk.tokenize import word_tokenize
+            from rank_bm25 import BM25Okapi
+        except ImportError:
+            raise ImportError(
+                'Install the missing dependencies with `pip install "vidore-benchmark[bm25]"` to use BM25Retriever.'
+            )
+
+        self.stopwords = stopwords
+        self.word_tokenize = word_tokenize
+        self.bm25_okapi_class = BM25Okapi
+
         self.device = get_torch_device(device)
 
     @property
@@ -40,10 +54,6 @@ class BM25Retriever(VisionRetriever):
         passages: Union[List[Image.Image], List[str]],
         **kwargs,
     ) -> torch.Tensor:
-        try:
-            from rank_bm25 import BM25Okapi
-        except ImportError:
-            raise ImportError("Please install the `rank-bm25` package to use BM25Retriever.")
 
         # Sanity check: `passages` must be a list of filepaths (strings)
         if passages and not all(isinstance(doc, str) for doc in passages):
@@ -55,7 +65,7 @@ class BM25Retriever(VisionRetriever):
 
         corpus = {idx: passage for idx, passage in enumerate(passages)}
         tokenized_corpus = self.preprocess_text(corpus)
-        output = BM25Okapi(tokenized_corpus)
+        output = self.bm25_okapi_class(tokenized_corpus)
 
         scores = []
         for query in tokenized_queries:
@@ -73,15 +83,9 @@ class BM25Retriever(VisionRetriever):
         - punctuation
         - lowercase all the words.
         """
-        try:
-            from nltk.corpus import stopwords
-            from nltk.tokenize import word_tokenize
-        except ImportError:
-            raise ImportError("Please install the `nltk` package to use BM25Retriever.")
-
-        stop_words = set(stopwords.words("english"))
+        stop_words = set(self.stopwords.words("english"))
         tokenized_list = [
-            [word.lower() for word in word_tokenize(sentence) if word.isalnum() and word.lower() not in stop_words]
+            [word.lower() for word in self.word_tokenize(sentence) if word.isalnum() and word.lower() not in stop_words]
             for sentence in passages.values()
         ]
         return tokenized_list
