@@ -6,11 +6,11 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
 import torch
-from colpali_engine.trainer.eval_utils import CustomRetrievalEvaluator
 from datasets import Dataset
 from tqdm import tqdm
 
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
+from vidore_benchmark.evaluation.eval_utils import CustomRetrievalEvaluator
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
 
