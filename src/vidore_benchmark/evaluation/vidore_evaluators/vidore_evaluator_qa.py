@@ -26,14 +26,11 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         self,
         vision_retriever: BaseVisionRetriever,
         embedding_pooler: Optional[BaseEmbeddingPooler] = None,
-        is_legacy: bool = False,
     ):
         super().__init__(
             vision_retriever=vision_retriever,
             embedding_pooler=embedding_pooler,
         )
-
-        self.is_legacy = is_legacy
 
         # Dataset column names
         self.query_column = "query"
@@ -113,6 +110,8 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
             ds_deduped_queries=ds_deduped_queries,
             scores=scores,
         )
+
+        breakpoint()
 
         # Compute the MTEB metrics
         metrics = self.compute_retrieval_scores(qrels=qrels, results=results)
@@ -227,14 +226,8 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
 
         qrels: Dict[str, Dict[str, int]] = defaultdict(dict)
 
-        if self.is_legacy:
-            # Legacy behavior (bug): only keep the last occurrence of a query.
-            for query, passage_filename in zip(ds[self.query_column], ds[self.passage_filename_column]):
-                if query is not None and query in ds[self.query_column]:
-                    qrels[query] = {passage_filename: 1}
-        else:
-            for query, passage_filename in zip(ds[self.query_column], ds[self.passage_filename_column]):
-                if query is not None and query in ds[self.query_column]:
-                    qrels[query][passage_filename] = 1
+        for query, passage_filename in zip(ds[self.query_column], ds[self.passage_filename_column]):
+            if query is not None and query in ds[self.query_column]:
+                qrels[query][passage_filename] = 1
 
         return qrels
