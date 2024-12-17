@@ -26,7 +26,7 @@ class SigLIPRetriever(BaseVisionRetriever):
         super().__init__(use_visual_embedding=True)
 
         try:
-            import proto  # noqa: F401
+            import google.protobuf  # noqa: F401
         except ImportError:
             raise ImportError(
                 'Install the missing dependencies with `pip install "vidore-benchmark[siglip]"` to use SigLIPRetriever.'
