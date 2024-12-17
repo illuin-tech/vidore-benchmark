@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import torch
 from datasets import Dataset
@@ -37,7 +37,8 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         # Dataset column names
         self.query_column = "query"
         self.passage_column = "image" if self.vision_retriever.use_visual_embedding else "text_description"
-        self.passage_filename_column = "image_filename"
+        self.id_column = "id"
+        self.image_hash_column = "image_hash"
 
     def evaluate_dataset(
         self,
@@ -48,21 +49,26 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         dataloader_prebatch_size: Optional[int] = None,
         **kwargs,
     ) -> Dict[str, Optional[float]]:
-        ds_passages = ds.remove_columns(
-            [col for col in ds.column_names if col not in [self.passage_column, self.passage_filename_column]]
-        )
+        # Preprocess the dataset, get qrels, and deduplicate the queries and passages
+        ds = ds.map(lambda example, idx: {self.id_column: idx}, with_indices=True)
 
-        # Add image hashing and deduplication
+        ds_passages = ds.remove_columns(
+            [col for col in ds.column_names if col not in [self.passage_column, self.image_hash_column, self.id_column]]
+        )
         if self.vision_retriever.use_visual_embedding:
             ds_passages = ds_passages.map(
-                lambda x: {"image_hash": hash_image(x[self.passage_column])},
+                lambda x: {self.image_hash_column: hash_image(x[self.passage_column])},
                 desc="Hashing images for deduplication...",
             )
-            ds_passages = deduplicate_dataset_rows(ds=ds_passages, target_column="image_hash")
-            ds_passages = ds_passages.remove_columns(["image_hash"])
+            ds_passages = deduplicate_dataset_rows(ds=ds_passages, target_column=self.image_hash_column)
 
-        ds_queries = ds.remove_columns([col for col in ds.column_names if col != self.query_column])
+        ds_queries = ds.remove_columns(
+            [col for col in ds.column_names if col not in [self.query_column, self.id_column]]
+        )
         ds_queries = deduplicate_dataset_rows(ds=ds_queries, target_column=self.query_column)
+
+        passage_ids: List[int] = list(ds_passages[self.id_column])
+        query_ids: List[int] = ds_queries[self.id_column]
 
         if len(ds_queries) == 0:
             raise ValueError("No valid queries found in the dataset. Check if the queries are all set to `None`.")
@@ -76,8 +82,8 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
 
             qrels = self._get_qrels_from_qa_dataset(ds=ds)
             results = self._get_retrieval_results(
-                ds_passages=ds_passages,
-                ds_deduped_queries=ds_queries,
+                query_ids=query_ids,
+                passage_ids=passage_ids,
                 scores=scores,
             )
 
@@ -117,8 +123,8 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         # Get the relevant passages and results
         qrels = self._get_qrels_from_qa_dataset(ds=ds)
         results = self._get_retrieval_results(
-            ds_passages=ds_passages,
-            ds_deduped_queries=ds_queries,
+            query_ids=query_ids,
+            passage_ids=passage_ids,
             scores=scores,
         )
 
@@ -129,17 +135,16 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
 
     def _get_retrieval_results(
         self,
-        ds_passages: Dataset,
-        ds_deduped_queries: Dataset,
+        query_ids: List[int],
+        passage_ids: List[int],
         scores: torch.Tensor,
     ) -> Dict[str, Dict[str, float]]:
         """
-        Get the retrieval results from the model's scores, i.e. the retrieval scores
-        for each document for each query.
+        Get the retrieval results from the model's scores, i.e. the retrieval scores for each passage for each query.
 
         Args:
-            ds_passages (Dataset): The dataset containing the passages.
-            ds_queries (Dataset): The dataset containing the deduplicated queries.
+            query_ids (List[int]): The list of query IDs.
+            passage_ids (List[int]): The list of passage IDs.
             scores(torch.Tensor): The similarity scores between queries and passages (shape: n_queries, n_passages).
 
         Returns:
@@ -154,25 +159,18 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
             }
             ```
         """
-        # Get the mapping
-        passage_id_to_filename: Dict[int, str] = {
-            passage_id: image_filename
-            for passage_id, image_filename in enumerate(ds_passages[self.passage_filename_column])
-        }
-
-        # Placeholders
         results: Dict[str, Dict[str, float]] = {}
 
-        for query, score_per_query in zip(ds_deduped_queries[self.query_column], scores):
-            for doc_idx, score in enumerate(score_per_query):
-                filename = passage_id_to_filename[doc_idx]
+        for query_idx, query_id in enumerate(query_ids):
+            for image_idx, score in enumerate(scores[query_idx]):
+                image_id = passage_ids[image_idx]
                 score_passage = float(score.item())
 
-                if query in results:
-                    current_score = results[query].get(filename, 0)
-                    results[query][filename] = max(current_score, score_passage)
+                if str(query_id) in results:
+                    current_score = results[str(query_id)].get(str(image_id), 0)
+                    results[str(query_id)][str(image_id)] = max(current_score, score_passage)
                 else:
-                    results[query] = {filename: score_passage}
+                    results[str(query_id)] = {str(image_id): score_passage}
 
         return results
 
