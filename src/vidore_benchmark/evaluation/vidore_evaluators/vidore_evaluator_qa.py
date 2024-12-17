@@ -11,6 +11,7 @@ from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
 from vidore_benchmark.evaluation.vidore_evaluators.base_vidore_evaluator import BaseViDoReEvaluator
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.bm25_retriever import BM25Retriever
+from vidore_benchmark.utils.data_utils import deduplicate_dataset_rows
 from vidore_benchmark.utils.image_utils import hash_image
 
 
@@ -57,11 +58,11 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
                 lambda x: {"image_hash": hash_image(x[self.passage_column])},
                 desc="Hashing images for deduplication...",
             )
-            ds_passages = self._deduplicate_dataset_rows(ds=ds_passages, target_column="image_hash")
+            ds_passages = deduplicate_dataset_rows(ds=ds_passages, target_column="image_hash")
             ds_passages = ds_passages.remove_columns(["image_hash"])
 
         ds_queries = ds.remove_columns([col for col in ds.column_names if col != self.query_column])
-        ds_queries = self._deduplicate_dataset_rows(ds=ds_queries, target_column=self.query_column)
+        ds_queries = deduplicate_dataset_rows(ds=ds_queries, target_column=self.query_column)
 
         if len(ds_queries) == 0:
             raise ValueError("No valid queries found in the dataset. Check if the queries are all set to `None`.")
@@ -125,36 +126,6 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         metrics = self.compute_retrieval_scores(qrels=qrels, results=results)
 
         return metrics
-
-    def _deduplicate_dataset_rows(self, ds: Dataset, target_column: str) -> Dataset:
-        """
-        Remove duplicate rows from a dataset based on values in a target column.
-
-        Args:
-            ds (Dataset): The dataset to deduplicate.
-            target_column (str): The column to use for deduplication.
-
-        Returns:
-            Dataset: The deduplicated dataset.
-        """
-        if target_column not in ds.column_names:
-            raise ValueError(f"Column '{target_column}' not found in dataset.")
-
-        seen_values = set()
-        keep_mask = []
-
-        for value in ds[target_column]:
-            if value is None:
-                keep_mask.append(False)
-                continue
-
-            if value not in seen_values:
-                seen_values.add(value)
-                keep_mask.append(True)
-            else:
-                keep_mask.append(False)
-
-        return ds.select([i for i, keep in enumerate(keep_mask) if keep])
 
     def _get_retrieval_results(
         self,
