@@ -190,21 +190,23 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         Example output:
             ```python
             {
-                "query_0": {"doc_0": 1},
-                "query_1": {"doc_1": 1},
+                "0": {"1": 1},  # query_id: {passage_id: relevance_score}
+                "1": {"2": 1},
                 ...
             }
             ```
         """
-        if self.passage_filename_column not in ds.column_names:
-            raise ValueError(f"Passage filename column name '{self.passage_filename_column}' not found in the dataset.")
+        if self.id_column not in ds.column_names:
+            raise ValueError(f"ID column name '{self.id_column}' not found in the dataset.")
         if self.query_column not in ds.column_names:
             raise ValueError(f"Query column name '{self.query_column}' not found in the dataset.")
 
         qrels: Dict[str, Dict[str, int]] = defaultdict(dict)
 
-        for query, passage_filename in zip(ds[self.query_column], ds[self.passage_filename_column]):
+        for query, doc_id in zip(ds[self.query_column], ds[self.id_column]):
             if query is not None and query in ds[self.query_column]:
-                qrels[query][passage_filename] = 1
+                query_indices = [i for i, q in enumerate(ds[self.query_column]) if q == query]
+                for query_idx in query_indices:
+                    qrels[str(query_idx)][str(doc_id)] = 1
 
         return qrels
