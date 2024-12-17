@@ -81,6 +81,7 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
         # Get query relevance data
         qrels: Dict[str, Dict[str, int]] = defaultdict(dict)
         for qrel in ds_qrels:
+            # Convert qrels to have the format expected by MTEB.
             # NOTE: The IDs are stored as integers in the dataset.
             query_id = str(qrel[self.query_id_column])
             corpus_id = str(qrel[self.corpus_id_column])
