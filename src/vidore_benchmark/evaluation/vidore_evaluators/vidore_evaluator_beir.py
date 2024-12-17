@@ -72,11 +72,10 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
         ds_qrels = ds["qrels"]
 
         # Get image data
-        image_ids: List[int] = list(ds_corpus[self.corpus_id_column])
+        passage_ids: List[int] = list(ds_corpus[self.corpus_id_column])
 
-        # Get deduplicated query data
+        # Get query data
         query_ids: List[int] = ds_queries[self.query_id_column]
-        queries: List[str] = ds_queries[self.query_column]
 
         # Get query relevance data
         qrels: Dict[str, Dict[str, int]] = defaultdict(dict)
@@ -90,13 +89,15 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
         # Edge case: using the BM25Retriever
         if isinstance(self.vision_retriever, BM25Retriever):
             passages = ds_corpus[self.passage_column]
+            queries: List[str] = ds_queries[self.query_column]
+
             scores = self.vision_retriever.get_scores_bm25(
                 queries=queries,
                 passages=passages,
             )
             results = self._get_retrieval_results(
                 query_ids=query_ids,
-                image_ids=image_ids,
+                passage_ids=passage_ids,
                 scores=scores,
             )
             metrics = self.compute_retrieval_scores(qrels=qrels, results=results)
@@ -134,7 +135,7 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
         # Get the relevant passages and results
         results = self._get_retrieval_results(
             query_ids=query_ids,
-            image_ids=image_ids,
+            passage_ids=passage_ids,
             scores=scores,
         )
 
@@ -146,16 +147,15 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
     def _get_retrieval_results(
         self,
         query_ids: List[int],
-        image_ids: List[int],
+        passage_ids: List[int],
         scores: torch.Tensor,
     ) -> Dict[str, Dict[str, float]]:
         """
-        Get the retrieval results from the model's scores, i.e. the retrieval scores
-        for each document for each query.
+        Get the retrieval results from the model's scores, i.e. the retrieval scores for each passage for each query.
 
         Args:
             query_ids (List[int]): The list of query IDs.
-            image_ids (List[int]): The list of image IDs.
+            passage_ids (List[int]): The list of passage IDs.
             scores(torch.Tensor): The similarity scores between queries and passages (shape: n_queries, n_passages).
 
         Returns:
@@ -174,7 +174,7 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
 
         for query_idx, query_id in enumerate(query_ids):
             for image_idx, score in enumerate(scores[query_idx]):
-                image_id = image_ids[image_idx]
+                image_id = passage_ids[image_idx]
                 score_passage = float(score.item())
 
                 if str(query_id) in results:
