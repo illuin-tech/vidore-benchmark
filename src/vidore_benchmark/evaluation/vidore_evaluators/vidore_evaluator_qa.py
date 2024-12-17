@@ -11,6 +11,7 @@ from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
 from vidore_benchmark.evaluation.vidore_evaluators.base_vidore_evaluator import BaseViDoReEvaluator
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.bm25_retriever import BM25Retriever
+from vidore_benchmark.utils.image_utils import hash_image
 
 
 class ViDoReEvaluatorQA(BaseViDoReEvaluator):
@@ -50,23 +51,32 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
             [col for col in ds.column_names if col not in [self.passage_column, self.passage_filename_column]]
         )
 
-        ds_queries = ds.remove_columns([col for col in ds.column_names if col != self.query_column])
-        ds_deduped_queries = self._deduplicate_dataset_rows(ds=ds_queries, target_column=self.query_column)
+        # Add image hashing and deduplication
+        if self.vision_retriever.use_visual_embedding:
+            ds_passages = ds_passages.map(
+                lambda x: {"image_hash": hash_image(x[self.passage_column])},
+                desc="Hashing images for deduplication...",
+            )
+            ds_passages = self._deduplicate_dataset_rows(ds=ds_passages, target_column="image_hash")
+            ds_passages = ds_passages.remove_columns(["image_hash"])
 
-        if len(ds_deduped_queries) == 0:
+        ds_queries = ds.remove_columns([col for col in ds.column_names if col != self.query_column])
+        ds_queries = self._deduplicate_dataset_rows(ds=ds_queries, target_column=self.query_column)
+
+        if len(ds_queries) == 0:
             raise ValueError("No valid queries found in the dataset. Check if the queries are all set to `None`.")
 
         # Edge case: using the BM25Retriever
         if isinstance(self.vision_retriever, BM25Retriever):
             scores = self.vision_retriever.get_scores_bm25(
-                queries=ds_deduped_queries[self.query_column],
+                queries=ds_queries[self.query_column],
                 passages=ds_passages[self.passage_column],
             )
 
             qrels = self._get_qrels_from_qa_dataset(ds=ds)
             results = self._get_retrieval_results(
                 ds_passages=ds_passages,
-                ds_deduped_queries=ds_deduped_queries,
+                ds_deduped_queries=ds_queries,
                 scores=scores,
             )
 
@@ -76,7 +86,7 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
 
         # Get the embeddings for the queries and passages
         query_embeddings = self._get_query_embeddings(
-            ds=ds_deduped_queries,
+            ds=ds_queries,
             query_column=self.query_column,
             batch_query=batch_query,
             dataloader_prebatch_size=dataloader_prebatch_size,
@@ -107,11 +117,9 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         qrels = self._get_qrels_from_qa_dataset(ds=ds)
         results = self._get_retrieval_results(
             ds_passages=ds_passages,
-            ds_deduped_queries=ds_deduped_queries,
+            ds_deduped_queries=ds_queries,
             scores=scores,
         )
-
-        breakpoint()
 
         # Compute the MTEB metrics
         metrics = self.compute_retrieval_scores(qrels=qrels, results=results)
