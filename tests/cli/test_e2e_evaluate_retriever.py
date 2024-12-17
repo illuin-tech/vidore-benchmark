@@ -56,11 +56,29 @@ def cli_runner():
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "model_class,model_name,dataset_name,dataset_format",
+    "model_class,model_name,dataset_name,dataset_format,expected_results_filepath",
     [
-        ("siglip", "google/siglip-so400m-patch14-384", "vidore/tabfquad_test_subsampled", "qa"),
-        ("bm25", None, "vidore/tabfquad_test_subsampled_ocr_chunk", "qa"),
-        ("siglip", "google/siglip-so400m-patch14-384", "vidore/tabfquad_test_subsampled_beir", "beir"),
+        (
+            "siglip",
+            "google/siglip-so400m-patch14-384",
+            "vidore/tabfquad_test_subsampled",
+            "qa",
+            "tests/data/e2e_vidore_results/bm25_tabfquad_ocr_chunk.json",
+        ),
+        (
+            "bm25",
+            None,
+            "vidore/tabfquad_test_subsampled_ocr_chunk",
+            "qa",
+            "tests/data/e2e_vidore_results/siglip_tabfquad_beir.json",
+        ),
+        (
+            "siglip",
+            "google/siglip-so400m-patch14-384",
+            "vidore/tabfquad_test_subsampled_beir",
+            "beir",
+            "tests/data/e2e_vidore_results/siglip_tabfquad_beir.json",
+        ),
     ],
 )
 def test_e2e_evaluate_retriever(
@@ -69,12 +87,13 @@ def test_e2e_evaluate_retriever(
     model_name: Optional[str],
     dataset_name: str,
     dataset_format: str,
+    expected_results_filepath: str,
 ):
     """
     End-to-end test for the `evaluate_retriever` command.
     """
     # Load expected results for comparison
-    expected_results_path = Path("tests/data/e2e_vidore_results/google_siglip-so400m-patch14-384_metrics.json")
+    expected_results_path = Path(expected_results_filepath)
     with open(expected_results_path, "r", encoding="utf-8") as f:
         expected_results = ViDoReBenchmarkResults(**json.load(f))
 
