@@ -1,26 +1,13 @@
-import hashlib
 from typing import Annotated, Dict, Generator, List, Optional, TypedDict, cast
 
 import typer
 from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
-from PIL import Image
 from tqdm import tqdm
 
+from vidore_benchmark.utils.image_utils import hash_image
+
 load_dotenv()
-
-
-def hash_image(image: Image.Image) -> str:
-    """
-    Hash a PILLOW image using MD5.
-
-    Args:
-        image (Image.Image): PIL Image object.
-
-    Returns:
-        str: MD5 hash of the image.
-    """
-    return hashlib.md5(image.tobytes()).hexdigest()
 
 
 def main(
