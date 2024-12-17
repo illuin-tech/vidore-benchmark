@@ -4,14 +4,13 @@ from typing import List, Optional, Union
 
 import torch
 from PIL import Image
-from torch import Tensor
 
+from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 
 
-@register_vision_retriever("dummy_retriever")
-class DummyRetriever(VisionRetriever):
+@register_vision_retriever("dummy_vision_retriever")
+class DummyVisionRetriever(BaseVisionRetriever):
     """
     Dummy retriever that generates random dense embeddings.
     """
@@ -22,21 +21,26 @@ class DummyRetriever(VisionRetriever):
         emb_dim_doc: int = 16,
         device: str = "cpu",
     ):
-        super().__init__()
-
+        super().__init__(use_visual_embedding=True)
         self.emb_dim_query = emb_dim_query
         self.emb_dim_doc = emb_dim_doc
         self.device = device
 
-    @property
-    def use_visual_embedding(self) -> bool:
-        return True
+    def forward_queries(
+        self,
+        queries: List[str],
+        batch_size: int,
+        **kwargs,
+    ) -> torch.Tensor:
+        return torch.randn(len(queries), self.emb_dim_query)
 
-    def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> Tensor:
-        return torch.randn(len(queries), self.emb_dim_query).to(self.device)
-
-    def forward_passages(self, passages: List[Image.Image], batch_size: int, **kwargs) -> Tensor:
-        return torch.randn(len(passages), self.emb_dim_doc).to(self.device)
+    def forward_passages(
+        self,
+        passages: List[Image.Image],
+        batch_size: int,
+        **kwargs,
+    ) -> torch.Tensor:
+        return torch.randn(len(passages), self.emb_dim_doc)
 
     def get_scores(
         self,

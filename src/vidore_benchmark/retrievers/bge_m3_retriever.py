@@ -5,14 +5,14 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
+from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 @register_vision_retriever("bge-m3")
-class BGEM3Retriever(VisionRetriever):
+class BGEM3Retriever(BaseVisionRetriever):
     """
     BGEM3Retriever class to retrieve embeddings the BGE-M3 model (dense embeddings).
     """
@@ -22,7 +22,7 @@ class BGEM3Retriever(VisionRetriever):
         pretrained_model_name_or_path: str = "BAAI/bge-m3",
         device: str = "auto",
     ):
-        super().__init__()
+        super().__init__(use_visual_embedding=False)
 
         try:
             from FlagEmbedding import BGEM3FlagModel
@@ -39,10 +39,6 @@ class BGEM3Retriever(VisionRetriever):
             device=self.device,
         )
         # NOTE: BGEM3FlagModel is already in eval mode
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return False
 
     def forward_queries(self, queries, batch_size: int, **kwargs) -> torch.Tensor:
         list_emb_queries: List[float] = []

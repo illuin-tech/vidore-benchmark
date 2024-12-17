@@ -46,7 +46,7 @@ class ViDoReBenchmarkResults(BaseModel):
                 vidore_benchmark_version="0.0.1.dev7+g462dc4f.d20241102",
             ),
             metrics={
-                "vidore/syntheticDocQA_dummy": {
+                "vidore/vidore_benchmark_qa_dummy": {
                     "ndcg_at_1": 1.0,
                     "ndcg_at_3": 1.0,
                 }

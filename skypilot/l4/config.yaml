@@ -108,6 +108,5 @@ setup: |
   echo -e "\n\n============   SKYPILOT SETUP: Created venv.   ============\n\n"
   
   avenv
-  pip install -e .
-  pip install -e ".[dev]"
+  pip install -e ".[all]"
   echo -e "\n\n============   SKYPILOT SETUP: Installed Python deps in venv.   ============\n\n"

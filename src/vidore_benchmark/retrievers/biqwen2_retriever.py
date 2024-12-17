@@ -9,8 +9,8 @@ from PIL import Image
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.data_utils import ListDataset
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
@@ -20,7 +20,7 @@ load_dotenv(override=True)
 
 
 @register_vision_retriever("biqwen2")
-class BiQwen2Retriever(VisionRetriever):
+class BiQwen2Retriever(BaseVisionRetriever):
     """
     BiQwen2 retriever that implements the model from "ColPali: Efficient Document Retrieval
     with Vision Language Models".
@@ -31,7 +31,7 @@ class BiQwen2Retriever(VisionRetriever):
         pretrained_model_name_or_path: str,
         device: str = "auto",
     ):
-        super().__init__()
+        super().__init__(use_visual_embedding=True)
 
         try:
             from colpali_engine.models import BiQwen2, BiQwen2Processor
@@ -58,10 +58,6 @@ class BiQwen2Retriever(VisionRetriever):
         # Load the processor
         self.processor = cast(BiQwen2Processor, BiQwen2Processor.from_pretrained(pretrained_model_name_or_path))
         print("Loaded custom processor.\n")
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return True
 
     def process_images(self, images: List[Image.Image], **kwargs):
         return self.processor.process_images(images=images).to(self.device)

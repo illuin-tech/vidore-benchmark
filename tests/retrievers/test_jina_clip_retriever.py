@@ -2,13 +2,13 @@ from typing import Generator
 
 import pytest
 
+from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.jina_clip_retriever import JinaClipRetriever
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.torch_utils import tear_down_torch
 
 
 @pytest.fixture(scope="module")
-def retriever() -> Generator[VisionRetriever, None, None]:
+def retriever() -> Generator[BaseVisionRetriever, None, None]:
     yield JinaClipRetriever()
     tear_down_torch()
 
