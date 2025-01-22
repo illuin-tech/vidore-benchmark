@@ -30,7 +30,7 @@ class BiQwen2Retriever(VisionRetriever):
         self,
         pretrained_model_name_or_path: str,
         device: str = "auto",
-        num_workers: int = 0,
+        num_workers: int = 8,
     ):
         super().__init__()
 

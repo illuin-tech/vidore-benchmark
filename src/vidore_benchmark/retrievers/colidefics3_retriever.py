@@ -35,7 +35,7 @@ class ColIdefics3Retriever(VisionRetriever):
         self,
         pretrained_model_name_or_path: str = "vidore/colidefics-v0.1",
         device: str = "auto",
-        num_workers: int = 0,
+        num_workers: int = 8,
     ):
         super().__init__()
 
