@@ -35,6 +35,7 @@ class ColIdefics3Retriever(VisionRetriever):
         self,
         pretrained_model_name_or_path: str = "vidore/colidefics-v0.1",
         device: str = "auto",
+        num_workers: int = 0,
     ):
         super().__init__()
 
@@ -51,6 +52,7 @@ class ColIdefics3Retriever(VisionRetriever):
 
         # Load the processor
         self.processor = ColIdefics3Processor.from_pretrained(pretrained_model_name_or_path)
+        self.num_workers = num_workers
         print("Loaded custom processor.\n")
 
     @property
@@ -69,6 +71,7 @@ class ColIdefics3Retriever(VisionRetriever):
             batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_queries,
+            num_workers=self.num_workers,
         )
 
         qs = []
@@ -86,6 +89,7 @@ class ColIdefics3Retriever(VisionRetriever):
             batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_images,
+            num_workers=self.num_workers,
         )
 
         ds = []

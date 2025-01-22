@@ -30,6 +30,7 @@ class BiQwen2Retriever(VisionRetriever):
         self,
         pretrained_model_name_or_path: str,
         device: str = "auto",
+        num_workers: int = 0,
     ):
         super().__init__()
 
@@ -58,6 +59,7 @@ class BiQwen2Retriever(VisionRetriever):
         # Load the processor
         self.processor = cast(BiQwen2Processor, BiQwen2Processor.from_pretrained(pretrained_model_name_or_path))
         print("Loaded custom processor.\n")
+        self.num_workers = num_workers
 
     @property
     def use_visual_embedding(self) -> bool:
@@ -80,6 +82,7 @@ class BiQwen2Retriever(VisionRetriever):
             batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_queries,
+            num_workers=self.num_workers,
         )
 
         query_embeddings: List[torch.Tensor] = []
@@ -103,6 +106,7 @@ class BiQwen2Retriever(VisionRetriever):
             batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_images,
+            num_workers=self.num_workers
         )
 
         passage_embeddings: List[torch.Tensor] = []
