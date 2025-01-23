@@ -44,11 +44,11 @@ class ColIdefics3Retriever(VisionRetriever):
 
         # Load the model and LORA adapter
         self.model = ColIdefics3.from_pretrained(
-                pretrained_model_name_or_path,
-                torch_dtype=torch.bfloat16,
-                device_map=device,
-                attn_implementation="flash_attention_2" if torch.cuda.is_available() else None,
-            ).eval()
+            pretrained_model_name_or_path,
+            torch_dtype=torch.bfloat16,
+            device_map=device,
+            attn_implementation="flash_attention_2" if torch.cuda.is_available() else None,
+        ).eval()
 
         # Load the processor
         self.processor = ColIdefics3Processor.from_pretrained(pretrained_model_name_or_path)
