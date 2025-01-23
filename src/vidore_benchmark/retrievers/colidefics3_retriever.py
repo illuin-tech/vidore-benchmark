@@ -107,6 +107,6 @@ class ColIdefics3Retriever(VisionRetriever):
         batch_size: Optional[int] = 128,
     ) -> torch.Tensor:
         if batch_size is None:
-            raise ValueError("`batch_size` must be provided for ColPaliRetriever's scoring")
+            raise ValueError("`batch_size` must be provided for ColIdefics3's scoring")
         scores = score_multi_vector(query_embeddings, passage_embeddings, batch_size=batch_size)
         return scores
