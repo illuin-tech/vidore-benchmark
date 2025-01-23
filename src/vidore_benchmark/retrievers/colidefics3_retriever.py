@@ -24,7 +24,7 @@ load_dotenv(override=True)
 @register_vision_retriever("colidefics3")
 class ColIdefics3Retriever(VisionRetriever):
     """
-    ColPali Retriever that implements the model from "ColPali: Efficient Document Retrieval
+    ColIdefics3 Retriever that implements the ColVision architecture with an Idefics3 VLM backbone.
     with Vision Language Models".
     """
 
