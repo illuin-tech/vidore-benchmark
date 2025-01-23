@@ -15,6 +15,7 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 - Add Pydantic models for storing the ViDoRe benchmark results and metadata (includes `vidore-benchmark` version)
 - Add option to create an `EvalManager` instance from `ViDoReBenchmarkResults`
 - Add support for ColIdefics3 models
+- Add `num_workers` argument for dataloaders
 
 ### Changed
 
