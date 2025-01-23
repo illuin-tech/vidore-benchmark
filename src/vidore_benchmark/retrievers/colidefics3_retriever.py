@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import ClassVar, List, Optional, Union
 
 import torch
@@ -35,7 +36,7 @@ class ColIdefics3Retriever(VisionRetriever):
         self,
         pretrained_model_name_or_path: str = "vidore/colidefics-v0.1",
         device: str = "auto",
-        num_workers: int = 8,
+        num_workers: Optional[int] = None,
     ):
         super().__init__()
 
@@ -52,8 +53,12 @@ class ColIdefics3Retriever(VisionRetriever):
 
         # Load the processor
         self.processor = ColIdefics3Processor.from_pretrained(pretrained_model_name_or_path)
-        self.num_workers = num_workers
         print("Loaded custom processor.\n")
+
+        if num_workers is None:
+            self.num_workers = os.cpu_count() if os.cpu_count() is not None else 1
+        else:
+            self.num_workers = num_workers
 
     @property
     def use_visual_embedding(self) -> bool:
