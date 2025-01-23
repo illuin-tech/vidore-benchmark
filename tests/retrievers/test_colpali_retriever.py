@@ -8,7 +8,7 @@ from vidore_benchmark.utils.torch_utils import tear_down_torch
 
 @pytest.fixture(scope="module")
 def retriever() -> Generator[ColPaliRetriever, None, None]:
-    yield ColPaliRetriever(pretrained_model_name_or_path="vidore/colpali-v1.2-merged")
+    yield ColPaliRetriever()
     tear_down_torch()
 
 

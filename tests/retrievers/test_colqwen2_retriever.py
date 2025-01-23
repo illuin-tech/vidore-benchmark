@@ -8,7 +8,7 @@ from vidore_benchmark.utils.torch_utils import tear_down_torch
 
 @pytest.fixture(scope="module")
 def retriever() -> Generator[ColQwen2Retriever, None, None]:
-    yield ColQwen2Retriever(pretrained_model_name_or_path="vidore/colqwen2-v0.1")
+    yield ColQwen2Retriever()
     tear_down_torch()
 
 
