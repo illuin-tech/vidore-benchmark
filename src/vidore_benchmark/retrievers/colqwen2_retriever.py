@@ -65,7 +65,10 @@ class ColQwen2Retriever(VisionRetriever):
         print("Loaded custom processor.\n")
 
         if num_workers is None:
-            self.num_workers = os.cpu_count() if os.cpu_count() is not None else 1
+            if self.device == "mps":
+                self.num_workers = 0  # MPS does not support dataloader multiprocessing
+            else:
+                self.num_workers = os.cpu_count() if os.cpu_count() is not None else 1
         else:
             self.num_workers = num_workers
 
