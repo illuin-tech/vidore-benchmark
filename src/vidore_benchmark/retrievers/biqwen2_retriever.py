@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import List, Optional, Union, cast
 
 import torch
@@ -30,7 +31,7 @@ class BiQwen2Retriever(VisionRetriever):
         self,
         pretrained_model_name_or_path: str,
         device: str = "auto",
-        num_workers: int = 8,
+        num_workers: Optional[int] = None,
     ):
         super().__init__()
 
@@ -59,7 +60,14 @@ class BiQwen2Retriever(VisionRetriever):
         # Load the processor
         self.processor = cast(BiQwen2Processor, BiQwen2Processor.from_pretrained(pretrained_model_name_or_path))
         print("Loaded custom processor.\n")
-        self.num_workers = num_workers
+
+        if num_workers is None:
+            if self.device == "mps":
+                self.num_workers = 0  # MPS does not support dataloader multiprocessing
+            else:
+                self.num_workers = os.cpu_count() if os.cpu_count() is not None else 1
+        else:
+            self.num_workers = num_workers
 
     @property
     def use_visual_embedding(self) -> bool:
@@ -106,7 +114,7 @@ class BiQwen2Retriever(VisionRetriever):
             batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_images,
-            num_workers=self.num_workers
+            num_workers=self.num_workers,
         )
 
         passage_embeddings: List[torch.Tensor] = []

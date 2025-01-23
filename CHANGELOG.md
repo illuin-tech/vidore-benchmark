@@ -15,6 +15,7 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 - Add Pydantic models for storing the ViDoRe benchmark results and metadata (includes `vidore-benchmark` version)
 - Add option to create an `EvalManager` instance from `ViDoReBenchmarkResults`
 - Add support for ColIdefics3 models
+- Add `num_workers` argument for dataloaders
 
 ### Changed
 
@@ -33,6 +34,7 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 - Make `colpali-engine` dependency optional
 - Rename `ColQwenRetriever` to `ColQwen2Retriever`
 - Rename `BiQwenRetriever` to `BiQwen2Retriever`
+- Change default checkpoints for ColPali and ColQwen2 retrievers
 
 ### Fixed
 
@@ -62,6 +64,7 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 - Add tests for `ViDoReBenchmarkResults`
 - Add tests for `EvalManager`
 - Add tests for `BiQwen2Retriever`
+- Add test for `ColIdefics3Retriever`
 
 ## [4.0.2] - 2024-10-17
 

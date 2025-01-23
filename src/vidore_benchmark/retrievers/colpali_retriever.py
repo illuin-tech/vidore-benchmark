@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import List, Optional, Union, cast
 
 import torch
@@ -28,8 +29,9 @@ class ColPaliRetriever(VisionRetriever):
 
     def __init__(
         self,
-        pretrained_model_name_or_path: str,
+        pretrained_model_name_or_path: str = "vidore/colpali-v1.3",
         device: str = "auto",
+        num_workers: Optional[int] = None,
     ):
         super().__init__()
 
@@ -60,6 +62,14 @@ class ColPaliRetriever(VisionRetriever):
             ColPaliProcessor.from_pretrained(pretrained_model_name_or_path),
         )
 
+        if num_workers is None:
+            if self.device == "mps":
+                self.num_workers = 0  # MPS does not support dataloader multiprocessing
+            else:
+                self.num_workers = os.cpu_count() if os.cpu_count() is not None else 1
+        else:
+            self.num_workers = num_workers
+
     @property
     def use_visual_embedding(self) -> bool:
         return True
@@ -76,6 +86,7 @@ class ColPaliRetriever(VisionRetriever):
             batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_queries,
+            num_workers=self.num_workers,
         )
 
         query_embeddings: List[torch.Tensor] = []
@@ -93,6 +104,7 @@ class ColPaliRetriever(VisionRetriever):
             batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_images,
+            num_workers=self.num_workers,
         )
 
         passage_embeddings: List[torch.Tensor] = []
