@@ -29,7 +29,7 @@ class ColQwen2Retriever(VisionRetriever):
 
     def __init__(
         self,
-        pretrained_model_name_or_path: str = "vidore/colqwen2-v0.1",
+        pretrained_model_name_or_path: str = "vidore/colqwen2-v1.0",
         device: str = "auto",
         num_workers: Optional[int] = None,
     ):

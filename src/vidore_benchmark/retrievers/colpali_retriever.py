@@ -29,7 +29,7 @@ class ColPaliRetriever(VisionRetriever):
 
     def __init__(
         self,
-        pretrained_model_name_or_path: str,
+        pretrained_model_name_or_path: str = "vidore/colpali-v1.3",
         device: str = "auto",
         num_workers: Optional[int] = None,
     ):
