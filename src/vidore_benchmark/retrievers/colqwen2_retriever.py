@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from PIL import Image
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from transformers.utils.import_utils import is_flash_attn_2_available
 
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
@@ -53,7 +54,7 @@ class ColQwen2Retriever(BaseVisionRetriever):
                 pretrained_model_name_or_path,
                 torch_dtype=torch.bfloat16,
                 device_map=self.device,
-                attn_implementation="flash_attention_2" if torch.cuda.is_available() else None,
+                attn_implementation="flash_attention_2" if is_flash_attn_2_available() else None,
             ).eval(),
         )
 

@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from PIL import Image
 from tqdm import tqdm
 from transformers import AutoProcessor, Qwen2VLForConditionalGeneration
+from transformers.utils.import_utils import is_flash_attn_2_available
 
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
@@ -35,8 +36,7 @@ class DSEQwen2Retriever(BaseVisionRetriever):
             from qwen_vl_utils import process_vision_info
         except ImportError:
             raise ImportError(
-                'Install the missing dependencies with `pip install "vidore-benchmark[dse]"` '
-                "to use DSEQwen2Retriever."
+                'Install the missing dependencies with `pip install "vidore-benchmark[dse]"` to use DSEQwen2Retriever.'
             )
 
         self.device = get_torch_device(device)
@@ -53,7 +53,7 @@ class DSEQwen2Retriever(BaseVisionRetriever):
         self.model = (
             Qwen2VLForConditionalGeneration.from_pretrained(
                 pretrained_model_name_or_path,
-                attn_implementation="flash_attention_2" if torch.cuda.is_available() else None,
+                attn_implementation="flash_attention_2" if is_flash_attn_2_available() else None,
                 torch_dtype=torch.bfloat16,
             )
             .to(self.device)
