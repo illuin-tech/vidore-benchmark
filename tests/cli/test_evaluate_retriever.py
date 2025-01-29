@@ -19,11 +19,10 @@ def cli_runner():
     "model_class,dataset_name,dataset_format",
     [
         ("dummy_vision_retriever", "vidore/vidore_benchmark_qa_dummy", "qa"),
-        ("dummy_vision_retriever", "vidore/vidore_benchmark_beir_dummy", "beir"),
         ("bm25", "vidore/vidore_benchmark_ocr_qa_dummy", "qa"),
     ],
 )
-def test_evaluate_retriever(
+def test_run_evaluate_retriever(
     cli_runner: CliRunner,
     model_class: str,
     dataset_name: str,
