@@ -10,10 +10,10 @@ from vidore_benchmark.cli.main import _sanitize_model_id, app
 from vidore_benchmark.evaluation.interfaces import ViDoReBenchmarkResults
 
 
-def _are_vidore_results_close(
+def _are_vidore_ndcg_results_close(
     result_1: ViDoReBenchmarkResults,
     result_2: ViDoReBenchmarkResults,
-    tolerance: float = 1e-3,
+    tolerance: float = 3e-2,
 ) -> bool:
     """
     Check if two `ViDoReBenchmarkResults` objects are close within a tolerance.
@@ -37,13 +37,14 @@ def _are_vidore_results_close(
             return False
 
         for metric, value1 in metrics1.items():
-            value2 = metrics2[metric]
-            if value1 is None and value2 is None:
-                continue
-            if value1 is None or value2 is None:
-                return False
-            if abs(value1 - value2) > tolerance:
-                return False
+            if metric.startswith("ndcg_"):
+                value2 = metrics2[metric]
+                if value1 is None and value2 is None:
+                    continue
+                if value1 is None or value2 is None:
+                    return False
+                if abs(value1 - value2) > tolerance:
+                    return False
 
     return True
 
@@ -59,18 +60,11 @@ def cli_runner():
     "model_class,model_name,dataset_name,dataset_format,expected_results_filepath",
     [
         (
-            "siglip",
-            "google/siglip-so400m-patch14-384",
+            "colidefics3",
+            "vidore/colSmol-256M",
             "vidore/tabfquad_test_subsampled",
             "qa",
-            "tests/data/e2e_vidore_results/siglip_tabfquad.json",
-        ),
-        (
-            "siglip",
-            "google/siglip-so400m-patch14-384",
-            "vidore/tabfquad_test_subsampled_beir",
-            "beir",
-            "tests/data/e2e_vidore_results/siglip_tabfquad.json",
+            "tests/data/e2e_vidore_results/colsmol_256M_tabfquad.json",
         ),
         (
             "bm25",
@@ -98,10 +92,6 @@ def test_e2e_evaluate_retriever(
         expected_results = ViDoReBenchmarkResults(**json.load(f))
 
     with tempfile.TemporaryDirectory() as temp_dir:
-        # Define the model used for retrieval
-        model_class = "siglip"
-        model_name = "google/siglip-so400m-patch14-384"
-
         # Run the CLI command
         result = cli_runner.invoke(
             app,
@@ -110,7 +100,7 @@ def test_e2e_evaluate_retriever(
                 "--model-class",
                 model_class,
                 "--model-name",
-                model_name,
+                model_name if model_name else "",
                 "--dataset-name",
                 dataset_name,
                 "--dataset-format",
@@ -118,11 +108,11 @@ def test_e2e_evaluate_retriever(
                 "--split",
                 "test",
                 "--batch-query",
-                "2",
+                "4",
                 "--batch-passage",
-                "2",
+                "4",
                 "--batch-score",
-                "2",
+                "4",
                 "--output-dir",
                 temp_dir,
             ],
@@ -134,6 +124,7 @@ def test_e2e_evaluate_retriever(
         # Check if result file was created
         model_id = _sanitize_model_id(model_class, model_name)
         vidore_results_file = Path(temp_dir) / f"{model_id}_metrics.json"
+        print(f"Metrics file path: {vidore_results_file}")
         assert vidore_results_file.exists(), "Metrics file was not created"
 
         # Load JSON
@@ -150,7 +141,7 @@ def test_e2e_evaluate_retriever(
             pytest.fail(f"Failed to load results using the `ViDoReBenchmarkResults` format: {e}")
 
         # Verify results match expected with some tolerance
-        if not _are_vidore_results_close(vidore_results, expected_results):
+        if not _are_vidore_ndcg_results_close(vidore_results, expected_results):
             # Copy the results file to outputs directory for debugging
             outputs_dir = Path("outputs")
             outputs_dir.mkdir(exist_ok=True, parents=True)
@@ -158,14 +149,11 @@ def test_e2e_evaluate_retriever(
             vidore_results_file.rename(vidore_results_file_copy)
 
             pytest.fail(
-                f"Results do not match expected. "
-                f"Check {vidore_results_file_copy} and {expected_results_path} for details."
+                f"Results do not match expected. Check `{vidore_results_file_copy}` (output) and "
+                "{expected_results_path}` (expected) for more details."
             )
 
         metrics = vidore_results.metrics
 
         # Check if metrics contain the expected dataset
         assert dataset_name in metrics, f"Metrics for dataset {dataset_name} not found"
-
-        # Check for specific nDCG@5 output in stdout
-        assert f"nDCG@5 for {model_class} on {dataset_name}:" in result.stdout

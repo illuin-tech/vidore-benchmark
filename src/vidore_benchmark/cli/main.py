@@ -3,17 +3,17 @@ import os
 from datetime import datetime
 from importlib.metadata import version
 from pathlib import Path
-from typing import Annotated, Dict, List, Optional, cast
+from typing import Annotated, Dict, List, Optional
 
 import huggingface_hub
 import typer
-from datasets import Dataset, load_dataset
+from datasets import load_dataset
 from dotenv import load_dotenv
 from transformers import set_seed
 
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler, HierarchicalEmbeddingPooler
 from vidore_benchmark.evaluation.interfaces import MetadataModel, ViDoReBenchmarkResults
-from vidore_benchmark.evaluation.vidore_evaluators import ViDoReEvaluatorBEIR, ViDoReEvaluatorQA
+from vidore_benchmark.evaluation.vidore_evaluators import ViDoReEvaluatorQA
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import load_vision_retriever_from_registry
 from vidore_benchmark.utils.logging_utils import setup_logging
@@ -40,7 +40,7 @@ def _sanitize_model_id(
     Return sanitized model ID for properly saving metrics as files.
     """
     model_id = model_class
-    if pretrained_model_name_or_path is not None:
+    if pretrained_model_name_or_path:
         model_id += f"_{pretrained_model_name_or_path}"
     model_id = model_id.replace("/", "_")
     return model_id
@@ -93,25 +93,7 @@ def _get_metrics_from_vidore_evaluator(
         }
 
     elif dataset_format == "beir":
-        vidore_evaluator = ViDoReEvaluatorBEIR(
-            vision_retriever=vision_retriever,
-            embedding_pooler=embedding_pooler,
-        )
-        ds = {
-            "corpus": cast(Dataset, load_dataset(dataset_name, name="corpus", split=split)),
-            "queries": cast(Dataset, load_dataset(dataset_name, name="queries", split=split)),
-            "qrels": cast(Dataset, load_dataset(dataset_name, name="qrels", split=split)),
-        }
-        metrics = {
-            dataset_name: vidore_evaluator.evaluate_dataset(
-                ds=ds,
-                ds_format=dataset_format,
-                batch_query=batch_query,
-                batch_passage=batch_passage,
-                batch_score=batch_score,
-                dataloader_prebatch_size=dataloader_prebatch_size,
-            )
-        }
+        raise NotImplementedError("BEIR evaluation is not implemented yet.")
     else:
         raise ValueError(f"Unsupported dataset format: {dataset_format}")
 

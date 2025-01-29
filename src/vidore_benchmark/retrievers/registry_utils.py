@@ -50,7 +50,7 @@ def load_vision_retriever_from_registry(
 
     retriever_class = load_vision_retriever_class_from_registry(model_class)
 
-    if pretrained_model_name_or_path is not None:
+    if pretrained_model_name_or_path:
         retriever = retriever_class(pretrained_model_name_or_path=pretrained_model_name_or_path)
     else:
         retriever = retriever_class()
