@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning].
 - Rename `ColQwenRetriever` to `ColQwen2Retriever`
 - Rename `BiQwenRetriever` to `BiQwen2Retriever`
 - Change default checkpoints for ColPali and ColQwen2 retrievers
-- [Breaking] Revamp the `evaluate` module. Evaluation is now handled by the `ViDoReEvaluator` classes.
+- [Breaking] Revamp the `evaluate` module. Evaluation is now handled by the `ViDoReEvaluatorQA` class.
 
 ### Fixed
 
@@ -60,12 +60,11 @@ and this project adheres to [Semantic Versioning].
 
 - Add tests for ColQwen2, DSEQwen2, and Cohere API embedding models
 - Add fixtures in retriever tests to speed up testing
-- Add tests for `evaluate_dataset` method
-- Add E2E test for cli command `evaluate-retriever`
 - Add tests for `ViDoReBenchmarkResults`
 - Add tests for `EvalManager`
 - Add tests for `BiQwen2Retriever`
-- Add test for `ColIdefics3Retriever`
+- Add tests for `ColIdefics3Retriever`
+- Add tests and E2E tests for cli command `evaluate-retriever`
 
 ## [4.0.2] - 2024-10-17
 
