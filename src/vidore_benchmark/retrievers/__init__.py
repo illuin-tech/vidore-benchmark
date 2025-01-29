@@ -13,3 +13,4 @@ from .jina_clip_retriever import JinaClipRetriever
 from .nomic_retriever import NomicVisionRetriever
 from .registry_utils import VISION_RETRIEVER_REGISTRY, load_vision_retriever_from_registry, register_vision_retriever
 from .siglip_retriever import SigLIPRetriever
+from .vision_retriever import VisionRetriever
