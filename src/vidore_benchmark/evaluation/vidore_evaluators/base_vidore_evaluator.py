@@ -89,10 +89,9 @@ class BaseViDoReEvaluator(ABC):
         """
         passage_embeddings: List[torch.Tensor] = []
 
-        # NOTE: To prevent overloading the RAM for large datasets, we will load the passages (images)
-        # that will be fed to the model in batches (this should be fine for queries as their memory footprint
-        # is negligible. This optimization is about efficient data loading, and is not related to the model's
-        # forward pass which is also batched.
+        # NOTE: To prevent overloading the RAM for large datasets, we will load the passages that will be fed
+        # to the model in batches. This optimization is about efficient data loading, and is not related to
+        # the model's forward pass which is also batched.
 
         if dataloader_prebatch_size is None:
             dataloader_prebatch_size = batch_passage
@@ -148,10 +147,9 @@ class BaseViDoReEvaluator(ABC):
         """
         query_embeddings: List[torch.Tensor] = []
 
-        # NOTE: To prevent overloading the RAM for large datasets, we will load the passages (images)
-        # that will be fed to the model in batches (this should be fine for queries as their memory footprint
-        # is negligible. This optimization is about efficient data loading, and is not related to the model's
-        # forward pass which is also batched.
+        # NOTE: To prevent overloading the RAM for large datasets, we will load the queries that will be fed
+        # to the model in batches. This optimization is about efficient data loading, and is not related to
+        # the model's forward pass which is also batched.
 
         if dataloader_prebatch_size is None:
             dataloader_prebatch_size = batch_query
