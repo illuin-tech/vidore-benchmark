@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from collections import defaultdict
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import torch
 from datasets import Dataset
@@ -56,9 +55,7 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
             [col for col in ds.column_names if col not in [self.query_column, self.id_column]]
         )
         ds_queries = deduplicate_dataset_rows(ds=ds_queries, target_column=self.query_column)
-
-        passage_ids: List[int] = list(ds_passages[self.id_column])
-        query_ids: List[int] = ds_queries[self.id_column]
+        queries = list(ds_queries[self.query_column])
 
         if len(ds_queries) == 0:
             raise ValueError("No valid queries found in the dataset. Check if the queries are all set to `None`.")
@@ -70,14 +67,13 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
                 passages=ds_passages[self.passage_column],
             )
 
-            qrels = self._get_qrels_from_qa_dataset(ds=ds)
-            results = self._get_retrieval_results(
-                query_ids=query_ids,
-                passage_ids=passage_ids,
+            relevant_docs, results = self._get_relevant_docs_results(
+                ds=ds,
+                queries=queries,
                 scores=scores,
             )
 
-            metrics = self.compute_retrieval_scores(qrels=qrels, results=results)
+            metrics = self.compute_retrieval_scores(qrels=relevant_docs, results=results)
 
             return metrics
 
@@ -110,92 +106,58 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
             batch_size=batch_score,
         )
 
-        # Get the relevant query relevances (qrels) and results
-        qrels = self._get_qrels_from_qa_dataset(ds=ds)
-        results = self._get_retrieval_results(
-            query_ids=query_ids,
-            passage_ids=passage_ids,
+        # Get the relevant passages and results
+        relevant_docs, results = self._get_relevant_docs_results(
+            ds=ds,
+            queries=queries,
             scores=scores,
         )
 
         # Compute the MTEB metrics
-        metrics = self.compute_retrieval_scores(qrels=qrels, results=results)
+        metrics = self.compute_retrieval_scores(qrels=relevant_docs, results=results)
 
         return metrics
 
-    def _get_retrieval_results(
-        self,
-        query_ids: List[int],
-        passage_ids: List[int],
-        scores: torch.Tensor,
-    ) -> Dict[str, Dict[str, float]]:
-        """
-        Get the retrieval results from the model's scores, i.e. the retrieval scores for each passage for each query.
-
-        Args:
-            query_ids (List[int]): The list of query IDs.
-            passage_ids (List[int]): The list of passage IDs.
-            scores(torch.Tensor): The similarity scores between queries and passages (shape: n_queries, n_passages).
-
-        Returns:
-            (Dict[str, Dict[str, float]]): The retrieval results.
-
-        Example output:
-            ```python
-            {
-                "query_0": {"doc_i": 19.125, "doc_1": 18.75, ...},
-                "query_1": {"doc_j": 17.25, "doc_1": 16.75, ...},
-                ...
-            }
-            ```
-        """
-        results: Dict[str, Dict[str, float]] = {}
-
-        for query_idx, query_id in enumerate(query_ids):
-            for image_idx, score in enumerate(scores[query_idx]):
-                image_id = passage_ids[image_idx]
-                score_passage = float(score.item())
-
-                if str(query_id) in results:
-                    current_score = results[str(query_id)].get(str(image_id), 0)
-                    results[str(query_id)][str(image_id)] = max(current_score, score_passage)
-                else:
-                    results[str(query_id)] = {str(image_id): score_passage}
-
-        return results
-
-    def _get_qrels_from_qa_dataset(
+    def _get_relevant_docs_results(
         self,
         ds: Dataset,
-    ) -> Dict[str, Dict[str, int]]:
+        queries: List[str],
+        scores: torch.Tensor,
+        **kwargs,
+    ) -> Tuple[Dict[str, Dict[str, int]], Dict[str, Dict[str, float]]]:
         """
-        Get the query relevance judgments (qrels) from a dataset (QA format).
+        Get the relevant passages and the results from the scores.
 
-        Args:
-            ds (Dataset): The dataset containing the queries and passages.
-
-        Returns:
-            Dict[str, Dict[str, int]]: The query relevance judgments (qrels).
-
-        Example output:
-            ```python
-            {
-                "0": {"1": 1},  # query_id: {passage_id: relevance_score}
-                "1": {"2": 1},
-                ...
-            }
-            ```
+        Outputs:
+        - relevant_docs: Dict[str, float]
+        {
+            "query_0": {"doc_0": 1},
+            "query_1": {"doc_1": 1},
+            ...
+        }
+        - results: Dict[str, Dict[str, float]] with shape:
+        {
+            "query_0": {"doc_i": 19.125, "doc_1": 18.75, ...},
+            "query_1": {"doc_j": 17.25, "doc_1": 16.75, ...},
+            ...
+        }
         """
-        if self.id_column not in ds.column_names:
-            raise ValueError(f"ID column name '{self.id_column}' not found in the dataset.")
-        if self.query_column not in ds.column_names:
-            raise ValueError(f"Query column name '{self.query_column}' not found in the dataset.")
+        relevant_docs = {}
+        results = {}
 
-        qrels: Dict[str, Dict[str, int]] = defaultdict(dict)
+        queries2filename = {query: image_filename for query, image_filename in zip(ds["query"], ds["image_filename"])}
+        passages2filename = {docidx: image_filename for docidx, image_filename in enumerate(ds["image_filename"])}
 
-        # Legacy behavior (bug): only keep the last occurrence of a query.
-        for query, passage_filename in zip(ds[self.query_column], ds[self.passage_filename_column]):
-            if query is not None and query in ds[self.query_column]:
-                qrels[query] = {passage_filename: 1}
+        for query, score_per_query in zip(queries, scores):
+            relevant_docs[query] = {queries2filename[query]: 1}
 
-        return qrels
+            for docidx, score in enumerate(score_per_query):
+                filename = passages2filename[docidx]
+                score_passage = float(score.item())
+
+                if query in results:
+                    results[query][filename] = max(results[query].get(filename, 0), score_passage)
+                else:
+                    results[query] = {filename: score_passage}
+
+        return relevant_docs, results
