@@ -12,16 +12,12 @@ from vidore_benchmark.evaluation.vidore_evaluators.base_vidore_evaluator import 
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.bm25_retriever import BM25Retriever
 from vidore_benchmark.utils.data_utils import deduplicate_dataset_rows
-from vidore_benchmark.utils.image_utils import hash_image
 
 
 class ViDoReEvaluatorQA(BaseViDoReEvaluator):
     """
     Evaluator for the ViDoRe benchmark for datasets with a question-answering (QA) format, i.e. where each
     row in the dataset contains an optional query and a passage (image or text).
-
-    **IMPORTANT**: The old ViDoRe evaluation (<5.0.0) had a bug when computing `qrels`. This would slightly boost scores
-    on some datasets (e.g. DocVQA). To reproduce the old behavior, set `is_legacy=True`.
     """
 
     def __init__(
@@ -37,6 +33,7 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         # Dataset column names
         self.query_column = "query"
         self.passage_column = "image" if self.vision_retriever.use_visual_embedding else "text_description"
+        self.passage_filename_column = "image_filename"
         self.id_column = "id"
         self.image_hash_column = "image_hash"
 
@@ -55,13 +52,6 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         ds_passages = ds.remove_columns(
             [col for col in ds.column_names if col not in [self.passage_column, self.image_hash_column, self.id_column]]
         )
-        if self.vision_retriever.use_visual_embedding:
-            ds_passages = ds_passages.map(
-                lambda x: {self.image_hash_column: hash_image(x[self.passage_column])},
-                desc="Hashing images for deduplication...",
-            )
-            ds_passages = deduplicate_dataset_rows(ds=ds_passages, target_column=self.image_hash_column)
-
         ds_queries = ds.remove_columns(
             [col for col in ds.column_names if col not in [self.query_column, self.id_column]]
         )
@@ -120,7 +110,7 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
             batch_size=batch_score,
         )
 
-        # Get the relevant passages and results
+        # Get the relevant query relevances (qrels) and results
         qrels = self._get_qrels_from_qa_dataset(ds=ds)
         results = self._get_retrieval_results(
             query_ids=query_ids,
@@ -203,10 +193,9 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
 
         qrels: Dict[str, Dict[str, int]] = defaultdict(dict)
 
-        for query, doc_id in zip(ds[self.query_column], ds[self.id_column]):
+        # Legacy behavior (bug): only keep the last occurrence of a query.
+        for query, passage_filename in zip(ds[self.query_column], ds[self.passage_filename_column]):
             if query is not None and query in ds[self.query_column]:
-                query_indices = [i for i, q in enumerate(ds[self.query_column]) if q == query]
-                for query_idx in query_indices:
-                    qrels[str(query_idx)][str(doc_id)] = 1
+                qrels[query] = {passage_filename: 1}
 
         return qrels
