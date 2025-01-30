@@ -5,8 +5,6 @@ import os
 from typing import ClassVar, List, Optional, Union
 
 import torch
-from colpali_engine.models import ColIdefics3, ColIdefics3Processor
-from colpali_engine.utils.torch_utils import get_torch_device
 from dotenv import load_dotenv
 from PIL import Image
 from torch.utils.data import DataLoader
@@ -16,6 +14,7 @@ from vidore_benchmark.evaluation.scoring import score_multi_vector
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
 from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.data_utils import ListDataset
+from vidore_benchmark.utils.torch_utils import get_torch_device
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +38,14 @@ class ColIdefics3Retriever(VisionRetriever):
         num_workers: Optional[int] = None,
     ):
         super().__init__()
+
+        try:
+            from colpali_engine.models import ColIdefics3, ColIdefics3Processor
+        except ImportError:
+            raise ImportError(
+                'Install the missing dependencies with `pip install "vidore-benchmark[colpali-engine]"` '
+                "to use ColIdefics3Retriever."
+            )
 
         self.device = get_torch_device(device)
         logger.info(f"Using device: {self.device}")
