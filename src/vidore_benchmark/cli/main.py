@@ -165,6 +165,8 @@ def evaluate_retriever(
         raise ValueError("Please provide a dataset name or collection name.")
 
     elif dataset_name is not None:
+        print(f"\n---------------------------\n{dataset_name}")
+
         metrics = _get_metrics_from_vidore_evaluator(
             vision_retriever=retriever,
             embedding_pooler=embedding_pooler,
@@ -270,8 +272,6 @@ def evaluate_retriever(
             f.write(results_merged.model_dump_json(indent=4))
 
         print(f"Concatenated metrics saved to `{savepath_all}`")
-
-    print("Done.")
 
 
 if __name__ == "__main__":
