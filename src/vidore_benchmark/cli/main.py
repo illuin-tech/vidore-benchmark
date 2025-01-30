@@ -121,9 +121,9 @@ def evaluate_retriever(
     ] = None,
     dataset_format: Annotated[str, typer.Option(help='Dataset format ("qa" or "beir") to use for evaluation')] = "qa",
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
-    batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 8,
-    batch_passage: Annotated[int, typer.Option(help="Batch size for passages embedding inference")] = 8,
-    batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 16,
+    batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 4,
+    batch_passage: Annotated[int, typer.Option(help="Batch size for passages embedding inference")] = 4,
+    batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
     dataloader_prebatch_size: Annotated[Optional[int], typer.Option(help="Prebatch size for the dataloader")] = None,
     use_token_pooling: Annotated[
         bool, typer.Option(help="Whether to use token pooling for passage embeddings")
