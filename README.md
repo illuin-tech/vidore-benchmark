@@ -72,7 +72,6 @@ vidore-benchmark evaluate-retriever \
     --model-class colpali \
     --model-name vidore/colpali-v1.2 \
     --collection-name vidore/vidore-benchmark-667173f98e70a1c0fa4db00d \
-    --dataset-format qa \
     --split test
 ```
 
@@ -83,7 +82,6 @@ vidore-benchmark evaluate-retriever \
     --model-class colpali \
     --model-name vidore/colpali-v1.2 \
     --dataset-name vidore/docvqa_test_subsampled \
-    --dataset-format qa \
     --split test
 ```
 
@@ -94,7 +92,6 @@ vidore-benchmark evaluate-retriever \
     --model-class bge-m3 \
     --model-name BAAI/bge-m3 \
     --dataset-name vidore/docvqa_test_subsampled_tesseract \
-    --dataset-format qa \
     --split test
 ```
 
@@ -109,7 +106,6 @@ vidore-benchmark evaluate-retriever \
     --model-class colpali \
     --model-name vidore/colpali-v1.2 \
     --dataset-name vidore/docvqa_test_subsampled \
-    --dataset-format qa \
     --split test \
     --use-token-pooling \
     --pool-factor 3

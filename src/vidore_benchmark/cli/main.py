@@ -119,7 +119,9 @@ def evaluate_retriever(
         Optional[str],
         typer.Option(help="Dataset collection to use for evaluation. Can be a Hf collection id or a local dirpath."),
     ] = None,
-    dataset_format: Annotated[str, typer.Option(help='Dataset format ("qa" or "beir") to use for evaluation')] = "qa",
+    dataset_format: Annotated[
+        str, typer.Option(help='Dataset format to use for evaluation. Only "qa" is supported for now.')
+    ] = "qa",
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
     batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 4,
     batch_passage: Annotated[int, typer.Option(help="Batch size for passages embedding inference")] = 4,
