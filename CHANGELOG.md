@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning].
 - Add option to create an `EvalManager` instance from `ViDoReBenchmarkResults`
 - Add support for ColIdefics3 models
 - Add `num_workers` argument for dataloaders
-- Add support for the BEIR dataset format (keep support for the previous QA format)
+- Allow the creation of `VisionRetriever` instances using a PyTorch model and a processor that implements a `process_images` and a `process_queries` methods, similarly to the ColVision processors
+- [Experimental] Add a QA-to-BEIR dataset format conversion script
 
 ### Changed
 
@@ -34,7 +35,8 @@ and this project adheres to [Semantic Versioning].
 - Rename `ColQwenRetriever` to `ColQwen2Retriever`
 - Rename `BiQwenRetriever` to `BiQwen2Retriever`
 - Change default checkpoints for ColPali and ColQwen2 retrievers
-- [Breaking] Revamp the `evaluate` module. Evaluation is now handled by the `ViDoReEvaluatorQA` class.
+- [Breaking] Revamp the `evaluate` module. Evaluation is now handled by the `ViDoReEvaluatorQA` class
+- [Breaking] Rename `ViDoReEvaluator` into `BaseViDoReEvaluator`. The new `ViDoReEvaluator` class allows to create retrievers using the Python API.
 
 ### Fixed
 
