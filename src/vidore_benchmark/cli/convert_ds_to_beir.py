@@ -1,3 +1,4 @@
+import warnings
 from typing import Annotated, Dict, Generator, List, Optional, TypedDict, cast
 
 import typer
@@ -18,8 +19,7 @@ def main(
     target_dataset: Annotated[
         Optional[str],
         typer.Option(
-            help="Name of the target Hf dataset to push the converted dataset to. Defaults to \
-                `<source_dataset>_beir`."
+            help="Name of the concerted dataset used when pushing to Hf Hub. Defaults to `<source_dataset>_beir`."
         ),
     ] = None,
     query_column: Annotated[str, typer.Option(help="Name of the column containing the query.")] = "query",
@@ -28,6 +28,12 @@ def main(
     """
     Convert a dataset from the QA format to the standard BEIR format.
     """
+
+    warnings.warn(
+        "The `convert_ds_to_beir.py` script is experimental and may change or be removed in future releases.",
+        category=UserWarning,
+        stacklevel=2,
+    )
 
     if target_dataset is None:
         target_dataset = f"{source_dataset}_beir"
