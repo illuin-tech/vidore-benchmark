@@ -110,7 +110,7 @@ def main(log_level: Annotated[str, typer.Option("--log", help="Logging level")] 
 @app.command()
 def evaluate_retriever(
     model_class: Annotated[str, typer.Option(help="Model class")],
-    pretrained_model_name_or_path: Annotated[
+    model_name: Annotated[
         Optional[str],
         typer.Option("--model-name", help="If Hf model, passed to the `model.from_pretrained` method."),
     ] = None,
@@ -149,11 +149,11 @@ def evaluate_retriever(
     # Create the vision retriever
     retriever = load_vision_retriever_from_registry(
         model_class,
-        pretrained_model_name_or_path=pretrained_model_name_or_path,
+        pretrained_model_name_or_path=model_name,
     )
 
     # Sanitize the model ID to use as a filename
-    model_id = _sanitize_model_id(model_class, pretrained_model_name_or_path)
+    model_id = _sanitize_model_id(model_class, model_name)
 
     # Get the pooling strategy
     embedding_pooler = HierarchicalEmbeddingPooler(pool_factor) if use_token_pooling else None
