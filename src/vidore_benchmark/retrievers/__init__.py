@@ -7,6 +7,7 @@ from .colidefics3_retriever import ColIdefics3Retriever
 from .colpali_retriever import ColPaliRetriever
 from .colqwen2_retriever import ColQwen2Retriever
 from .dse_qwen2_retriever import DSEQwen2Retriever
+from .colqwen2_5_retriever import ColQwen2_5_Retriever
 from .dummy_retriever import DummyRetriever
 from .jina_clip_retriever import JinaClipRetriever
 from .nomic_retriever import NomicVisionRetriever
