@@ -63,7 +63,6 @@ class ColQwen2Retriever(BaseVisionRetriever):
             ColQwen2Processor,
             ColQwen2Processor.from_pretrained(pretrained_model_name_or_path),
         )
-        print("Loaded custom processor.\n")
 
         if num_workers is None:
             if self.device == "mps":

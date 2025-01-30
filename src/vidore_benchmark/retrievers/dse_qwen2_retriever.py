@@ -62,8 +62,6 @@ class DSEQwen2Retriever(BaseVisionRetriever):
         self.processor.tokenizer.padding_side = "left"
         self.model.padding_side = "left"
 
-        print("Loaded custom processor.\n")
-
     def get_embedding(self, last_hidden_state: torch.Tensor, dimension: int) -> torch.Tensor:
         reps = last_hidden_state[:, -1]
         reps = torch.nn.functional.normalize(reps[:, :dimension], p=2, dim=-1)
