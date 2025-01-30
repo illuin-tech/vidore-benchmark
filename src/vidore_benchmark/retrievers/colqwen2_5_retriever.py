@@ -68,7 +68,7 @@ class ColQwen2_5_Retriever(VisionRetriever):  # noqa : N801
             if self.device == "mps":
                 self.num_workers = 0  # MPS does not support dataloader multiprocessing
             else:
-                self.num_workers = os.cpu_count() if os.cpu_count() is not None else 1
+                self.num_workers = min(8, os.cpu_count()) if os.cpu_count() is not None else 1
         else:
             self.num_workers = num_workers
 
@@ -77,10 +77,10 @@ class ColQwen2_5_Retriever(VisionRetriever):  # noqa : N801
         return True
 
     def process_images(self, images: List[Image.Image], **kwargs):
-        return self.processor.process_images(images=images).to(self.device)
+        return self.processor.process_images(images=images)
 
     def process_queries(self, queries: List[str], **kwargs):
-        return self.processor.process_queries(queries=queries).to(self.device)
+        return self.processor.process_queries(queries=queries)
 
     def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
