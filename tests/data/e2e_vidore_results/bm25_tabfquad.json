@@ -1,7 +1,7 @@
 {
     "metadata": {
-        "timestamp": "2024-12-17T21:26:43.879787",
-        "vidore_benchmark_version": "4.0.3.dev86+ged83fef"
+        "timestamp": "2024-06-26T21:26:43.879787",
+        "vidore_benchmark_version": "1.0.0"
     },
     "metrics": {
         "vidore/tabfquad_test_subsampled_ocr_chunk": {
