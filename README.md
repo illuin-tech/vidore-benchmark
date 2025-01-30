@@ -76,9 +76,6 @@ vidore-benchmark evaluate-retriever \
     --split test
 ```
 
-**Note:** You should get a warning about some non-initialized weights. This is a known issue in ColPali and will
-cause the metrics to be slightly different from the ones reported in the paper. We are working on fixing this issue.
-
 Alternatively, you can evaluate your model on a single dataset. If your retriver uses visual embeddings, you can use any dataset path from the [ViDoRe Benchmark](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d) collection, e.g.:
 
 ```bash
@@ -101,7 +98,7 @@ vidore-benchmark evaluate-retriever \
     --split test
 ```
 
-Both scripts will generate one particular JSON file in `outputs/{model_name_all_metrics.json}`. Follow the instructions on the [ViDoRe Leaderboard](https://huggingface.co/spaces/vidore/vidore-leaderboard) to compare your model with the others.
+All the above scripts will generate a JSON file in `outputs/{model_name_all_metrics.json}`. Follow the instructions on the [ViDoRe Leaderboard](https://huggingface.co/spaces/vidore/vidore-leaderboard) to learn how to publish your results on the leaderboard too!
 
 ### Evaluate a retriever using token pooling
 
@@ -118,73 +115,55 @@ vidore-benchmark evaluate-retriever \
     --pool-factor 3
 ```
 
-### Retrieve the top-k documents from a HuggingFace dataset
-
-```bash
-vidore-benchmark retrieve-on-dataset \
-    --model-class colpali \
-    --model-name vidore/colpali-v1.2 \
-    --query "Which hour of the day had the highest overall electricity generation in 2019?" \
-    --k 5 \
-    --dataset-name vidore/syntheticDocQA_energy_test \
-    --split test
-```
-
-### Retrieve the top-k documents from a collection of PDF documents
-
-```bash
-vidore-benchmark retriever_on_pdfs \
-    --model-class siglip \
-    --model-name google/siglip-so400m-patch14-384 \
-    --query "Which hour of the day had the highest overall electricity generation in 2019?" \
-    --k 5 \
-    --data-dirpath data/my_folder_with_pdf_documents/
-```
-
 ### Documentation
 
-To get more information about the available options, run:
+To have more control over the evaluation process (e.g. the batch size used at inference), read the CLI documentation using:
 
 ```bash
-vidore-benchmark --help
+vidore-benchmark evaluate-retriever --help
 ```
 
 ## Python usage
 
 ### Quickstart example
 
+While the CLI can be used to evaluate a fixed list of models, you can also use the Python API to evaluate your own retriever. Here is an example of how to evaluate the ColPali model on the ViDoRe benchmark. Note that your processor must implement a `process_images` and a `process_queries` methods, similarly to the ColVision processors.
+
 ```python
+import torch
+from colpali_engine.models import ColIdefics3, ColIdefics3Processor
 from datasets import load_dataset
-from dotenv import load_dotenv
+
 from vidore_benchmark.evaluation.vidore_evaluators import ViDoReEvaluatorQA
-from vidore_benchmark.retrievers.jina_clip_retriever import JinaClipRetriever
+from vidore_benchmark.retrievers import VisionRetriever
 
-load_dotenv(override=True)
+model_name = "vidore/colSmol-256M"
+processor = ColIdefics3Processor.from_pretrained(model_name)
+model = ColIdefics3.from_pretrained(
+    model_name,
+    torch_dtype=torch.bfloat16,
+    device_map="cuda",
+).eval()
 
-def main():
-    """
-    Example script for a Python usage of the Vidore Benchmark.
-    """
-    # Load the model and the dataset
-    my_retriever = JinaClipRetriever("jinaai/jina-clip-v1")
-    ds = load_dataset("vidore/vidore_benchmark_qa_dummy", split="test")
+vision_retriever = VisionRetriever(
+    model=model,
+    processor=processor,
+)
+vidore_evaluator = ViDoReEvaluatorQA(vision_retriever)
 
-    # Load the ViDoRe Evaluator
-    vidore_evaluator = ViDoReEvaluatorQA(vision_retriever=my_retriever)
+ds = load_dataset("vidore/tabfquad_test_subsampled", split="test")
 
-    # Get the MTEB metrics for retrieval
-    metrics = vidore_evaluator.evaluate_dataset(
-        ds=ds,
-        batch_query=8,
-        batch_passage=8,
-        batch_score=16,
-    )
-    print(metrics)
+metrics = vidore_evaluator.evaluate_dataset(
+    ds=ds,
+    batch_query=4,
+    batch_passage=4,
+    batch_score=4,
+)
 ```
 
 ### Implement your own retriever
 
-If you need to evaluate your own model on the ViDoRe benchmark, you can create your own instance of `VisionRetriever` to use it with the evaluation scripts in this package. You can find the detailed instructions [here](https://github.com/illuin-tech/vidore-benchmark/blob/main/src/vidore_benchmark/retrievers/README.md).
+If you want to evaluate your own retriever to use it with the CLI, you should clone the repository and add your own class that inherits from `BaseVisionRetriever`. You can find the detailed instructions [here](https://github.com/illuin-tech/vidore-benchmark/blob/main/src/vidore_benchmark/retrievers/README.md).
 
 ### Compare retrievers using the EvalManager
 
