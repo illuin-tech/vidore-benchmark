@@ -112,7 +112,10 @@ def evaluate_retriever(
     model_class: Annotated[str, typer.Option(help="Model class")],
     model_name: Annotated[
         Optional[str],
-        typer.Option("--model-name", help="If Hf model, passed to the `model.from_pretrained` method."),
+        typer.Option(
+            "--model-name",
+            help="For Hf transformers-based models, this value is passed to the `model.from_pretrained` method.",
+        ),
     ] = None,
     dataset_name: Annotated[Optional[str], typer.Option(help="Hf Hub dataset name.")] = None,
     collection_name: Annotated[
@@ -125,20 +128,18 @@ def evaluate_retriever(
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
     batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 4,
     batch_passage: Annotated[int, typer.Option(help="Batch size for passages embedding inference")] = 4,
-    batch_score: Annotated[Optional[int], typer.Option(help="Batch size for score computation")] = 4,
+    batch_score: Annotated[Optional[int], typer.Option(help="Batch size for retrieval score computation")] = 4,
     dataloader_prebatch_size: Annotated[Optional[int], typer.Option(help="Prebatch size for the dataloader")] = None,
     use_token_pooling: Annotated[
-        bool, typer.Option(help="Whether to use token pooling for passage embeddings")
+        bool, typer.Option(help="Whether to use token pooling for passage embeddings or not")
     ] = False,
     pool_factor: Annotated[int, typer.Option(help="Pooling factor for hierarchical token pooling")] = 3,
     output_dir: Annotated[str, typer.Option(help="Directory where to save the metrics")] = "outputs",
 ):
     """
-    Evaluate the vision retriever on the given dataset or dataset collection.
-    The metrics are saved to a JSON file and follow the `ViDoReBenchmarkResults` schema.
+    Evaluate a retriever on a given dataset or dataset collection.
+    The MTEB retrieval metrics are saved to a JSON file.
     """
-
-    logging.info(f"Evaluating retriever `{model_class}`")
 
     # Sanity check
     if dataset_name is None and collection_name is None:
