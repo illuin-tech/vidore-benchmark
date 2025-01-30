@@ -95,6 +95,7 @@ class ColQwen2_5_Retriever(VisionRetriever):  # noqa : N801
 
         with torch.no_grad():
             for batch_query in tqdm(dataloader, desc="Forward pass queries...", leave=False):
+                batch_query = {k: v.to(self.device) for k, v in batch_query.items()}
                 embeddings_query = self.model(**batch_query).to("cpu")
                 query_embeddings.extend(list(torch.unbind(embeddings_query)))
 
@@ -113,6 +114,7 @@ class ColQwen2_5_Retriever(VisionRetriever):  # noqa : N801
 
         with torch.no_grad():
             for batch_doc in tqdm(dataloader, desc="Forward pass documents...", leave=False):
+                batch_doc = {k: v.to(self.device) for k, v in batch_doc.items()}
                 embeddings_doc = self.model(**batch_doc).to("cpu")
                 passage_embeddings.extend(list(torch.unbind(embeddings_doc)))
 
