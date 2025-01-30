@@ -77,10 +77,10 @@ class ColQwen2Retriever(VisionRetriever):
         return True
 
     def process_images(self, images: List[Image.Image], **kwargs):
-        return self.processor.process_images(images=images).to(self.device)
+        return self.processor.process_images(images=images)
 
     def process_queries(self, queries: List[str], **kwargs):
-        return self.processor.process_queries(queries=queries).to(self.device)
+        return self.processor.process_queries(queries=queries)
 
     def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
         dataloader = DataLoader(
@@ -95,6 +95,7 @@ class ColQwen2Retriever(VisionRetriever):
 
         with torch.no_grad():
             for batch_query in tqdm(dataloader, desc="Forward pass queries...", leave=False):
+                batch_query = {k: v.to(self.device) for k, v in batch_query.items()}
                 embeddings_query = self.model(**batch_query).to("cpu")
                 query_embeddings.extend(list(torch.unbind(embeddings_query)))
 
@@ -113,6 +114,7 @@ class ColQwen2Retriever(VisionRetriever):
 
         with torch.no_grad():
             for batch_doc in tqdm(dataloader, desc="Forward pass documents...", leave=False):
+                batch_doc = {k: v.to(self.device) for k, v in batch_doc.items()}
                 embeddings_doc = self.model(**batch_doc).to("cpu")
                 passage_embeddings.extend(list(torch.unbind(embeddings_doc)))
 

@@ -74,10 +74,10 @@ class BiQwen2Retriever(VisionRetriever):
         return True
 
     def process_images(self, images: List[Image.Image], **kwargs):
-        return self.processor.process_images(images=images).to(self.device)
+        return self.processor.process_images(images=images)
 
     def process_queries(self, queries: List[str], **kwargs):
-        return self.processor.process_queries(queries=queries).to(self.device)
+        return self.processor.process_queries(queries=queries)
 
     def forward_queries(
         self,
