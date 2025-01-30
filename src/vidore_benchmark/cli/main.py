@@ -9,6 +9,7 @@ import huggingface_hub
 import typer
 from datasets import load_dataset
 from dotenv import load_dotenv
+from tqdm import tqdm
 from transformers import set_seed
 
 from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler, HierarchicalEmbeddingPooler
@@ -213,8 +214,12 @@ def evaluate_retriever(
         savedir = output_path / model_id.replace("/", "_")
         savedir.mkdir(parents=True, exist_ok=True)
 
-        for dataset_name in dataset_names:
-            print(f"\n---------------------------\nEvaluating {dataset_name}")
+        for dataset_name in tqdm(
+            dataset_names,
+            desc="Evaluating datasets in collection",
+            leave=False,
+        ):
+            print(f"\n---------------------------\n{dataset_name}")
 
             metrics = _get_metrics_from_vidore_evaluator(
                 vision_retriever=retriever,

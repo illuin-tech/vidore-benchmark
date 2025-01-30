@@ -164,6 +164,7 @@ class BaseViDoReEvaluator(ABC):
             batched(ds, n=dataloader_prebatch_size),
             desc="Dataloader pre-batching for queries",
             total=math.ceil(len(ds) / (dataloader_prebatch_size)),
+            leave=False,
         ):
             queries: List[Any] = [batch[query_column] for batch in ds_batch]
             batch_embedding_queries = self.vision_retriever.forward_queries(
