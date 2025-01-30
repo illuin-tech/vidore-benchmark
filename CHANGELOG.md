@@ -43,6 +43,7 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 - Fix `DummyRetriever`'s `get_scores` method
 - Fix processor output not being sent to the correct device in `ColQwen2Retriever`
 - Fix bugs in `BiQwen2Retriever`
+- Fix try-catch block for soft dep check in `SigLIPRetriever`
 
 ### Removed
 
