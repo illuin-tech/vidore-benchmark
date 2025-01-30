@@ -49,7 +49,7 @@ class ColQwen2_5_Retriever(VisionRetriever):  # noqa : N801
         # Load the model and LORA adapter
         self.model = cast(
             ColQwen2_5,
-            ColQwen2_5_Processor.from_pretrained(
+            ColQwen2_5.from_pretrained(
                 pretrained_model_name_or_path,
                 torch_dtype=torch.bfloat16,
                 device_map=self.device,
