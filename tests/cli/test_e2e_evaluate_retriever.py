@@ -75,7 +75,7 @@ def cli_runner():
         ),
     ],
 )
-def test_e2e_evaluate_retriever(
+def test_e2e_evaluate_retriever_on_one_dataset(
     cli_runner: CliRunner,
     model_class: str,
     model_name: Optional[str],
@@ -86,13 +86,11 @@ def test_e2e_evaluate_retriever(
     """
     End-to-end test for the `evaluate_retriever` command.
     """
-    # Load expected results for comparison
     expected_results_path = Path(expected_results_filepath)
     with open(expected_results_path, "r", encoding="utf-8") as f:
         expected_results = ViDoReBenchmarkResults(**json.load(f))
 
     with tempfile.TemporaryDirectory() as temp_dir:
-        # Run the CLI command
         result = cli_runner.invoke(
             app,
             [
@@ -118,29 +116,24 @@ def test_e2e_evaluate_retriever(
             ],
         )
 
-        # Assert
         assert result.exit_code == 0, f"CLI command failed with error: {result.stdout}"
 
-        # Check if result file was created
         model_id = _sanitize_model_id(model_class, model_name)
         vidore_results_file = Path(temp_dir) / f"{model_id}_metrics.json"
         print(f"Metrics file path: {vidore_results_file}")
         assert vidore_results_file.exists(), "Metrics file was not created"
 
-        # Load JSON
         try:
             with open(vidore_results_file, "r", encoding="utf-8") as f:
                 vidore_results = json.load(f)
         except Exception as e:
             pytest.fail(f"Failed to load JSON file: {e}")
 
-        # Load results using the ViDoReBenchmarkResults format
         try:
             vidore_results = ViDoReBenchmarkResults(**vidore_results)
         except Exception as e:
             pytest.fail(f"Failed to load results using the `ViDoReBenchmarkResults` format: {e}")
 
-        # Verify results match expected with some tolerance
         if not _are_vidore_ndcg_results_close(vidore_results, expected_results):
             # Copy the results file to outputs directory for debugging
             outputs_dir = Path("outputs")
@@ -154,6 +147,4 @@ def test_e2e_evaluate_retriever(
             )
 
         metrics = vidore_results.metrics
-
-        # Check if metrics contain the expected dataset
         assert dataset_name in metrics, f"Metrics for dataset {dataset_name} not found"
