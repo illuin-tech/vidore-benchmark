@@ -54,7 +54,7 @@ cohere = ["cohere>=5.11.2,<6.0.0"]
 colpali-engine = ["colpali-engine>=0.3.3,<0.4.0"]
 dse = ["qwen-vl-utils==0.0.8"]
 jina-clip = ["timm>=1.0.7,<2.0.0"]
-siglip = ["protobuf>=4.25.3,<5.0.0"]
+siglip = ["protobuf>=4.25.3"]
 all-retrievers = [
     "vidore-benchmark[bge-m3]",
     "vidore-benchmark[bm25]",
