@@ -10,10 +10,10 @@ from vidore_benchmark.cli.main import _sanitize_model_id, app
 from vidore_benchmark.evaluation.interfaces import ViDoReBenchmarkResults
 
 
-def _are_vidore_ndcg_results_close(
+def _are_vidore_results_close(
     result_1: ViDoReBenchmarkResults,
     result_2: ViDoReBenchmarkResults,
-    tolerance: float = 3e-2,
+    tolerance: float = 1e-3,
 ) -> bool:
     """
     Check if two `ViDoReBenchmarkResults` objects are close within a tolerance.
@@ -134,7 +134,7 @@ def test_e2e_evaluate_retriever_on_one_dataset(
         except Exception as e:
             pytest.fail(f"Failed to load results using the `ViDoReBenchmarkResults` format: {e}")
 
-        if not _are_vidore_ndcg_results_close(vidore_results, expected_results):
+        if not _are_vidore_results_close(vidore_results, expected_results):
             # Copy the results file to outputs directory for debugging
             outputs_dir = Path("outputs")
             outputs_dir.mkdir(exist_ok=True, parents=True)
@@ -143,7 +143,7 @@ def test_e2e_evaluate_retriever_on_one_dataset(
 
             pytest.fail(
                 f"Results do not match expected. Check `{vidore_results_file_copy}` (output) and "
-                "{expected_results_path}` (expected) for more details."
+                f"{expected_results_path}` (expected) for more details."
             )
 
         metrics = vidore_results.metrics
