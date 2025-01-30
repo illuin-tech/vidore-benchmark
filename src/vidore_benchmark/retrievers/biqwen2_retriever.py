@@ -65,7 +65,7 @@ class BiQwen2Retriever(BaseVisionRetriever):
             if self.device == "mps":
                 self.num_workers = 0  # MPS does not support dataloader multiprocessing
             else:
-                self.num_workers = os.cpu_count() if os.cpu_count() is not None else 1
+                self.num_workers = min(os.cpu_count(), 8) if os.cpu_count() is not None else 1
         else:
             self.num_workers = num_workers
 
