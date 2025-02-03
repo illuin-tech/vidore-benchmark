@@ -42,7 +42,8 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         batch_query: int,
         batch_passage: int,
         batch_score: Optional[int] = None,
-        dataloader_prebatch_size: Optional[int] = None,
+        dataloader_prebatch_query: Optional[int] = None,
+        dataloader_prebatch_passage: Optional[int] = None,
         **kwargs,
     ) -> Dict[str, Optional[float]]:
         # Preprocess the dataset, get qrels, and deduplicate the queries and passages
@@ -82,13 +83,13 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
             ds=ds_queries,
             query_column=self.query_column,
             batch_query=batch_query,
-            dataloader_prebatch_size=dataloader_prebatch_size,
+            dataloader_prebatch_size=dataloader_prebatch_query,
         )
         passage_embeddings = self._get_passage_embeddings(
             ds=ds_passages,
             passage_column=self.passage_column,
             batch_passage=batch_passage,
-            dataloader_prebatch_size=dataloader_prebatch_size,
+            dataloader_prebatch_size=dataloader_prebatch_passage,
         )
 
         # Use token pooling (optional)

@@ -55,27 +55,10 @@ def _get_metrics_from_vidore_evaluator(
     split: str,
     batch_query: int,
     batch_passage: int,
-    batch_score: Optional[int],
-    dataloader_prebatch_size: Optional[int],
+    batch_score: Optional[int] = None,
+    dataloader_prebatch_query: Optional[int] = None,
+    dataloader_prebatch_passage: Optional[int] = None,
 ) -> Dict[str, Dict[str, Optional[float]]]:
-    """
-    Rooter function to get metrics from the ViDoRe evaluator depending on the dataset format.
-
-    Args:
-        vision_retriever (BaseVisionRetriever)
-        embedding_pooler (Optional[BaseEmbeddingPooler])
-        dataset_name (str): Dataset name
-        dataset_format (str): Dataset format
-        split (str): Dataset split
-        batch_query (int): Batch size for query embedding inference
-        batch_passage (int): Batch size for passages embedding inference
-        batch_score (Optional[int]): Batch size for score computation
-        dataloader_prebatch_size (Optional[int]): Prebatch size for the dataloader
-
-    Returns:
-        Dict[str, Dict[str, Optional[float]]]: Metrics per dataset.
-            Example: {"dataset_name": {"ndcg_at_5": 0.5, "ndcg_at_10": 0.6}}
-    """
     if dataset_format == "qa":
         vidore_evaluator = ViDoReEvaluatorQA(
             vision_retriever=vision_retriever,
@@ -89,7 +72,8 @@ def _get_metrics_from_vidore_evaluator(
                 batch_query=batch_query,
                 batch_passage=batch_passage,
                 batch_score=batch_score,
-                dataloader_prebatch_size=dataloader_prebatch_size,
+                dataloader_prebatch_query=dataloader_prebatch_query,
+                dataloader_prebatch_passage=dataloader_prebatch_passage,
             )
         }
 
@@ -129,7 +113,12 @@ def evaluate_retriever(
     batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 4,
     batch_passage: Annotated[int, typer.Option(help="Batch size for passages embedding inference")] = 4,
     batch_score: Annotated[Optional[int], typer.Option(help="Batch size for retrieval score computation")] = 4,
-    dataloader_prebatch_size: Annotated[Optional[int], typer.Option(help="Prebatch size for the dataloader")] = None,
+    dataloader_prebatch_query: Annotated[
+        Optional[int], typer.Option(help="Dataloader prebatch size for queries")
+    ] = None,
+    dataloader_prebatch_passage: Annotated[
+        Optional[int], typer.Option(help="Dataloader prebatch size for passages")
+    ] = None,
     use_token_pooling: Annotated[
         bool, typer.Option(help="Whether to use token pooling for passage embeddings or not")
     ] = False,
@@ -179,7 +168,8 @@ def evaluate_retriever(
             batch_query=batch_query,
             batch_passage=batch_passage,
             batch_score=batch_score,
-            dataloader_prebatch_size=dataloader_prebatch_size,
+            dataloader_prebatch_query=dataloader_prebatch_query,
+            dataloader_prebatch_passage=dataloader_prebatch_passage,
         )
 
         if use_token_pooling:
@@ -212,7 +202,6 @@ def evaluate_retriever(
             collection = huggingface_hub.get_collection(collection_name)
             dataset_names = [dataset_item.item_id for dataset_item in collection.items]
 
-        # Placeholder for all metrics
         metrics_all: Dict[str, Dict[str, Optional[float]]] = {}
         results_all: List[ViDoReBenchmarkResults] = []
 
@@ -235,7 +224,8 @@ def evaluate_retriever(
                 batch_query=batch_query,
                 batch_passage=batch_passage,
                 batch_score=batch_score,
-                dataloader_prebatch_size=dataloader_prebatch_size,
+                dataloader_prebatch_query=dataloader_prebatch_query,
+                dataloader_prebatch_passage=dataloader_prebatch_passage,
             )
 
             metrics_all.update(metrics)

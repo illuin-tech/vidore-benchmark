@@ -81,7 +81,7 @@ class BaseViDoReEvaluator(ABC):
             ds (Dataset): The dataset containing the queries and passages.
             passage_column (str): The name of the column containing the passages (i.e. images or text chunks).
             batch_passage (int): The batch size for the passages.
-            dataloader_prebatch_size (Optional[int]): The pre-batch size for the dataloader. If set, must be
+            dataloader_prebatch_size (Optional[int]): The prebatch size for the dataloader. If set, must be
                 greater than or equal to `batch_passage`.
 
         Returns:
@@ -89,7 +89,7 @@ class BaseViDoReEvaluator(ABC):
         """
         passage_embeddings: List[torch.Tensor] = []
 
-        # NOTE: To prevent overloading the RAM for large datasets, we will load the passages that will be fed
+        # NOTE: To avoid loading the entire dataset in memory, we will load the passages that will be fed
         # to the model in batches. This optimization is about efficient data loading, and is not related to
         # the model's forward pass which is also batched.
 
@@ -139,7 +139,7 @@ class BaseViDoReEvaluator(ABC):
             ds (Dataset): The dataset containing the queries and passages.
             query_column (str): The name of the column containing the queries.
             batch_query (int): The batch size for the queries.
-            dataloader_prebatch_size (Optional[int]): The pre-batch size for the dataloader. If set, must be
+            dataloader_prebatch_size (Optional[int]): The prebatch size for the dataloader. If set, must be
                 greater than or equal to `batch_query`.
 
         Returns:
@@ -147,7 +147,7 @@ class BaseViDoReEvaluator(ABC):
         """
         query_embeddings: List[torch.Tensor] = []
 
-        # NOTE: To prevent overloading the RAM for large datasets, we will load the queries that will be fed
+        # NOTE: To avoid loading the entire dataset in memory, we will load the queries that will be fed
         # to the model in batches. This optimization is about efficient data loading, and is not related to
         # the model's forward pass which is also batched.
 
