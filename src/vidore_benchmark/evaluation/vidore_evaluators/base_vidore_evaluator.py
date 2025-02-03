@@ -82,7 +82,7 @@ class BaseViDoReEvaluator(ABC):
             passage_column (str): The name of the column containing the passages (i.e. images or text chunks).
             batch_passage (int): The batch size for the passages.
             dataloader_prebatch_size (Optional[int]): The prebatch size for the dataloader. If set, must be
-                greater than or equal to `batch_passage`.
+                greater than or equal to `batch_passage`. Defaults to `10 * batch_passage`.
 
         Returns:
             Union[torch.Tensor, List[torch.Tensor]]: The passage embeddings.
@@ -94,7 +94,7 @@ class BaseViDoReEvaluator(ABC):
         # the model's forward pass which is also batched.
 
         if dataloader_prebatch_size is None:
-            dataloader_prebatch_size = batch_passage
+            dataloader_prebatch_size = 10 * batch_passage
         if dataloader_prebatch_size < batch_passage:
             logger.warning(
                 f"`dataloader_prebatch_size` ({dataloader_prebatch_size}) is smaller than `batch_passage` "
@@ -140,7 +140,7 @@ class BaseViDoReEvaluator(ABC):
             query_column (str): The name of the column containing the queries.
             batch_query (int): The batch size for the queries.
             dataloader_prebatch_size (Optional[int]): The prebatch size for the dataloader. If set, must be
-                greater than or equal to `batch_query`.
+                greater than or equal to `batch_query`. Defaults to `10 * batch_query`.
 
         Returns:
             Union[torch.Tensor, List[torch.Tensor]]: The query embeddings.
@@ -152,7 +152,7 @@ class BaseViDoReEvaluator(ABC):
         # the model's forward pass which is also batched.
 
         if dataloader_prebatch_size is None:
-            dataloader_prebatch_size = batch_query
+            dataloader_prebatch_size = 10 * batch_query
         if dataloader_prebatch_size < batch_query:
             logger.warning(
                 f"`dataloader_prebatch_size` ({dataloader_prebatch_size}) is smaller than `batch_query` "
