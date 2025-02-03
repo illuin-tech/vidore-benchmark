@@ -152,8 +152,9 @@ def evaluate_retriever(
     metrics_all: Dict[str, Dict[str, Optional[float]]] = {}
     results_all: List[ViDoReBenchmarkResults] = []  # same as metrics_all but structured + with metadata
 
-    savedir = Path(output_dir) / model_id.replace("/", "_")
-    savedir.mkdir(parents=True, exist_ok=True)
+    savedir_root = Path(output_dir)
+    savedir_datasets = savedir_root / model_id.replace("/", "_")
+    savedir_datasets.mkdir(parents=True, exist_ok=True)
 
     for dataset_name in tqdm(dataset_names, desc="Evaluating dataset(s)"):
         print(f"\n---------------------------\n{dataset_name}")
@@ -172,7 +173,7 @@ def evaluate_retriever(
         )
         metrics_all.update(metrics)
 
-        print(f"nDCG@5 for {model_id} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
+        print(f"nDCG@5 on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
 
         results = ViDoReBenchmarkResults(
             metadata=MetadataModel(
@@ -188,7 +189,7 @@ def evaluate_retriever(
             filename_results = f"{sanitized_dataset_name}_metrics_pool_factor_{pool_factor}.json"
         else:
             filename_results = f"{sanitized_dataset_name}_metrics.json"
-        savepath_results = savedir / filename_results
+        savepath_results = savedir_datasets / filename_results
 
         with open(str(savepath_results), "w", encoding="utf-8") as f:
             f.write(results.model_dump_json(indent=4))
@@ -198,10 +199,10 @@ def evaluate_retriever(
     results_merged = ViDoReBenchmarkResults.merge(results_all)
 
     if use_token_pooling:
-        filename_results_all = f"{model_id}_all_metrics_pool_factor_{pool_factor}.json"
+        filename_results_all = f"{model_id}_metrics_pool_factor_{pool_factor}.json"
     else:
-        filename_results_all = f"{model_id}_all_metrics.json"
-    savepath_results_all = savedir / filename_results_all
+        filename_results_all = f"{model_id}_metrics.json"
+    savepath_results_all = savedir_root / filename_results_all
 
     with open(str(savepath_results_all), "w", encoding="utf-8") as f:
         f.write(results_merged.model_dump_json(indent=4))
