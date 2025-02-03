@@ -116,11 +116,12 @@ def test_e2e_evaluate_retriever_on_one_dataset(
             ],
         )
 
+        # Check if the CLI command ran successfully
         assert result.exit_code == 0, f"CLI command failed with error: {result.stdout}"
 
+        # Assert that the metrics file was properly created
         model_id = _sanitize_model_id(model_class, model_name)
         vidore_results_file = Path(temp_dir) / f"{model_id}_metrics.json"
-        print(f"Metrics file path: {vidore_results_file}")
         assert vidore_results_file.exists(), "Metrics file was not created"
 
         try:
@@ -129,6 +130,7 @@ def test_e2e_evaluate_retriever_on_one_dataset(
         except Exception as e:
             pytest.fail(f"Failed to load JSON file: {e}")
 
+        # Assert that the results have the correct format and are close to the expected results
         try:
             vidore_results = ViDoReBenchmarkResults(**vidore_results)
         except Exception as e:
@@ -146,5 +148,6 @@ def test_e2e_evaluate_retriever_on_one_dataset(
                 f"{expected_results_path}` (expected) for more details."
             )
 
+        # Assert that the dataset name is present in the metrics
         metrics = vidore_results.metrics
         assert dataset_name in metrics, f"Metrics for dataset {dataset_name} not found"
