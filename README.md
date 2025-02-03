@@ -126,12 +126,16 @@ vidore-benchmark evaluate-retriever --help
 While the CLI can be used to evaluate a fixed list of models, you can also use the Python API to evaluate your own retriever. Here is an example of how to evaluate the ColPali model on the ViDoRe benchmark. Note that your processor must implement a `process_images` and a `process_queries` methods, similarly to the ColVision processors.
 
 ```python
+from typing import Dict, Optional
+
 import torch
 from colpali_engine.models import ColIdefics3, ColIdefics3Processor
 from datasets import load_dataset
+from tqdm import tqdm
 
 from vidore_benchmark.evaluation.vidore_evaluators import ViDoReEvaluatorQA
 from vidore_benchmark.retrievers import VisionRetriever
+from vidore_benchmark.utils.data_utils import get_datasets_from_collection
 
 model_name = "vidore/colSmol-256M"
 processor = ColIdefics3Processor.from_pretrained(model_name)
@@ -141,20 +145,36 @@ model = ColIdefics3.from_pretrained(
     device_map="cuda",
 ).eval()
 
+# Get retriever instance
 vision_retriever = VisionRetriever(
     model=model,
     processor=processor,
 )
 vidore_evaluator = ViDoReEvaluatorQA(vision_retriever)
 
-ds = load_dataset("vidore/tabfquad_test_subsampled", split="test")
+# Evaluate on a single dataset
+dataset_name = "vidore/tabfquad_test_subsampled"
 
-metrics = vidore_evaluator.evaluate_dataset(
+ds = load_dataset(dataset_name, split="test")
+metrics_dataset = vidore_evaluator.evaluate_dataset(
     ds=ds,
     batch_query=4,
     batch_passage=4,
     batch_score=4,
 )
+
+# Evaluate on a local directory or a HuggingFace collection
+collection_name = "vidore/vidore-benchmark-667173f98e70a1c0fa4db00d"  # ViDoRe Benchmark
+
+dataset_names = get_datasets_from_collection(collection_name)
+metrics_collection: Dict[str, Dict[str, Optional[float]]] = {}
+for dataset_name in tqdm(dataset_names, desc="Evaluating dataset(s)"):
+    metrics_collection[dataset_name] = vidore_evaluator.evaluate_dataset(
+        ds=load_dataset(dataset_name, split="test"),
+        batch_query=4,
+        batch_passage=4,
+        batch_score=4,
+    )
 ```
 
 ### Implement your own retriever
