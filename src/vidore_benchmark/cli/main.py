@@ -33,6 +33,26 @@ app = typer.Typer(
 )
 
 
+def get_datasets_from_collection(collection_name: str) -> List[str]:
+    """Get dataset names from a collection path or HuggingFace collection ID.
+
+    Args:
+        collection_name: Local directory path or HuggingFace collection ID
+
+    Returns:
+        List of dataset names
+    """
+    if os.path.isdir(collection_name):
+        print(f"Loading datasets from local directory: `{collection_name}`")
+        dataset_names = os.listdir(collection_name)
+        dataset_names = [os.path.join(collection_name, dataset) for dataset in dataset_names]
+    else:
+        print(f"Loading datasets from the Hf Hub collection: {collection_name}")
+        collection = huggingface_hub.get_collection(collection_name)
+        dataset_names = [dataset_item.item_id for dataset_item in collection.items]
+    return dataset_names
+
+
 def _sanitize_model_id(
     model_class: str,
     pretrained_model_name_or_path: Optional[str] = None,
@@ -59,6 +79,9 @@ def _get_metrics_from_vidore_evaluator(
     dataloader_prebatch_query: Optional[int] = None,
     dataloader_prebatch_passage: Optional[int] = None,
 ) -> Dict[str, Dict[str, Optional[float]]]:
+    """
+    Rooter function to get metrics from the ViDoRe evaluator depending on the dataset format.
+    """
     if dataset_format == "qa":
         vidore_evaluator = ViDoReEvaluatorQA(
             vision_retriever=vision_retriever,
@@ -76,7 +99,6 @@ def _get_metrics_from_vidore_evaluator(
                 dataloader_prebatch_passage=dataloader_prebatch_passage,
             )
         }
-
     elif dataset_format == "beir":
         raise NotImplementedError("BEIR evaluation is not implemented yet.")
     else:
@@ -193,14 +215,7 @@ def evaluate_retriever(
         print(f"Benchmark results saved to `{savepath}`")
 
     elif collection_name is not None:
-        if os.path.isdir(collection_name):
-            print(f"Loading datasets from local directory: `{collection_name}`")
-            dataset_names = os.listdir(collection_name)
-            dataset_names = [os.path.join(collection_name, dataset) for dataset in dataset_names]
-        else:
-            print(f"Loading datasets from the Hf Hub collection: {collection_name}")
-            collection = huggingface_hub.get_collection(collection_name)
-            dataset_names = [dataset_item.item_id for dataset_item in collection.items]
+        dataset_names = get_datasets_from_collection(collection_name)
 
         metrics_all: Dict[str, Dict[str, Optional[float]]] = {}
         results_all: List[ViDoReBenchmarkResults] = []
