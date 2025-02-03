@@ -34,10 +34,10 @@ app = typer.Typer(
 
 
 def get_datasets_from_collection(collection_name: str) -> List[str]:
-    """Get dataset names from a collection path or HuggingFace collection ID.
+    """Get dataset names from a local directory or a HuggingFace collection.
 
     Args:
-        collection_name: Local directory path or HuggingFace collection ID
+        collection_name: Local dirpath or HuggingFace collection ID
 
     Returns:
         List of dataset names
@@ -55,14 +55,14 @@ def get_datasets_from_collection(collection_name: str) -> List[str]:
 
 def _sanitize_model_id(
     model_class: str,
-    pretrained_model_name_or_path: Optional[str] = None,
+    model_name: Optional[str] = None,
 ) -> str:
     """
     Return sanitized model ID for properly saving metrics as files.
     """
     model_id = model_class
-    if pretrained_model_name_or_path:
-        model_id += f"_{pretrained_model_name_or_path}"
+    if model_name:
+        model_id += f"_{model_name}"
     model_id = model_id.replace("/", "_")
     return model_id
 
@@ -152,33 +152,35 @@ def evaluate_retriever(
     The MTEB retrieval metrics are saved to a JSON file.
     """
 
-    # Sanity check
     if dataset_name is None and collection_name is None:
         raise ValueError("Please provide a dataset name or collection name")
     elif dataset_name is not None and collection_name is not None:
         raise ValueError("Please provide only one of dataset name or collection name")
 
-    # Create the vision retriever
     retriever = load_vision_retriever_from_registry(
         model_class,
         pretrained_model_name_or_path=model_name,
     )
-
-    # Sanitize the model ID to use as a filename
-    model_id = _sanitize_model_id(model_class, model_name)
-
-    # Get the pooling strategy
+    model_id = _sanitize_model_id(model_class, model_name=model_name)
     embedding_pooler = HierarchicalEmbeddingPooler(pool_factor) if use_token_pooling else None
 
-    # Create the output directory if it doesn't exist
-    output_path = Path(output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
+    dataset_names: List[str] = []
+    if dataset_name is not None:
+        dataset_names = [dataset_name]
+    elif collection_name is not None:
+        dataset_names = get_datasets_from_collection(collection_name)
 
-    # Load the dataset(s) and evaluate
-    if dataset_name is None and collection_name is None:
-        raise ValueError("Please provide a dataset name or collection name.")
+    metrics_all: Dict[str, Dict[str, Optional[float]]] = {}
+    results_all: List[ViDoReBenchmarkResults] = []  # same as metrics_all but structured + with metadata
 
-    elif dataset_name is not None:
+    savedir = Path(output_dir) / model_id.replace("/", "_")
+    savedir.mkdir(parents=True, exist_ok=True)
+
+    for dataset_name in tqdm(
+        dataset_names,
+        desc="Evaluating dataset(s)",
+        leave=False,
+    ):
         print(f"\n---------------------------\n{dataset_name}")
 
         metrics = _get_metrics_from_vidore_evaluator(
@@ -193,11 +195,7 @@ def evaluate_retriever(
             dataloader_prebatch_query=dataloader_prebatch_query,
             dataloader_prebatch_passage=dataloader_prebatch_passage,
         )
-
-        if use_token_pooling:
-            savepath = output_path / f"{model_id}_metrics_pool_factor_{pool_factor}.json"
-        else:
-            savepath = output_path / f"{model_id}_metrics.json"
+        metrics_all.update(metrics)
 
         print(f"nDCG@5 for {model_id} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
 
@@ -208,78 +206,32 @@ def evaluate_retriever(
             ),
             metrics={dataset_name: metrics[dataset_name]},
         )
+        results_all.append(results)
 
-        with open(str(savepath), "w", encoding="utf-8") as f:
+        sanitized_dataset_name = dataset_name.replace("/", "_")
+        if use_token_pooling:
+            filename_results = f"{sanitized_dataset_name}_metrics_pool_factor_{pool_factor}.json"
+        else:
+            filename_results = f"{sanitized_dataset_name}_metrics.json"
+        savepath_results = savedir / filename_results
+
+        with open(str(savepath_results), "w", encoding="utf-8") as f:
             f.write(results.model_dump_json(indent=4))
 
-        print(f"Benchmark results saved to `{savepath}`")
+        logger.info(f'ViDoRe Benchmark results for "{dataset_name}" saved to `{savepath_results}`')
 
-    elif collection_name is not None:
-        dataset_names = get_datasets_from_collection(collection_name)
+    results_merged = ViDoReBenchmarkResults.merge(results_all)
 
-        metrics_all: Dict[str, Dict[str, Optional[float]]] = {}
-        results_all: List[ViDoReBenchmarkResults] = []
+    if use_token_pooling:
+        filename_results_all = f"{model_id}_all_metrics_pool_factor_{pool_factor}.json"
+    else:
+        filename_results_all = f"{model_id}_all_metrics.json"
+    savepath_results_all = savedir / filename_results_all
 
-        savedir = output_path / model_id.replace("/", "_")
-        savedir.mkdir(parents=True, exist_ok=True)
+    with open(str(savepath_results_all), "w", encoding="utf-8") as f:
+        f.write(results_merged.model_dump_json(indent=4))
 
-        for dataset_name in tqdm(
-            dataset_names,
-            desc="Evaluating datasets in collection",
-            leave=False,
-        ):
-            print(f"\n---------------------------\n{dataset_name}")
-
-            metrics = _get_metrics_from_vidore_evaluator(
-                vision_retriever=retriever,
-                embedding_pooler=embedding_pooler,
-                dataset_name=dataset_name,
-                dataset_format=dataset_format,
-                split=split,
-                batch_query=batch_query,
-                batch_passage=batch_passage,
-                batch_score=batch_score,
-                dataloader_prebatch_query=dataloader_prebatch_query,
-                dataloader_prebatch_passage=dataloader_prebatch_passage,
-            )
-
-            metrics_all.update(metrics)
-
-            # Sanitize the dataset item to use as a filename
-            dataset_item_id = dataset_name.replace("/", "_")
-
-            if use_token_pooling:
-                savepath = savedir / f"{dataset_item_id}_metrics_pool_factor_{pool_factor}.json"
-            else:
-                savepath = savedir / f"{dataset_item_id}_metrics.json"
-
-            print(f"nDCG@5 for {model_id} on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
-
-            results = ViDoReBenchmarkResults(
-                metadata=MetadataModel(
-                    timestamp=datetime.now(),
-                    vidore_benchmark_version=version("vidore_benchmark"),
-                ),
-                metrics={dataset_name: metrics[dataset_name]},
-            )
-            results_all.append(results)
-
-            with open(str(savepath), "w", encoding="utf-8") as f:
-                f.write(results.model_dump_json(indent=4))
-
-            print(f"Benchmark results saved to `{savepath}`")
-
-        if use_token_pooling:
-            savepath_all = output_path / f"{model_id}_all_metrics_pool_factor_{pool_factor}.json"
-        else:
-            savepath_all = output_path / f"{model_id}_all_metrics.json"
-
-        results_merged = ViDoReBenchmarkResults.merge(results_all)
-
-        with open(str(savepath_all), "w", encoding="utf-8") as f:
-            f.write(results_merged.model_dump_json(indent=4))
-
-        print(f"Concatenated metrics saved to `{savepath_all}`")
+    print(f"ViDoRe Benchmark results saved to `{savepath_results_all}`")
 
 
 if __name__ == "__main__":
