@@ -1,4 +1,5 @@
 import json
+import logging
 import tempfile
 from pathlib import Path
 from typing import Optional
@@ -8,6 +9,9 @@ from typer.testing import CliRunner
 
 from vidore_benchmark.cli.main import _sanitize_model_id, app
 from vidore_benchmark.evaluation.interfaces import ViDoReBenchmarkResults
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 def _are_vidore_results_close(
@@ -115,6 +119,7 @@ def test_e2e_evaluate_retriever_on_one_dataset(
                 temp_dir,
             ],
         )
+        logger.info(f"CLI output: {result.stdout}")
 
         # Check if the CLI command ran successfully
         assert result.exit_code == 0, f"CLI command failed with error: {result.stdout}"
@@ -123,26 +128,25 @@ def test_e2e_evaluate_retriever_on_one_dataset(
         model_id = _sanitize_model_id(model_class, model_name)
         vidore_results_file = Path(temp_dir) / f"{model_id}_metrics.json"
         assert vidore_results_file.exists(), "Metrics file was not created"
-
         try:
             with open(vidore_results_file, "r", encoding="utf-8") as f:
                 vidore_results = json.load(f)
         except Exception as e:
             pytest.fail(f"Failed to load JSON file: {e}")
 
-        # Assert that the results have the correct format and are close to the expected results
+        # Assert that the results have the correct format
         try:
             vidore_results = ViDoReBenchmarkResults(**vidore_results)
         except Exception as e:
             pytest.fail(f"Failed to load results using the `ViDoReBenchmarkResults` format: {e}")
 
+        # Assert that the results are close to the expected results
         if not _are_vidore_results_close(vidore_results, expected_results):
             # Copy the results file to outputs directory for debugging
             outputs_dir = Path("outputs")
             outputs_dir.mkdir(exist_ok=True, parents=True)
             vidore_results_file_copy = outputs_dir / vidore_results_file.name
             vidore_results_file.rename(vidore_results_file_copy)
-
             pytest.fail(
                 f"Results do not match expected. Check `{vidore_results_file_copy}` (output) and "
                 f"{expected_results_path}` (expected) for more details."
