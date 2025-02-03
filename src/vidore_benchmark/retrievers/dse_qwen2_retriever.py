@@ -40,7 +40,6 @@ class DSEQwen2Retriever(BaseVisionRetriever):
             )
 
         self.device = get_torch_device(device)
-        logger.info(f"Using device: {self.device}")
 
         min_pixels = 1 * 28 * 28
         max_pixels = num_image_tokens * 28 * 28

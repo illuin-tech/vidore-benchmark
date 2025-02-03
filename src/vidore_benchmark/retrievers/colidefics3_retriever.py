@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 from typing import List, Optional, Union, cast
 
 import torch
@@ -33,7 +32,7 @@ class ColIdefics3Retriever(BaseVisionRetriever):
         self,
         pretrained_model_name_or_path: str = "vidore/colSmol-256M",
         device: str = "auto",
-        num_workers: Optional[int] = None,
+        num_workers: int = 0,
     ):
         super().__init__(use_visual_embedding=True)
 
@@ -46,7 +45,7 @@ class ColIdefics3Retriever(BaseVisionRetriever):
             )
 
         self.device = get_torch_device(device)
-        logger.info(f"Using device: {self.device}")
+        self.num_workers = num_workers
 
         # Load the model and LORA adapter
         self.model = cast(
@@ -64,14 +63,6 @@ class ColIdefics3Retriever(BaseVisionRetriever):
             ColIdefics3Processor,
             ColIdefics3Processor.from_pretrained(pretrained_model_name_or_path),
         )
-
-        if num_workers is None:
-            if self.device == "mps":
-                self.num_workers = 0  # MPS does not support dataloader multiprocessing
-            else:
-                self.num_workers = min(os.cpu_count(), 8) if os.cpu_count() is not None else 1
-        else:
-            self.num_workers = num_workers
 
     def process_images(self, images: List[Image.Image], **kwargs):
         return self.processor.process_images(images=images)
