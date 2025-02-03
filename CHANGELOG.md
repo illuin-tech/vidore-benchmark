@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning].
 - Change default checkpoints for ColPali and ColQwen2 retrievers
 - [Breaking] Revamp the `evaluate` module. Evaluation is now handled by the `ViDoReEvaluatorQA` class
 - [Breaking] Rename `ViDoReEvaluator` into `BaseViDoReEvaluator`. The new `ViDoReEvaluator` class allows to create retrievers using the Python API.
+- Set default `num_workers` to 0 in retrievers
 
 ### Fixed
 
