@@ -46,6 +46,14 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         dataloader_prebatch_passage: Optional[int] = None,
         **kwargs,
     ) -> Dict[str, Optional[float]]:
+        """
+        Evaluate a dataset with a Question Answering (QA) format.
+
+        Important notes:
+        - In the current ViDoRe Benchmark, queries are deduplicated.
+        - In the next iteration of the ViDoRe Benchmark, we will allow for multiple queries per passage using
+          the BEIR format.
+        """
         # Preprocess the dataset, get qrels, and deduplicate the queries and passages
         ds = ds.map(lambda example, idx: {self.id_column: idx}, with_indices=True)
 
@@ -56,6 +64,7 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
             [col for col in ds.column_names if col not in [self.query_column, self.id_column]]
         )
         ds_queries = deduplicate_dataset_rows(ds=ds_queries, target_column=self.query_column)
+
         queries = list(ds_queries[self.query_column])
 
         if len(ds_queries) == 0:
@@ -67,15 +76,12 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
                 queries=ds_queries[self.query_column],
                 passages=ds_passages[self.passage_column],
             )
-
             relevant_docs, results = self._get_relevant_docs_results(
                 ds=ds,
                 queries=queries,
                 scores=scores,
             )
-
             metrics = self.compute_retrieval_scores(qrels=relevant_docs, results=results)
-
             return metrics
 
         # Get the embeddings for the queries and passages
