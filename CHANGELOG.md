@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning].
 - Add `num_workers` argument for dataloaders
 - Allow the creation of `VisionRetriever` instances using a PyTorch model and a processor that implements a `process_images` and a `process_queries` methods, similarly to the ColVision processors
 - [Experimental] Add a QA-to-BEIR dataset format conversion script
+- Add `dataloader_prebatch_query` and `dataloader_prebatch_passage` arguments/CLI options to avoid loading the entire datasets in memory
 
 ### Changed
 
