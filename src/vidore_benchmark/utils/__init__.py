@@ -1,4 +1,4 @@
-from .data_utils import ListDataset
+from .data_utils import ListDataset, deduplicate_dataset_rows, get_datasets_from_collection
 from .image_utils import hash_image
 from .iter_utils import batched, islice
 from .logging_utils import setup_logging

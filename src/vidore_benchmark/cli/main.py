@@ -1,11 +1,9 @@
 import logging
-import os
 from datetime import datetime
 from importlib.metadata import version
 from pathlib import Path
 from typing import Annotated, Dict, List, Optional
 
-import huggingface_hub
 import typer
 from datasets import load_dataset
 from dotenv import load_dotenv
@@ -17,6 +15,7 @@ from vidore_benchmark.evaluation.interfaces import MetadataModel, ViDoReBenchmar
 from vidore_benchmark.evaluation.vidore_evaluators import ViDoReEvaluatorQA
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import load_vision_retriever_from_registry
+from vidore_benchmark.utils.data_utils import get_datasets_from_collection
 from vidore_benchmark.utils.logging_utils import setup_logging
 
 logger = logging.getLogger(__name__)
@@ -31,26 +30,6 @@ app = typer.Typer(
     """,
     no_args_is_help=True,
 )
-
-
-def get_datasets_from_collection(collection_name: str) -> List[str]:
-    """Get dataset names from a local directory or a HuggingFace collection.
-
-    Args:
-        collection_name: Local dirpath or HuggingFace collection ID
-
-    Returns:
-        List of dataset names
-    """
-    if os.path.isdir(collection_name):
-        print(f"Loading datasets from local directory: `{collection_name}`")
-        dataset_names = os.listdir(collection_name)
-        dataset_names = [os.path.join(collection_name, dataset) for dataset in dataset_names]
-    else:
-        print(f"Loading datasets from the Hf Hub collection: {collection_name}")
-        collection = huggingface_hub.get_collection(collection_name)
-        dataset_names = [dataset_item.item_id for dataset_item in collection.items]
-    return dataset_names
 
 
 def _sanitize_model_id(
@@ -176,11 +155,7 @@ def evaluate_retriever(
     savedir = Path(output_dir) / model_id.replace("/", "_")
     savedir.mkdir(parents=True, exist_ok=True)
 
-    for dataset_name in tqdm(
-        dataset_names,
-        desc="Evaluating dataset(s)",
-        leave=False,
-    ):
+    for dataset_name in tqdm(dataset_names, desc="Evaluating dataset(s)"):
         print(f"\n---------------------------\n{dataset_name}")
 
         metrics = _get_metrics_from_vidore_evaluator(

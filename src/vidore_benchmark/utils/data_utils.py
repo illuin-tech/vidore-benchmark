@@ -1,9 +1,15 @@
+import logging
+import os
+from pathlib import Path
 from typing import List, TypeVar
 
+import huggingface_hub
 from datasets import Dataset as HfDataset
 from torch.utils.data import Dataset as TorchDataset
 
 T = TypeVar("T")
+
+logger = logging.getLogger(__name__)
 
 
 class ListDataset(TorchDataset[T]):
@@ -46,3 +52,24 @@ def deduplicate_dataset_rows(ds: HfDataset, target_column: str) -> HfDataset:
             keep_mask.append(False)
 
     return ds.select([i for i, keep in enumerate(keep_mask) if keep])
+
+
+def get_datasets_from_collection(collection_name: str) -> List[str]:
+    """
+    Get dataset names from a local directory or a HuggingFace collection.
+
+    Args:
+        collection_name: Local dirpath or HuggingFace collection ID
+
+    Returns:
+        List of dataset names
+    """
+    if Path(collection_name).is_dir():
+        logger.info(f"Loading datasets from local directory: `{collection_name}`")
+        dataset_names = os.listdir(collection_name)
+        dataset_names = [os.path.join(collection_name, dataset) for dataset in dataset_names]
+    else:
+        logger.info(f'Loading datasets from the Hf Hub collection: "{collection_name}"')
+        collection = huggingface_hub.get_collection(collection_name)
+        dataset_names = [dataset_item.item_id for dataset_item in collection.items]
+    return dataset_names
