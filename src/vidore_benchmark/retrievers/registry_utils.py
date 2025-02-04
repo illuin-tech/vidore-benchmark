@@ -39,17 +39,20 @@ def load_vision_retriever_class_from_registry(model_class: str) -> Type[BaseVisi
 def load_vision_retriever_from_registry(
     model_class: str,
     pretrained_model_name_or_path: Optional[str] = None,
+    **kwargs,
 ) -> BaseVisionRetriever:
     """
     Create a vision retriever class instance.
-    If `model_name` is provided, the retriever will be instantiated with the given model name or path.
     """
 
     retriever_class = load_vision_retriever_class_from_registry(model_class)
 
     if pretrained_model_name_or_path:
-        retriever = retriever_class(pretrained_model_name_or_path=pretrained_model_name_or_path)
+        retriever = retriever_class(
+            pretrained_model_name_or_path=pretrained_model_name_or_path,
+            **kwargs,
+        )
     else:
-        retriever = retriever_class()
+        retriever = retriever_class(**kwargs)
 
     return retriever
