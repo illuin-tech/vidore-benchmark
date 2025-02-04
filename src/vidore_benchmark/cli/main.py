@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 from tqdm import tqdm
 from transformers import set_seed
 
-from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler, HierarchicalEmbeddingPooler
 from vidore_benchmark.evaluation.interfaces import MetadataModel, ViDoReBenchmarkResults
 from vidore_benchmark.evaluation.vidore_evaluators import ViDoReEvaluatorQA
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
@@ -48,7 +47,6 @@ def _sanitize_model_id(
 
 def _get_metrics_from_vidore_evaluator(
     vision_retriever: BaseVisionRetriever,
-    embedding_pooler: Optional[BaseEmbeddingPooler],
     dataset_name: str,
     dataset_format: str,
     split: str,
@@ -62,10 +60,7 @@ def _get_metrics_from_vidore_evaluator(
     Rooter function to get metrics from the ViDoRe evaluator depending on the dataset format.
     """
     if dataset_format == "qa":
-        vidore_evaluator = ViDoReEvaluatorQA(
-            vision_retriever=vision_retriever,
-            embedding_pooler=embedding_pooler,
-        )
+        vidore_evaluator = ViDoReEvaluatorQA(vision_retriever)
         ds = load_dataset(dataset_name, split=split)
         metrics = {
             dataset_name: vidore_evaluator.evaluate_dataset(
@@ -120,10 +115,6 @@ def evaluate_retriever(
     dataloader_prebatch_passage: Annotated[
         Optional[int], typer.Option(help="Dataloader prebatch size for passages")
     ] = None,
-    use_token_pooling: Annotated[
-        bool, typer.Option(help="Whether to use token pooling for passage embeddings or not")
-    ] = False,
-    pool_factor: Annotated[int, typer.Option(help="Pooling factor for hierarchical token pooling")] = 3,
     output_dir: Annotated[str, typer.Option(help="Directory where to save the metrics")] = "outputs",
 ):
     """
@@ -141,7 +132,6 @@ def evaluate_retriever(
         pretrained_model_name_or_path=model_name,
     )
     model_id = _sanitize_model_id(model_class, model_name=model_name)
-    embedding_pooler = HierarchicalEmbeddingPooler(pool_factor) if use_token_pooling else None
 
     dataset_names: List[str] = []
     if dataset_name is not None:
@@ -161,7 +151,6 @@ def evaluate_retriever(
 
         metrics = _get_metrics_from_vidore_evaluator(
             vision_retriever=retriever,
-            embedding_pooler=embedding_pooler,
             dataset_name=dataset_name,
             dataset_format=dataset_format,
             split=split,
@@ -185,11 +174,7 @@ def evaluate_retriever(
         results_all.append(results)
 
         sanitized_dataset_name = dataset_name.replace("/", "_")
-        if use_token_pooling:
-            filename_results = f"{sanitized_dataset_name}_metrics_pool_factor_{pool_factor}.json"
-        else:
-            filename_results = f"{sanitized_dataset_name}_metrics.json"
-        savepath_results = savedir_datasets / filename_results
+        savepath_results = savedir_datasets / f"{sanitized_dataset_name}_metrics.json"
 
         with open(str(savepath_results), "w", encoding="utf-8") as f:
             f.write(results.model_dump_json(indent=4))
@@ -197,17 +182,12 @@ def evaluate_retriever(
         logger.info(f'ViDoRe Benchmark results for "{dataset_name}" saved to `{savepath_results}`')
 
     results_merged = ViDoReBenchmarkResults.merge(results_all)
+    savepath_results_merged = savedir_root / f"{model_id}_metrics.json"
 
-    if use_token_pooling:
-        filename_results_all = f"{model_id}_metrics_pool_factor_{pool_factor}.json"
-    else:
-        filename_results_all = f"{model_id}_metrics.json"
-    savepath_results_all = savedir_root / filename_results_all
-
-    with open(str(savepath_results_all), "w", encoding="utf-8") as f:
+    with open(str(savepath_results_merged), "w", encoding="utf-8") as f:
         f.write(results_merged.model_dump_json(indent=4))
 
-    print(f"ViDoRe Benchmark results saved to `{savepath_results_all}`")
+    print(f"ViDoRe Benchmark results saved to `{savepath_results_merged}`")
 
 
 if __name__ == "__main__":

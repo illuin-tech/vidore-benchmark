@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning].
 - [Breaking] Revamp the `evaluate` module. Evaluation is now handled by the `ViDoReEvaluatorQA` class
 - [Breaking] Rename `ViDoReEvaluator` into `BaseViDoReEvaluator`. The new `ViDoReEvaluator` class allows to create retrievers using the Python API.
 - Set default `num_workers` to 0 in retrievers
+- [Breaking] Remove support for token pooling with `HierarchicalEmbeddingPooler`. This feature was moved into `colpali-engine==0.3.9`.
 
 ### Fixed
 
