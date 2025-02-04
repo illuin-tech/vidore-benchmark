@@ -18,7 +18,11 @@ from vidore_benchmark.utils.torch_utils import get_torch_device
 
 @register_vision_retriever("nomic-embed-vision")
 class NomicVisionRetriever(BaseVisionRetriever):
-    def __init__(self, device: str = "auto"):
+    def __init__(
+        self,
+        device: str = "auto",
+        **kwargs,
+    ):
         super().__init__(use_visual_embedding=True)
         self.device = get_torch_device(device)
 

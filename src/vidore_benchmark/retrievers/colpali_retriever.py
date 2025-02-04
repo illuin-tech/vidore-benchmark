@@ -31,6 +31,7 @@ class ColPaliRetriever(BaseVisionRetriever):
         pretrained_model_name_or_path: str = "vidore/colpali-v1.3",
         device: str = "auto",
         num_workers: int = 0,
+        **kwargs,
     ):
         super().__init__(use_visual_embedding=True)
 

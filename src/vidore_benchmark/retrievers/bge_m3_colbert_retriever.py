@@ -21,6 +21,7 @@ class BGEM3ColbertRetriever(BaseVisionRetriever):
         self,
         pretrained_model_name_or_path: str = "BAAI/bge-m3",
         device: str = "auto",
+        **kwargs,
     ):
         super().__init__(use_visual_embedding=False)
 

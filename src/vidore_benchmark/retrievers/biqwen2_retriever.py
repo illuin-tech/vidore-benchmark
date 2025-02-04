@@ -32,6 +32,7 @@ class BiQwen2Retriever(BaseVisionRetriever):
         pretrained_model_name_or_path: str,
         device: str = "auto",
         num_workers: int = 0,
+        **kwargs,
     ):
         super().__init__(use_visual_embedding=True)
 

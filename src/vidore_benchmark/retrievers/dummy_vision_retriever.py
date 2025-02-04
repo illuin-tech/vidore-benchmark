@@ -20,6 +20,7 @@ class DummyVisionRetriever(BaseVisionRetriever):
         emb_dim_query: int = 16,
         emb_dim_doc: int = 16,
         device: str = "cpu",
+        **kwargs,
     ):
         super().__init__(use_visual_embedding=True)
         self.emb_dim_query = emb_dim_query

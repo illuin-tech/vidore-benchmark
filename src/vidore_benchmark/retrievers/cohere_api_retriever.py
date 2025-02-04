@@ -23,8 +23,8 @@ class CohereAPIRetriever(BaseVisionRetriever):
     def __init__(
         self,
         pretrained_model_name_or_path: str = "embed-english-v3.0",
+        **kwargs,
     ):
-
         super().__init__(use_visual_embedding=True)
 
         try:

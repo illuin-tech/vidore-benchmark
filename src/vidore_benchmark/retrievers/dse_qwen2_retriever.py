@@ -29,6 +29,7 @@ class DSEQwen2Retriever(BaseVisionRetriever):
         pretrained_model_name_or_path: str = "MrLight/dse-qwen2-2b-mrl-v1",
         num_image_tokens: int = 1024,  # 2560 is the original value
         device: str = "auto",
+        **kwargs,
     ):
         super().__init__(use_visual_embedding=True)
 

@@ -11,7 +11,11 @@ from vidore_benchmark.utils.torch_utils import get_torch_device
 
 @register_vision_retriever("bm25")
 class BM25Retriever(BaseVisionRetriever):
-    def __init__(self, device: str = "auto"):
+    def __init__(
+        self,
+        device: str = "auto",
+        **kwargs,
+    ):
         super().__init__(use_visual_embedding=False)
 
         try:
@@ -50,7 +54,6 @@ class BM25Retriever(BaseVisionRetriever):
         passages: Union[List[Image.Image], List[str]],
         **kwargs,
     ) -> torch.Tensor:
-
         # Sanity check: `passages` must be a list of filepaths (strings)
         if passages and not all(isinstance(doc, str) for doc in passages):
             raise ValueError("`passages` must be a list of filepaths (strings)")
