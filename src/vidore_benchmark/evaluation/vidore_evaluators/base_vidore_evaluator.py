@@ -9,7 +9,6 @@ import torch
 from datasets import Dataset
 from tqdm import tqdm
 
-from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
 from vidore_benchmark.evaluation.eval_utils import CustomRetrievalEvaluator
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
@@ -23,16 +22,10 @@ class BaseViDoReEvaluator(ABC):
 
     Args:
         vision_retriever (BaseVisionRetriever): The vision retriever used to retrieve the embeddings.
-        embedding_pooler (Optional[BaseEmbeddingPooler]): The embedding pooler used to pool the passage embeddings.
     """
 
-    def __init__(
-        self,
-        vision_retriever: BaseVisionRetriever,
-        embedding_pooler: Optional[BaseEmbeddingPooler] = None,
-    ):
+    def __init__(self, vision_retriever: BaseVisionRetriever):
         self.vision_retriever = vision_retriever
-        self.embedding_pooler = embedding_pooler
 
     @abstractmethod
     def evaluate_dataset(

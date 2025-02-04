@@ -4,9 +4,7 @@ from typing import Dict, List, Optional, Tuple
 
 import torch
 from datasets import Dataset
-from tqdm import tqdm
 
-from vidore_benchmark.compression.token_pooling import BaseEmbeddingPooler
 from vidore_benchmark.evaluation.vidore_evaluators.base_vidore_evaluator import BaseViDoReEvaluator
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.bm25_retriever import BM25Retriever
@@ -19,15 +17,8 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
     row in the dataset contains an optional query and a passage (image or text).
     """
 
-    def __init__(
-        self,
-        vision_retriever: BaseVisionRetriever,
-        embedding_pooler: Optional[BaseEmbeddingPooler] = None,
-    ):
-        super().__init__(
-            vision_retriever=vision_retriever,
-            embedding_pooler=embedding_pooler,
-        )
+    def __init__(self, vision_retriever: BaseVisionRetriever):
+        super().__init__(vision_retriever=vision_retriever)
 
         # Dataset column names
         self.query_column = "query"
@@ -97,14 +88,6 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
             batch_passage=batch_passage,
             dataloader_prebatch_size=dataloader_prebatch_passage,
         )
-
-        # Use token pooling (optional)
-        if self.embedding_pooler is not None:
-            for idx, passage_embedding in tqdm(
-                enumerate(passage_embeddings), total=len(passage_embeddings), desc="Pooling embeddings..."
-            ):
-                passage_embedding, _ = self.embedding_pooler.pool_embeddings(passage_embedding)
-                passage_embeddings[idx] = passage_embedding
 
         # Get the similarity scores
         scores = self.vision_retriever.get_scores(
