@@ -1,3 +1,7 @@
+"""
+Scoring functions for the VidoRe benchmark.
+"""
+
 from typing import List, Union
 
 import torch

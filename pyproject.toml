@@ -51,7 +51,7 @@ dev = ["pytest>=8.2.1", "ruff>=0.4.5"]
 bge-m3 = ["FlagEmbedding>=1.2.10,<2.0.0"]
 bm25 = ["nltk>=3.8.1,<4.0.0", "rank-bm25>=0.2.2,<1.0.0"]
 cohere = ["cohere>=5.11.2,<6.0.0"]
-colpali-engine = ["colpali-engine>=0.3.3,<0.4.0"]
+colpali-engine = ["colpali-engine>=0.3.8,<0.4.0"]
 dse = ["qwen-vl-utils==0.0.8"]
 jina-clip = ["timm>=1.0.7,<2.0.0"]
 siglip = ["protobuf>=4.25.3"]
@@ -73,7 +73,7 @@ skypilot = ["skypilot==0.6.1,<1.0.0"]
 homepage = "https://github.com/illuin-tech/vidore-benchmark"
 
 [project.scripts]
-vidore-benchmark = "vidore_benchmark.main:app"
+vidore-benchmark = "vidore_benchmark.cli.main:app"
 
 [tool.pytest.ini_options]
 filterwarnings = ["ignore::Warning"]

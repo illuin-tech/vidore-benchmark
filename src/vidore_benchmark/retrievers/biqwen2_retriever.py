@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 from typing import List, Optional, Union, cast
 
 import torch
@@ -9,9 +8,10 @@ from dotenv import load_dotenv
 from PIL import Image
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from transformers.utils.import_utils import is_flash_attn_2_available
 
+from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.data_utils import ListDataset
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
@@ -21,7 +21,7 @@ load_dotenv(override=True)
 
 
 @register_vision_retriever("biqwen2")
-class BiQwen2Retriever(VisionRetriever):
+class BiQwen2Retriever(BaseVisionRetriever):
     """
     BiQwen2 retriever that implements the model from "ColPali: Efficient Document Retrieval
     with Vision Language Models".
@@ -31,9 +31,9 @@ class BiQwen2Retriever(VisionRetriever):
         self,
         pretrained_model_name_or_path: str,
         device: str = "auto",
-        num_workers: Optional[int] = None,
+        num_workers: int = 0,
     ):
-        super().__init__()
+        super().__init__(use_visual_embedding=True)
 
         try:
             from colpali_engine.models import BiQwen2, BiQwen2Processor
@@ -44,7 +44,7 @@ class BiQwen2Retriever(VisionRetriever):
             )
 
         self.device = get_torch_device(device)
-        logger.info(f"Using device: {self.device}")
+        self.num_workers = num_workers
 
         # Load the model and LORA adapter
         self.model = cast(
@@ -53,25 +53,12 @@ class BiQwen2Retriever(VisionRetriever):
                 pretrained_model_name_or_path,
                 torch_dtype=torch.bfloat16,
                 device_map=device,
-                attn_implementation="flash_attention_2" if torch.cuda.is_available() else None,
+                attn_implementation="flash_attention_2" if is_flash_attn_2_available() else None,
             ).eval(),
         )
 
         # Load the processor
         self.processor = cast(BiQwen2Processor, BiQwen2Processor.from_pretrained(pretrained_model_name_or_path))
-        print("Loaded custom processor.\n")
-
-        if num_workers is None:
-            if self.device == "mps":
-                self.num_workers = 0  # MPS does not support dataloader multiprocessing
-            else:
-                self.num_workers = os.cpu_count() if os.cpu_count() is not None else 1
-        else:
-            self.num_workers = num_workers
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return True
 
     def process_images(self, images: List[Image.Image], **kwargs):
         return self.processor.process_images(images=images).to(self.device)

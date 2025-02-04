@@ -1,18 +1,18 @@
 from __future__ import annotations
 
 import logging
-import os
-from typing import ClassVar, List, Optional, Union
+from typing import List, Optional, Union, cast
 
 import torch
 from dotenv import load_dotenv
 from PIL import Image
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from transformers.utils.import_utils import is_flash_attn_2_available
 
 from vidore_benchmark.evaluation.scoring import score_multi_vector
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+from vidore_benchmark.retrievers.vision_retriever import BaseVisionRetriever
 from vidore_benchmark.utils.data_utils import ListDataset
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
@@ -22,22 +22,19 @@ load_dotenv(override=True)
 
 
 @register_vision_retriever("colidefics3")
-class ColIdefics3Retriever(VisionRetriever):
+class ColIdefics3Retriever(BaseVisionRetriever):
     """
     ColIdefics3 Retriever that implements the ColVision architecture with an Idefics3 VLM backbone.
     with Vision Language Models".
     """
 
-    emb_dim_query: ClassVar[int] = 128
-    emb_dim_doc: ClassVar[int] = 128
-
     def __init__(
         self,
         pretrained_model_name_or_path: str = "vidore/colSmol-256M",
         device: str = "auto",
-        num_workers: Optional[int] = None,
+        num_workers: int = 0,
     ):
-        super().__init__()
+        super().__init__(use_visual_embedding=True)
 
         try:
             from colpali_engine.models import ColIdefics3, ColIdefics3Processor
@@ -48,31 +45,24 @@ class ColIdefics3Retriever(VisionRetriever):
             )
 
         self.device = get_torch_device(device)
-        logger.info(f"Using device: {self.device}")
+        self.num_workers = num_workers
 
         # Load the model and LORA adapter
-        self.model = ColIdefics3.from_pretrained(
-            pretrained_model_name_or_path,
-            torch_dtype=torch.bfloat16,
-            device_map=device,
-            attn_implementation="flash_attention_2" if torch.cuda.is_available() else None,
-        ).eval()
+        self.model = cast(
+            ColIdefics3,
+            ColIdefics3.from_pretrained(
+                pretrained_model_name_or_path,
+                torch_dtype=torch.bfloat16,
+                device_map=device,
+                attn_implementation="flash_attention_2" if is_flash_attn_2_available() else None,
+            ).eval(),
+        )
 
         # Load the processor
-        self.processor = ColIdefics3Processor.from_pretrained(pretrained_model_name_or_path)
-        print("Loaded custom processor.\n")
-
-        if num_workers is None:
-            if self.device == "mps":
-                self.num_workers = 0  # MPS does not support dataloader multiprocessing
-            else:
-                self.num_workers = os.cpu_count() if os.cpu_count() is not None else 1
-        else:
-            self.num_workers = num_workers
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return True
+        self.processor = cast(
+            ColIdefics3Processor,
+            ColIdefics3Processor.from_pretrained(pretrained_model_name_or_path),
+        )
 
     def process_images(self, images: List[Image.Image], **kwargs):
         return self.processor.process_images(images=images)

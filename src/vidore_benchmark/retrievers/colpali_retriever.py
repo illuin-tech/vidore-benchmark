@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 from typing import List, Optional, Union, cast
 
 import torch
@@ -10,8 +9,8 @@ from PIL import Image
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.data_utils import ListDataset
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
@@ -21,7 +20,7 @@ load_dotenv(override=True)
 
 
 @register_vision_retriever("colpali")
-class ColPaliRetriever(VisionRetriever):
+class ColPaliRetriever(BaseVisionRetriever):
     """
     ColPali retriever that implements the model from "ColPali: Efficient Document Retrieval
     with Vision Language Models".
@@ -31,9 +30,9 @@ class ColPaliRetriever(VisionRetriever):
         self,
         pretrained_model_name_or_path: str = "vidore/colpali-v1.3",
         device: str = "auto",
-        num_workers: Optional[int] = None,
+        num_workers: int = 0,
     ):
-        super().__init__()
+        super().__init__(use_visual_embedding=True)
 
         try:
             from colpali_engine.models import ColPali, ColPaliProcessor
@@ -44,7 +43,7 @@ class ColPaliRetriever(VisionRetriever):
             )
 
         self.device = get_torch_device(device)
-        logger.info(f"Using device: {self.device}")
+        self.num_workers = num_workers
 
         # Load the model
         self.model = cast(
@@ -61,18 +60,6 @@ class ColPaliRetriever(VisionRetriever):
             ColPaliProcessor,
             ColPaliProcessor.from_pretrained(pretrained_model_name_or_path),
         )
-
-        if num_workers is None:
-            if self.device == "mps":
-                self.num_workers = 0  # MPS does not support dataloader multiprocessing
-            else:
-                self.num_workers = os.cpu_count() if os.cpu_count() is not None else 1
-        else:
-            self.num_workers = num_workers
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return True
 
     def process_images(self, images: List[Image.Image], **kwargs):
         return self.processor.process_images(images=images).to(self.device)

@@ -10,16 +10,16 @@ from torch import Tensor
 from tqdm import tqdm
 from transformers import AutoImageProcessor, AutoModel, AutoTokenizer
 
+from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
 @register_vision_retriever("nomic-embed-vision")
-class NomicVisionRetriever(VisionRetriever):
+class NomicVisionRetriever(BaseVisionRetriever):
     def __init__(self, device: str = "auto"):
-        super().__init__()
+        super().__init__(use_visual_embedding=True)
         self.device = get_torch_device(device)
 
         self.model = (
@@ -41,10 +41,6 @@ class NomicVisionRetriever(VisionRetriever):
             "nomic-ai/nomic-embed-text-v1.5",
             trust_remote_code=True,
         )
-
-    @property
-    def use_visual_embedding(self) -> bool:
-        return True
 
     @staticmethod
     def _mean_pooling(model_output: Tensor, attention_mask: Tensor) -> Tensor:

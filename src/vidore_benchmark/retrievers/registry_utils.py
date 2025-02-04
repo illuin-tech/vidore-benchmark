@@ -1,9 +1,9 @@
 import logging
 from typing import Dict, Optional, Type
 
-from vidore_benchmark.retrievers.vision_retriever import VisionRetriever
+from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 
-VISION_RETRIEVER_REGISTRY: Dict[str, Type[VisionRetriever]] = {}
+VISION_RETRIEVER_REGISTRY: Dict[str, Type[BaseVisionRetriever]] = {}
 
 logger = logging.getLogger(__name__)
 
@@ -11,16 +11,13 @@ logger = logging.getLogger(__name__)
 def register_vision_retriever(model_class: str):
     def decorator(cls):
         VISION_RETRIEVER_REGISTRY[model_class] = cls
-
-        # NOTE: To see this log, use `logger.enable("vidore_benchmark")` at the very top of the script.
         logger.debug("Registered vision retriever `{}`", model_class)
-
         return cls
 
     return decorator
 
 
-def load_vision_retriever_class_from_registry(model_class: str) -> Type[VisionRetriever]:
+def load_vision_retriever_class_from_registry(model_class: str) -> Type[BaseVisionRetriever]:
     """
     Get a vision retriever class.
 
@@ -42,7 +39,7 @@ def load_vision_retriever_class_from_registry(model_class: str) -> Type[VisionRe
 def load_vision_retriever_from_registry(
     model_class: str,
     pretrained_model_name_or_path: Optional[str] = None,
-) -> VisionRetriever:
+) -> BaseVisionRetriever:
     """
     Create a vision retriever class instance.
     If `model_name` is provided, the retriever will be instantiated with the given model name or path.
@@ -50,7 +47,7 @@ def load_vision_retriever_from_registry(
 
     retriever_class = load_vision_retriever_class_from_registry(model_class)
 
-    if pretrained_model_name_or_path is not None:
+    if pretrained_model_name_or_path:
         retriever = retriever_class(pretrained_model_name_or_path=pretrained_model_name_or_path)
     else:
         retriever = retriever_class()

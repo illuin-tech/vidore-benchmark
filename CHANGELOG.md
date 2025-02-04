@@ -5,8 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog],
 and this project adheres to [Semantic Versioning].
 
-feat: add better soft dep handling + change `get_scores` signature + add `scoring` module + tweaks
-
 ## [Unreleased]
 
 ### Added
@@ -16,6 +14,9 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 - Add option to create an `EvalManager` instance from `ViDoReBenchmarkResults`
 - Add support for ColIdefics3 models
 - Add `num_workers` argument for dataloaders
+- Allow the creation of `VisionRetriever` instances using a PyTorch model and a processor that implements a `process_images` and a `process_queries` methods, similarly to the ColVision processors
+- [Experimental] Add a QA-to-BEIR dataset format conversion script
+- Add `dataloader_prebatch_query` and `dataloader_prebatch_passage` arguments/CLI options to avoid loading the entire datasets in memory
 
 ### Changed
 
@@ -35,6 +36,9 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 - Rename `ColQwenRetriever` to `ColQwen2Retriever`
 - Rename `BiQwenRetriever` to `BiQwen2Retriever`
 - Change default checkpoints for ColPali and ColQwen2 retrievers
+- [Breaking] Revamp the `evaluate` module. Evaluation is now handled by the `ViDoReEvaluatorQA` class
+- [Breaking] Rename `ViDoReEvaluator` into `BaseViDoReEvaluator`. The new `ViDoReEvaluator` class allows to create retrievers using the Python API.
+- Set default `num_workers` to 0 in retrievers
 
 ### Fixed
 
@@ -60,12 +64,11 @@ feat: add better soft dep handling + change `get_scores` signature + add `scorin
 
 - Add tests for ColQwen2, DSEQwen2, and Cohere API embedding models
 - Add fixtures in retriever tests to speed up testing
-- Add tests for `evaluate_dataset` method
-- Add E2E test for cli command `evaluate-retriever`
 - Add tests for `ViDoReBenchmarkResults`
 - Add tests for `EvalManager`
 - Add tests for `BiQwen2Retriever`
-- Add test for `ColIdefics3Retriever`
+- Add tests for `ColIdefics3Retriever`
+- Add tests and E2E tests for cli command `evaluate-retriever`
 
 ## [4.0.2] - 2024-10-17
 
