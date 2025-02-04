@@ -97,20 +97,6 @@ vidore-benchmark evaluate-retriever \
 
 All the above scripts will generate a JSON file in `outputs/{model_name_all_metrics.json}`. Follow the instructions on the [ViDoRe Leaderboard](https://huggingface.co/spaces/vidore/vidore-leaderboard) to learn how to publish your results on the leaderboard too!
 
-### Evaluate a retriever using token pooling
-
-You can use token pooling to reduce the length of the document embeddings. In production, this will significantly reduce the memory footprint of the retriever, thus reducing costs and increasing speed. You can use the `--use-token-pooling` flag to enable this feature:
-
-```bash
-vidore-benchmark evaluate-retriever \
-    --model-class colpali \
-    --model-name vidore/colpali-v1.2 \
-    --dataset-name vidore/docvqa_test_subsampled \
-    --split test \
-    --use-token-pooling \
-    --pool-factor 3
-```
-
 ### Documentation
 
 To have more control over the evaluation process (e.g. the batch size used at inference), read the CLI documentation using:
