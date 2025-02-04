@@ -95,7 +95,7 @@ vidore-benchmark evaluate-retriever \
     --split test
 ```
 
-All the above scripts will generate a JSON file in `outputs/{model_name_all_metrics.json}`. Follow the instructions on the [ViDoRe Leaderboard](https://huggingface.co/spaces/vidore/vidore-leaderboard) to learn how to publish your results on the leaderboard too!
+All the above scripts will generate a JSON file in `outputs/{model_id}_metrics.json`. Follow the instructions on the [ViDoRe Leaderboard](https://huggingface.co/spaces/vidore/vidore-leaderboard) to learn how to publish your results on the leaderboard too!
 
 ### Documentation
 
@@ -104,6 +104,8 @@ To have more control over the evaluation process (e.g. the batch size used at in
 ```bash
 vidore-benchmark evaluate-retriever --help
 ```
+
+In particular, feel free to play with the `--batch-query`, `--batch-passage`, `--batch-score`, and `--num-workers` inputs to speed up the evaluation process.
 
 ## Python usage
 
