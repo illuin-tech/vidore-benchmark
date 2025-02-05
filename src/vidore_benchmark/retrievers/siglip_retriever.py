@@ -22,6 +22,7 @@ class SigLIPRetriever(BaseVisionRetriever):
         self,
         pretrained_model_name_or_path: str = "google/siglip-so400m-patch14-384",
         device: str = "auto",
+        **kwargs,
     ):
         super().__init__(use_visual_embedding=True)
 

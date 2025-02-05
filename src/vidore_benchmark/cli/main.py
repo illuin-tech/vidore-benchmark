@@ -115,6 +115,9 @@ def evaluate_retriever(
     dataloader_prebatch_passage: Annotated[
         Optional[int], typer.Option(help="Dataloader prebatch size for passages")
     ] = None,
+    num_workers: Annotated[
+        int, typer.Option(help="Number of workers for dataloader in retrievers, when supported")
+    ] = 0,
     output_dir: Annotated[str, typer.Option(help="Directory where to save the metrics")] = "outputs",
 ):
     """
@@ -130,6 +133,7 @@ def evaluate_retriever(
     retriever = load_vision_retriever_from_registry(
         model_class,
         pretrained_model_name_or_path=model_name,
+        num_workers=num_workers,
     )
     model_id = _sanitize_model_id(model_class, model_name=model_name)
 

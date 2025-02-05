@@ -14,7 +14,7 @@ class BaseVisionRetriever(ABC):
     Base class for vision retrievers used in the ViDoRe benchmark.
     """
 
-    def __init__(self, use_visual_embedding: bool, **kwargs):
+    def __init__(self, use_visual_embedding: bool):
         """
         Initialize the VisionRetriever.
 

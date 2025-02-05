@@ -20,6 +20,7 @@ class JinaClipRetriever(BaseVisionRetriever):
         self,
         pretrained_model_name_or_path: str = "jinaai/jina-clip-v1",
         device: str = "auto",
+        **kwargs,
     ):
         super().__init__(use_visual_embedding=True)
 
