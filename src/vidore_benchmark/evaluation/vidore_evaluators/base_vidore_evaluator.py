@@ -30,6 +30,8 @@ class BaseViDoReEvaluator(ABC):
 
         if use_accelerator:
             self.accelerator = Accelerator()
+        else:
+            self.accelerator = None
 
     @abstractmethod
     def evaluate_dataset(
@@ -99,9 +101,6 @@ class BaseViDoReEvaluator(ABC):
             )
             dataloader_prebatch_size = batch_passage
 
-        if hasattr(self, "accelerator"):
-            self.vision_retriever.model, ds = self.accelerator.prepare(self.vision_retriever.model, ds)
-            self.accelerator.wait_for_everyone()
         for ds_batch in tqdm(
             batched(ds, n=dataloader_prebatch_size),
             desc="Dataloader pre-batching for passages",
@@ -112,11 +111,8 @@ class BaseViDoReEvaluator(ABC):
             batch_embedding_passages = self.vision_retriever.forward_passages(
                 passages=passages,
                 batch_size=batch_passage,
+                accelerator=self.accelerator,
             )
-
-            if hasattr(self, "accelerator"):
-                all_batch_embedding_passages = self.accelerator.gather(batch_embedding_passages)
-                batch_embedding_passages = all_batch_embedding_passages
 
             if isinstance(batch_embedding_passages, torch.Tensor):
                 batch_embedding_passages = list(torch.unbind(batch_embedding_passages.to("cpu")))
@@ -124,9 +120,6 @@ class BaseViDoReEvaluator(ABC):
             else:
                 for embedding_passage in batch_embedding_passages:
                     passage_embeddings.append(embedding_passage.to("cpu"))
-
-        if hasattr(self, "accelerator"):
-            self.accelerator.clear()
 
         return passage_embeddings
 
@@ -167,10 +160,6 @@ class BaseViDoReEvaluator(ABC):
             )
             dataloader_prebatch_size = batch_query
 
-        if hasattr(self, "accelerator"):
-            self.vision_retriever.model, ds = self.accelerator.prepare(self.vision_retriever.model, ds)
-            self.accelerator.wait_for_everyone()
-
         for ds_batch in tqdm(
             batched(ds, n=dataloader_prebatch_size),
             desc="Dataloader pre-batching for queries",
@@ -181,11 +170,8 @@ class BaseViDoReEvaluator(ABC):
             batch_embedding_queries = self.vision_retriever.forward_queries(
                 queries=queries,
                 batch_size=batch_query,
+                accelerator=self.accelerator,
             )
-
-            if hasattr(self, "accelerator"):
-                all_batch_embedding_queries = self.accelerator.gather(batch_embedding_queries)
-                batch_embedding_queries = all_batch_embedding_queries
 
             if isinstance(batch_embedding_queries, torch.Tensor):
                 batch_embedding_queries = list(torch.unbind(batch_embedding_queries.to("cpu")))
@@ -193,9 +179,6 @@ class BaseViDoReEvaluator(ABC):
             else:
                 for embedding_query in batch_embedding_queries:
                     query_embeddings.append(embedding_query.to("cpu"))
-
-        if hasattr(self, "accelerator"):
-            self.accelerator.clear()
 
         return query_embeddings
 

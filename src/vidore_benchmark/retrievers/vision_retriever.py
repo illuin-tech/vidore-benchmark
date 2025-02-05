@@ -4,6 +4,7 @@ import logging
 from typing import List, Optional, Union
 
 import torch
+from accelerate import Accelerator
 from dotenv import load_dotenv
 from PIL import Image
 from torch.utils.data import DataLoader
@@ -46,6 +47,7 @@ class VisionRetriever(BaseVisionRetriever):
         self,
         queries: List[str],
         batch_size: int,
+        accelerator: Optional[Accelerator] = None,
         **kwargs,
     ) -> List[torch.Tensor]:
         dataloader = DataLoader(
@@ -57,14 +59,26 @@ class VisionRetriever(BaseVisionRetriever):
 
         query_embeddings: List[torch.Tensor] = []
 
+        if accelerator is not None:
+            self.model, dataloader = accelerator.prepare(self.model, dataloader)
+            accelerator.wait_for_everyone()
+
         with torch.no_grad():
             for batch_query in tqdm(dataloader, desc="Forward pass queries...", leave=False):
-                embeddings_query = self.model(**batch_query).to("cpu")
+                embeddings_query = self.model(**batch_query)
+
+                if accelerator is not None:
+                    embeddings_query = accelerator.gather(embeddings_query)
+
                 query_embeddings.extend(list(torch.unbind(embeddings_query)))
+
+        accelerator.clear()
 
         return query_embeddings
 
-    def forward_passages(self, passages: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
+    def forward_passages(
+        self, passages: List[Image.Image], batch_size: int, accelerator: Optional[Accelerator] = None, **kwargs
+    ) -> List[torch.Tensor]:
         dataloader = DataLoader(
             dataset=ListDataset[Image.Image](passages),
             batch_size=batch_size,
@@ -74,10 +88,19 @@ class VisionRetriever(BaseVisionRetriever):
 
         passage_embeddings: List[torch.Tensor] = []
 
+        if accelerator is not None:
+            self.model, dataloader = accelerator.prepare(self.model, dataloader)
+            accelerator.wait_for_everyone()
+
         with torch.no_grad():
             for batch_doc in tqdm(dataloader, desc="Forward pass passages...", leave=False):
-                embeddings_doc = self.model(**batch_doc).to("cpu")
+                embeddings_doc = self.model(**batch_doc)
+
+                if accelerator is not None:
+                    embeddings_doc = accelerator.gather(embeddings_doc)
                 passage_embeddings.extend(list(torch.unbind(embeddings_doc)))
+
+        accelerator.clear()
 
         return passage_embeddings
 
