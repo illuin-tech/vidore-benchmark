@@ -99,6 +99,7 @@ class BaseViDoReEvaluator(ABC):
             batched(ds, n=dataloader_prebatch_size),
             desc="Dataloader pre-batching for passages",
             total=math.ceil(len(ds) / (dataloader_prebatch_size)),
+            leave=False,
         ):
             passages: List[Any] = [batch[passage_column] for batch in ds_batch]
 
