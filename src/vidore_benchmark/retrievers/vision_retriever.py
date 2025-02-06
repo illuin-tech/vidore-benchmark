@@ -31,6 +31,7 @@ class VisionRetriever(BaseVisionRetriever):
         self,
         model: torch.nn.Module,
         processor: ProcessorMixin,
+        token_pooler: Optional["BaseTokenPooler"] = None,
     ):
         super().__init__(use_visual_embedding=True)
 
@@ -38,6 +39,8 @@ class VisionRetriever(BaseVisionRetriever):
         self.model.eval()
 
         self.processor = processor
+        self.token_pooler = token_pooler
+
         if not hasattr(self.processor, "process_images"):
             raise ValueError("Processor must have `process_images` method")
         if not hasattr(self.processor, "process_queries"):
@@ -87,6 +90,9 @@ class VisionRetriever(BaseVisionRetriever):
             for batch_doc in tqdm(dataloader, desc="Forward pass passages...", leave=False):
                 embeddings_doc = self.model(**batch_doc).to("cpu")
                 passage_embeddings.extend(list(torch.unbind(embeddings_doc)))
+
+        if self.token_pooler is not None:
+            passage_embeddings = self.token_pooler.pool_embeddings(passage_embeddings)
 
         return passage_embeddings
 
