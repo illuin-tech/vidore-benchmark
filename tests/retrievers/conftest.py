@@ -18,8 +18,11 @@ def queries_fixture() -> List[str]:
 
 
 @pytest.fixture
-def image_passage_fixture(queries_fixture) -> List[Image.Image]:
-    images = [Image.new("RGB", (16, 16), color="black") for _ in queries_fixture]
+def image_passage_fixture() -> List[Image.Image]:
+    images = [
+        Image.new("RGB", (64, 64), color="black"),
+        Image.new("RGB", (32, 32), color="white"),
+    ]
     return images
 
 
