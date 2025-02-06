@@ -31,6 +31,7 @@ class VisionRetriever(BaseVisionRetriever):
         self,
         model: torch.nn.Module,
         processor: ProcessorMixin,
+        num_workers: int = 0,
         token_pooler: Optional["BaseTokenPooler"] = None,
     ):
         super().__init__(use_visual_embedding=True)
@@ -39,6 +40,7 @@ class VisionRetriever(BaseVisionRetriever):
         self.model.eval()
 
         self.processor = processor
+        self.num_workers = num_workers
         self.token_pooler = token_pooler
 
         if not hasattr(self.processor, "process_images"):
@@ -65,6 +67,7 @@ class VisionRetriever(BaseVisionRetriever):
             batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_queries,
+            num_workers=self.num_workers,
         )
 
         query_embeddings: List[torch.Tensor] = []
@@ -82,6 +85,7 @@ class VisionRetriever(BaseVisionRetriever):
             batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_images,
+            num_workers=self.num_workers,
         )
 
         passage_embeddings: List[torch.Tensor] = []
