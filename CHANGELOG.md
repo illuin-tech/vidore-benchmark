@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning].
 
 - Add `HFEndpointRetriever` to use a Hf Space as a model provider
 
+### Tests
+
+- Add tests for `VisionRetriever`
+
 ## [v5.0.0] - 2025-02-19
 
 ### Added
@@ -23,6 +27,7 @@ and this project adheres to [Semantic Versioning].
 - Add `dataloader_prebatch_query` and `dataloader_prebatch_passage` arguments to avoid loading the entire datasets in memory (used to cause RAM spikes when loading large image datasets)
 - Add QA-to-BEIR dataset format conversion script
 - Add support for the BEIR dataset format with `ViDoReEvaluatorBEIR`
+- Add token pooling option in `VisionRetriever`
 
 ### Changed
 
