@@ -19,6 +19,14 @@ load_dotenv(override=True)
 
 
 class VisionRetriever(BaseVisionRetriever):
+    """
+    Vision Retriever wrapper class that can be used with `BaseViDoReEvaluator`.
+
+    To use this class, the following requirements must be met:
+    - `model` has a `forward` method that returns dense or multi-vector embeddings
+    - `processor` implements `process_images`, `process_queries`, and `score` methods.
+    """
+
     def __init__(
         self,
         model: torch.nn.Module,
