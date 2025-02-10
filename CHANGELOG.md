@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning].
 - [Experimental] Add a QA-to-BEIR dataset format conversion script
 - Add `dataloader_prebatch_query` and `dataloader_prebatch_passage` arguments/CLI options to avoid loading the entire datasets in memory
 - Add `--num-workers` option in CLI
+- Add support for the BEIR dataset format with `ViDoReEvaluatorBEIR`
 
 ### Changed
 
