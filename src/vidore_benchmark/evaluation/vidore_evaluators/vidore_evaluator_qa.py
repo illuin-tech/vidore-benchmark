@@ -104,7 +104,11 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         )
 
         # Compute the MTEB metrics
-        metrics = self.compute_retrieval_scores(qrels=relevant_docs, results=results)
+        metrics = self.compute_retrieval_scores(
+            qrels=relevant_docs,
+            results=results,
+            ignore_identical_ids=True,
+        )
 
         return metrics
 

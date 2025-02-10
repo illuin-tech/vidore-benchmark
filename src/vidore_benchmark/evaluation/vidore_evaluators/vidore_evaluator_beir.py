@@ -75,7 +75,7 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
         ds_qrels = ds["qrels"]
 
         # Get image data
-        passage_ids: List[int] = list(ds_corpus[self.corpus_id_column])
+        passage_ids: List[int] = ds_corpus[self.corpus_id_column]
 
         # Get query data
         query_ids: List[int] = ds_queries[self.query_id_column]
@@ -135,7 +135,11 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
         )
 
         # Compute the MTEB metrics
-        metrics = self.compute_retrieval_scores(qrels=qrels, results=results)
+        metrics = self.compute_retrieval_scores(
+            qrels=qrels,
+            results=results,
+            ignore_identical_ids=False,
+        )
 
         return metrics
 
