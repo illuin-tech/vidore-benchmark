@@ -20,7 +20,7 @@ load_dotenv(override=True)
 
 class VisionRetriever(BaseVisionRetriever):
     """
-    Vision Retriever wrapper class that can be used with `BaseViDoReEvaluator`.
+    Vision Retriever wrapper class that can be used with the ViDoRe evaluators.
 
     To use this class, the following requirements must be met:
     - `model` has a `forward` method that returns dense or multi-vector embeddings
@@ -74,8 +74,8 @@ class VisionRetriever(BaseVisionRetriever):
 
         with torch.no_grad():
             for batch_query in tqdm(dataloader, desc="Forward pass queries...", leave=False):
-                embeddings_query = self.model(**batch_query).to("cpu")
-                query_embeddings.extend(list(torch.unbind(embeddings_query)))
+                batch_embeddings_query = self.model(**batch_query).to("cpu")
+                query_embeddings.extend(list(torch.unbind(batch_embeddings_query)))
 
         return query_embeddings
 
@@ -92,11 +92,14 @@ class VisionRetriever(BaseVisionRetriever):
 
         with torch.no_grad():
             for batch_doc in tqdm(dataloader, desc="Forward pass passages...", leave=False):
-                embeddings_doc = self.model(**batch_doc).to("cpu")
-                passage_embeddings.extend(list(torch.unbind(embeddings_doc)))
+                batch_embeddings_passages = self.model(**batch_doc).to("cpu")
 
         if self.token_pooler is not None:
-            passage_embeddings = self.token_pooler.pool_embeddings(passage_embeddings)
+            passage_embeddings = self.token_pooler.pool_embeddings(
+                batch_embeddings_passages,
+                padding=True,
+                padding_side=self.processor.tokenizer.padding_side,
+            )
 
         return passage_embeddings
 
