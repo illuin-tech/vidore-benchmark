@@ -24,6 +24,7 @@ def cli_runner():
     [
         ("dummy_vision_retriever", "vidore/vidore_benchmark_qa_dummy", "qa"),
         ("bm25", "vidore/vidore_benchmark_ocr_qa_dummy", "qa"),
+        ("dummy_vision_retriever", "vidore/vidore_benchmark_beir_dummy", "beir"),
     ],
 )
 def test_run_evaluate_retriever(
