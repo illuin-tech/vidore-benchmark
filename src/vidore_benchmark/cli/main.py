@@ -64,9 +64,11 @@ def _get_metrics_from_vidore_evaluator(
         ds = cast(Dataset, load_dataset(dataset_name, split=split))
         vidore_evaluator = ViDoReEvaluatorQA(vision_retriever)
     elif dataset_format == "beir":
-        ds = {}
-        for key in ["corpus", "queries", "qrels"]:
-            ds[key] = cast(Dataset, load_dataset(dataset_name, name=key, split=split))
+        ds = {
+            "corpus": cast(Dataset, load_dataset(dataset_name, name="corpus", split=split)),
+            "queries": cast(Dataset, load_dataset(dataset_name, name="queries", split=split)),
+            "qrels": cast(Dataset, load_dataset(dataset_name, name="qrels", split=split)),
+        }
         vidore_evaluator = ViDoReEvaluatorBEIR(vision_retriever)
     else:
         raise ValueError(f"Unsupported dataset format: {dataset_format}")
