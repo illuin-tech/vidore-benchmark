@@ -32,7 +32,7 @@ class VisionRetriever(BaseVisionRetriever):
         model: torch.nn.Module,
         processor: ProcessorMixin,
         num_workers: int = 0,
-        token_pooler: Optional["BaseTokenPooler"] = None,
+        token_pooler: Optional["BaseTokenPooler"] = None,  # noqa: F821
     ):
         super().__init__(use_visual_embedding=True)
 
