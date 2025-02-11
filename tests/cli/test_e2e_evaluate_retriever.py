@@ -81,7 +81,7 @@ def cli_runner():
             "colidefics3",
             "vidore/colSmol-256M",
             "vidore/arxivqa_test_subsampled_beir",
-            "format",
+            "beir",
             "tests/data/e2e_vidore_results/colsmol_256M_arxivqa_beir.json",
         ),
     ],
