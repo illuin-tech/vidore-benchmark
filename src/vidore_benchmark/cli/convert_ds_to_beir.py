@@ -101,7 +101,7 @@ def main(
     # Build query relevance judgments (qrels)
     print("Building query relevance judgments (qrels)...")
 
-    QrelsItem = TypedDict("QrelsItem", {"query-id": int, "corpus-id": int, "score": float})
+    QrelsItem = TypedDict("QrelsItem", {"query-id": int, "corpus-id": int, "score": int})
     qrels: List[QrelsItem] = []
 
     for row in ds:
