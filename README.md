@@ -72,6 +72,7 @@ vidore-benchmark evaluate-retriever \
     --model-class colpali \
     --model-name vidore/colpali-v1.2 \
     --collection-name vidore/vidore-benchmark-667173f98e70a1c0fa4db00d \
+    --dataset-format qa \
     --split test
 ```
 
@@ -82,6 +83,7 @@ vidore-benchmark evaluate-retriever \
     --model-class colpali \
     --model-name vidore/colpali-v1.2 \
     --dataset-name vidore/docvqa_test_subsampled \
+    --dataset-format qa \
     --split test
 ```
 
@@ -92,10 +94,24 @@ vidore-benchmark evaluate-retriever \
     --model-class bge-m3 \
     --model-name BAAI/bge-m3 \
     --dataset-name vidore/docvqa_test_subsampled_tesseract \
+    --dataset-format qa \
     --split test
 ```
 
 All the above scripts will generate a JSON file in `outputs/{model_id}_metrics.json`. Follow the instructions on the [ViDoRe Leaderboard](https://huggingface.co/spaces/vidore/vidore-leaderboard) to learn how to publish your results on the leaderboard too!
+
+> [!NOTE]
+> The `vidore-benchmark` package supports two formats of datasets:
+> 
+> - QA: The dataset is formatted as a question-answering task, where the queries are questions and the passages are the image pages that provide the answers.
+> - BEIR: Following the [BEIR paper](https://doi.org/10.48550/arXiv.2104.08663), the dataset is formatted in 3 sub-datasets: `corpus`, `queries`, and `qrels`. The `corpus` contains the documents, the `queries` contains the queries, and the `qrels` contains the relevance scores between the queries and the documents.
+>
+> In the first iteration of the ViDoRe benchmark, we **arbitrarily choose** to deduplicate the queries for the QA datasets. While this made sense given our data generation process, it wasn't suited for our ViDoRe benchmark v2 which aims at being broader and multilingual. We will release the ViDoRe benchmark v2 soon.
+
+| Dataset                                                                                                    | Dataset format | Deduplicate queries |
+|------------------------------------------------------------------------------------------------------------|----------------|---------------------|
+| [ViDoRe benchmark v1](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d) | QA             | ✅                   |
+| ViDoRe benchmark v2 (harder/multilingual, not released yet)                                                | BEIR           |                     |
 
 ### Documentation
 

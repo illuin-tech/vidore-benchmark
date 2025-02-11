@@ -77,6 +77,13 @@ def cli_runner():
             "qa",
             "tests/data/e2e_vidore_results/bm25_tabfquad.json",
         ),
+        (
+            "colidefics3",
+            "vidore/colSmol-256M",
+            "vidore/arxivqa_test_subsampled_beir",
+            "beir",
+            "tests/data/e2e_vidore_results/colsmol_256M_arxivqa_beir.json",
+        ),
     ],
 )
 def test_e2e_evaluate_retriever_on_one_dataset(

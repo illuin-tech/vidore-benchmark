@@ -178,6 +178,7 @@ class BaseViDoReEvaluator(ABC):
     def compute_retrieval_scores(
         qrels: Dict[str, Dict[str, int]],
         results: Dict[str, Dict[str, float]],
+        ignore_identical_ids: bool = False,
         **kwargs,
     ) -> Dict[str, Optional[float]]:
         """
@@ -196,6 +197,8 @@ class BaseViDoReEvaluator(ABC):
                     ...
                 }
                 ```
+            ignore_identical_ids: Whether to ignore identical IDs in the results, e.g. set to `True` if the
+                queries and documents have overlapping IDs.
             **kwargs: Additional keyword arguments.
         """
         mteb_evaluator = CustomRetrievalEvaluator()
@@ -204,7 +207,7 @@ class BaseViDoReEvaluator(ABC):
             qrels=qrels,
             results=results,
             k_values=mteb_evaluator.k_values,
-            ignore_identical_ids=kwargs.get("ignore_identical_ids", True),
+            ignore_identical_ids=ignore_identical_ids,
         )
 
         mrr = mteb_evaluator.evaluate_custom(qrels, results, mteb_evaluator.k_values, "mrr")

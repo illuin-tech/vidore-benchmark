@@ -2,16 +2,17 @@ import logging
 from datetime import datetime
 from importlib.metadata import version
 from pathlib import Path
-from typing import Annotated, Dict, List, Optional
+from typing import Annotated, Dict, List, Optional, cast
 
 import typer
-from datasets import load_dataset
+from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
 from tqdm import tqdm
 from transformers import set_seed
 
 from vidore_benchmark.evaluation.interfaces import MetadataModel, ViDoReBenchmarkResults
 from vidore_benchmark.evaluation.vidore_evaluators import ViDoReEvaluatorQA
+from vidore_benchmark.evaluation.vidore_evaluators.vidore_evaluator_beir import ViDoReEvaluatorBEIR
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import load_vision_retriever_from_registry
 from vidore_benchmark.utils.data_utils import get_datasets_from_collection
@@ -59,25 +60,30 @@ def _get_metrics_from_vidore_evaluator(
     """
     Rooter function to get metrics from the ViDoRe evaluator depending on the dataset format.
     """
-    if dataset_format == "qa":
+    if dataset_format.lower() == "qa":
+        ds = cast(Dataset, load_dataset(dataset_name, split=split))
         vidore_evaluator = ViDoReEvaluatorQA(vision_retriever)
-        ds = load_dataset(dataset_name, split=split)
-        metrics = {
-            dataset_name: vidore_evaluator.evaluate_dataset(
-                ds=ds,
-                ds_format=dataset_format,
-                batch_query=batch_query,
-                batch_passage=batch_passage,
-                batch_score=batch_score,
-                dataloader_prebatch_query=dataloader_prebatch_query,
-                dataloader_prebatch_passage=dataloader_prebatch_passage,
-            )
+    elif dataset_format.lower() == "beir":
+        ds = {
+            "corpus": cast(Dataset, load_dataset(dataset_name, name="corpus", split=split)),
+            "queries": cast(Dataset, load_dataset(dataset_name, name="queries", split=split)),
+            "qrels": cast(Dataset, load_dataset(dataset_name, name="qrels", split=split)),
         }
-    elif dataset_format == "beir":
-        raise NotImplementedError("BEIR evaluation is not implemented yet.")
+        vidore_evaluator = ViDoReEvaluatorBEIR(vision_retriever)
     else:
         raise ValueError(f"Unsupported dataset format: {dataset_format}")
 
+    metrics = {
+        dataset_name: vidore_evaluator.evaluate_dataset(
+            ds=ds,
+            ds_format=dataset_format,
+            batch_query=batch_query,
+            batch_passage=batch_passage,
+            batch_score=batch_score,
+            dataloader_prebatch_query=dataloader_prebatch_query,
+            dataloader_prebatch_passage=dataloader_prebatch_passage,
+        )
+    }
     return metrics
 
 
@@ -90,6 +96,13 @@ def main(log_level: Annotated[str, typer.Option("--log", help="Logging level")] 
 @app.command()
 def evaluate_retriever(
     model_class: Annotated[str, typer.Option(help="Model class")],
+    dataset_format: Annotated[
+        str,
+        typer.Option(
+            help='Dataset format to use for evaluation ("qa" or "beir"). Use "qa" (uses query deduplication) for '
+            'ViDoRe Benchmark v1 and "beir" (without query dedup) for ViDoRe Benchmark v2 (not released yet).'
+        ),
+    ],
     model_name: Annotated[
         Optional[str],
         typer.Option(
@@ -102,9 +115,6 @@ def evaluate_retriever(
         Optional[str],
         typer.Option(help="Dataset collection to use for evaluation. Can be a Hf collection id or a local dirpath."),
     ] = None,
-    dataset_format: Annotated[
-        str, typer.Option(help='Dataset format to use for evaluation. Only "qa" is supported for now.')
-    ] = "qa",
     split: Annotated[str, typer.Option(help="Dataset split")] = "test",
     batch_query: Annotated[int, typer.Option(help="Batch size for query embedding inference")] = 4,
     batch_passage: Annotated[int, typer.Option(help="Batch size for passages embedding inference")] = 4,

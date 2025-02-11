@@ -104,7 +104,11 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         )
 
         # Compute the MTEB metrics
-        metrics = self.compute_retrieval_scores(qrels=relevant_docs, results=results)
+        metrics = self.compute_retrieval_scores(
+            qrels=relevant_docs,
+            results=results,
+            ignore_identical_ids=True,
+        )
 
         return metrics
 
@@ -135,8 +139,13 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         relevant_docs = {}
         results = {}
 
-        queries2filename = {query: image_filename for query, image_filename in zip(ds["query"], ds["image_filename"])}
-        passages2filename = {docidx: image_filename for docidx, image_filename in enumerate(ds["image_filename"])}
+        queries2filename = {
+            query: image_filename
+            for query, image_filename in zip(ds[self.query_column], ds[self.passage_filename_column])
+        }
+        passages2filename = {
+            docidx: image_filename for docidx, image_filename in enumerate(ds[self.passage_filename_column])
+        }
 
         for query, score_per_query in zip(queries, scores):
             relevant_docs[query] = {queries2filename[query]: 1}
