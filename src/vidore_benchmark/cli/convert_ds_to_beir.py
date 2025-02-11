@@ -111,7 +111,7 @@ def main(
                 {
                     "query-id": query_to_id[row[query_column]],
                     "corpus-id": image_hash_to_id[image_hash],
-                    "score": 1.0,
+                    "score": 1,
                 }
             )
 
