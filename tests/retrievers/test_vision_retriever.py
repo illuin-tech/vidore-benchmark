@@ -2,8 +2,12 @@ from typing import Generator, cast
 
 import pytest
 import torch
-from colpali_engine.compression import HierarchicalTokenPooler
-from colpali_engine.models import ColIdefics3, ColIdefics3Processor
+
+try:
+    from colpali_engine.compression import HierarchicalTokenPooler
+    from colpali_engine.models import ColIdefics3, ColIdefics3Processor
+except ImportError:
+    pytest.skip("Skipping tests because colpali_engine is not installed", allow_module_level=True)
 
 from vidore_benchmark.retrievers import VisionRetriever
 from vidore_benchmark.retrievers.colidefics3_retriever import ColIdefics3Retriever
