@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from importlib.metadata import version
 from pathlib import Path
-from typing import Annotated, Dict, List, Literal, Optional, cast
+from typing import Annotated, Dict, List, Optional, cast
 
 import typer
 from datasets import Dataset, load_dataset
@@ -97,10 +97,10 @@ def main(log_level: Annotated[str, typer.Option("--log", help="Logging level")] 
 def evaluate_retriever(
     model_class: Annotated[str, typer.Option(help="Model class")],
     dataset_format: Annotated[
-        Literal["qa", "beir"],
+        str,
         typer.Option(
-            help='Dataset format to use for evaluation. Use the "qa" (uses query deduplication) for ViDoRe Benchmark '
-            'v1 and "beir" (without query dedup) for ViDoRe Benchmark v2 (not released yet).'
+            help='Dataset format to use for evaluation ("qa" or "beir"). Use "qa" (uses query deduplication) for '
+            'ViDoRe Benchmark v1 and "beir" (without query dedup) for ViDoRe Benchmark v2 (not released yet).'
         ),
     ],
     model_name: Annotated[
