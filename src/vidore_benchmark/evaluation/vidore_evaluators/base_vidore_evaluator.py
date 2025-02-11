@@ -197,7 +197,8 @@ class BaseViDoReEvaluator(ABC):
                     ...
                 }
                 ```
-            ignore_identical_ids: Whether to ignore identical IDs in the results.
+            ignore_identical_ids: Whether to ignore identical IDs in the results, e.g. set to `True` if the
+                queries and documents have overlapping IDs.
             **kwargs: Additional keyword arguments.
         """
         mteb_evaluator = CustomRetrievalEvaluator()
