@@ -87,7 +87,7 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
             # NOTE: The IDs are stored as integers in the dataset.
             query_id = str(qrel[self.query_id_column])
             corpus_id = str(qrel[self.corpus_id_column])
-            qrels[query_id][corpus_id] = int(qrel[self.score_column])
+            qrels[query_id][corpus_id] = qrel[self.score_column]
 
         # Edge case: using the BM25Retriever
         if isinstance(self.vision_retriever, BM25Retriever):
