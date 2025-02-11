@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from importlib.metadata import version
 from pathlib import Path
-from typing import Annotated, Dict, List, Optional, cast
+from typing import Annotated, Dict, List, Literal, Optional, cast
 
 import typer
 from datasets import Dataset, load_dataset
@@ -60,10 +60,10 @@ def _get_metrics_from_vidore_evaluator(
     """
     Rooter function to get metrics from the ViDoRe evaluator depending on the dataset format.
     """
-    if dataset_format == "qa":
+    if dataset_format.lower() == "qa":
         ds = cast(Dataset, load_dataset(dataset_name, split=split))
         vidore_evaluator = ViDoReEvaluatorQA(vision_retriever)
-    elif dataset_format == "beir":
+    elif dataset_format.lower() == "beir":
         ds = {
             "corpus": cast(Dataset, load_dataset(dataset_name, name="corpus", split=split)),
             "queries": cast(Dataset, load_dataset(dataset_name, name="queries", split=split)),
@@ -97,10 +97,10 @@ def main(log_level: Annotated[str, typer.Option("--log", help="Logging level")] 
 def evaluate_retriever(
     model_class: Annotated[str, typer.Option(help="Model class")],
     dataset_format: Annotated[
-        str,
+        Literal["qa", "beir"],
         typer.Option(
-            help="Dataset format to use for evaluation. Use QA (with query dedup) for ViDoRe Benchmark v1 and "
-            "BEIR (no query dedup) for v2."
+            help='Dataset format to use for evaluation. Use the "qa" (uses query deduplication) for ViDoRe Benchmark '
+            'v1 and "beir" (without query dedup) for ViDoRe Benchmark v2 (not released yet).'
         ),
     ],
     model_name: Annotated[
