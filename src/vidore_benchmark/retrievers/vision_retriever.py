@@ -27,6 +27,7 @@ class VisionRetriever(BaseVisionRetriever):
         super().__init__(use_visual_embedding=True)
 
         self.model = model
+        self.model.eval()
 
         self.processor = processor
         if not hasattr(self.processor, "process_images"):
