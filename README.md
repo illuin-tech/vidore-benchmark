@@ -21,29 +21,23 @@ The Visual Document Retrieval Benchmark (ViDoRe), is introduced to evaluate the 
 
 ![ViDoRe Examples](assets/vidore_examples.webp)
 
-> [!TIP]
-> If you want to fine-tune ColPali for your specific use-case, you should check the [`colpali`](https://github.com/illuin-tech/colpali) repository. It contains with the whole codebase used to train the model presented in our paper.
+## Usage
 
-## Setup
+This packages comes with a Python API and a CLI to evaluate your own retriever on the ViDoRe benchmark. Both are compatible with `Python>=3.9`.
 
-We used Python 3.11.6 and PyTorch 2.2.2 to train and test our models, but the codebase is expected to be compatible with Python >=3.9 and recent PyTorch versions.
-
-The eval codebase depends on a few Python packages, which can be downloaded using the following command:
+### CLI mode
 
 ```bash
 pip install vidore-benchmark
 ```
 
-> [!TIP]
-> By default, the `vidore-benchmark` package already includes the dependencies for the ColVision models (e.g. ColPali, ColQwen2...).
-
-To keep a lightweight repository, only the essential packages were installed. In particular, you must specify the dependencies for the specific non-Transformers models you want to run (see the list in `pyproject.toml`). For instance, if you are going to evaluate the BGE-M3 retriever:
+To keep this package lightweight, only the essential packages were installed. Thus, you must specify the dependency groups for models you want to evaluate with CLI (see the list in `pyproject.toml`). For instance, if you are going to evaluate the ColVision models (e.g. ColPali, ColQwen2, ColSmol, ...), you should run:
 
 ```bash
-pip install "vidore-benchmark[bge-m3]"
+pip install "vidore-benchmark[colpali-engine]"
 ```
 
-Or if you want to evaluate all the off-the-shelf retrievers:
+If you want to install all the dependencies for all the models, you can run:
 
 ```bash
 pip install "vidore-benchmark[all-retrievers]"
@@ -56,9 +50,16 @@ pip install "vidore-benchmark[bm25]"
 python -m nltk.downloader punkt punkt_tab stopwords
 ```
 
-## Available retrievers
+### Library mode
 
-The list of available retrievers can be found [here](https://github.com/illuin-tech/vidore-benchmark/tree/main/src/vidore_benchmark/retrievers). Read [this section](###Implement-your-own-retriever) to learn how to create, use, and evaluate your own retriever.
+Install the base package using pip:
+
+```bash
+pip install vidore-benchmark
+```
+
+> [!WARNING]
+> Do not install optional dependency groups if you are going to use the library mode, or you might end up with circular dependency imports!
 
 ## Command-line usage
 
@@ -70,7 +71,7 @@ can evaluate the ColPali model on the ViDoRe benchmark to reproduce the results 
 ```bash
 vidore-benchmark evaluate-retriever \
     --model-class colpali \
-    --model-name vidore/colpali-v1.2 \
+    --model-name vidore/colpali-v1.3 \
     --collection-name vidore/vidore-benchmark-667173f98e70a1c0fa4db00d \
     --dataset-format qa \
     --split test
@@ -81,7 +82,7 @@ Alternatively, you can evaluate your model on a single dataset. If your retriver
 ```bash
 vidore-benchmark evaluate-retriever \
     --model-class colpali \
-    --model-name vidore/colpali-v1.2 \
+    --model-name vidore/colpali-v1.3 \
     --dataset-name vidore/docvqa_test_subsampled \
     --dataset-format qa \
     --split test
@@ -111,7 +112,7 @@ All the above scripts will generate a JSON file in `outputs/{model_id}_metrics.j
 | Dataset                                                                                                    | Dataset format | Deduplicate queries |
 |------------------------------------------------------------------------------------------------------------|----------------|---------------------|
 | [ViDoRe benchmark v1](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d) | QA             | ✅                   |
-| ViDoRe benchmark v2 (harder/multilingual, not released yet)                                                | BEIR           |                     |
+| ViDoRe benchmark v2 (harder/multilingual, not released yet)                                                | BEIR           | ❌                   |
 
 ### Documentation
 
