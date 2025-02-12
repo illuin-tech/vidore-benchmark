@@ -28,6 +28,15 @@ def main(
 ):
     """
     Convert a dataset from the QA format to the standard BEIR format.
+
+    Example usage:
+
+    ```bash
+    python src/vidore_benchmark/cli/convert_ds_to_beir_dedup.py \
+        --source-dataset "vidore/vidore_benchmark_qa_dummy" \
+        --split "test" \
+        --target-dataset "vidore/vidore_benchmark_beir_dummy"
+    ```
     """
 
     warnings.warn(
