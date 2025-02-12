@@ -24,9 +24,19 @@ def main(
     ] = None,
     query_column: Annotated[str, typer.Option(help="Name of the column containing the query.")] = "query",
     image_column: Annotated[str, typer.Option(help="Name of the column containing the image.")] = "image",
+    private: Annotated[bool, typer.Option(help="Whether to push the dataset as private.")] = True,
 ):
     """
     Convert a dataset from the QA format to the standard BEIR format.
+
+    Example usage:
+
+    ```bash
+    python src/vidore_benchmark/cli/convert_ds_to_beir_dedup.py \
+        --source-dataset "vidore/vidore_benchmark_qa_dummy" \
+        --split "test" \
+        --target-dataset "vidore/vidore_benchmark_beir_dummy"
+    ```
     """
 
     warnings.warn(
@@ -111,7 +121,7 @@ def main(
                 {
                     "query-id": query_to_id[row[query_column]],
                     "corpus-id": image_hash_to_id[image_hash],
-                    "score": 1.0,
+                    "score": 1,
                 }
             )
 
@@ -119,13 +129,13 @@ def main(
 
     # Push datasets to the Hugging Face Hub
     print(f"Pushing the 'corpus' split dataset to '{target_dataset}'...")
-    ds_corpus.push_to_hub(target_dataset, config_name="corpus", private=True)
+    ds_corpus.push_to_hub(target_dataset, config_name="corpus", private=private)
 
     print(f"Pushing the 'queries' split dataset to '{target_dataset}'...")
-    ds_queries.push_to_hub(target_dataset, config_name="queries", private=True)
+    ds_queries.push_to_hub(target_dataset, config_name="queries", private=private)
 
     print(f"Pushing 'the default' triples split dataset to '{target_dataset}'...")
-    ds_qrels.push_to_hub(target_dataset, config_name="qrels", private=True)
+    ds_qrels.push_to_hub(target_dataset, config_name="qrels", private=private)
 
     print(f"All datasets have been successfully pushed to '{target_dataset}'.")
     print("Done.")
