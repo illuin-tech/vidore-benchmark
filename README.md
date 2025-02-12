@@ -37,6 +37,11 @@ To keep this package lightweight, only the essential packages were installed. Th
 pip install "vidore-benchmark[colpali-engine]"
 ```
 
+> [!WARNING]
+> If possible, do not `pip install colpali-engine` directly in the env dedicated for the CLI.
+> 
+> In particular, make sure not to install both `vidore-benchmark[colpali-engine]` and `colpali-engine[train]` simultaneously, as it will lead to a circular depencency conflict.
+
 If you want to install all the dependencies for all the models, you can run:
 
 ```bash
@@ -57,9 +62,6 @@ Install the base package using pip:
 ```bash
 pip install vidore-benchmark
 ```
-
-> [!WARNING]
-> Do not install optional dependency groups if you are going to use the library mode, or you might end up with circular dependency imports!
 
 ## Command-line usage
 
