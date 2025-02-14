@@ -19,10 +19,20 @@ load_dotenv(override=True)
 
 
 class VisionRetriever(BaseVisionRetriever):
+    """
+    Vision Retriever wrapper class that can be used with the ViDoRe evaluators.
+
+    To use this class, the following requirements must be met:
+    - `model` has a `forward` method that returns dense or multi-vector embeddings
+    - `processor` implements `process_images`, `process_queries`, and `score` methods.
+    """
+
     def __init__(
         self,
         model: torch.nn.Module,
         processor: ProcessorMixin,
+        num_workers: int = 0,
+        token_pooler: Optional["BaseTokenPooler"] = None,  # noqa: F821
     ):
         super().__init__(use_visual_embedding=True)
 
@@ -30,6 +40,9 @@ class VisionRetriever(BaseVisionRetriever):
         self.model.eval()
 
         self.processor = processor
+        self.num_workers = num_workers
+        self.token_pooler = token_pooler
+
         if not hasattr(self.processor, "process_images"):
             raise ValueError("Processor must have `process_images` method")
         if not hasattr(self.processor, "process_queries"):
@@ -54,14 +67,15 @@ class VisionRetriever(BaseVisionRetriever):
             batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_queries,
+            num_workers=self.num_workers,
         )
 
         query_embeddings: List[torch.Tensor] = []
 
         with torch.no_grad():
             for batch_query in tqdm(dataloader, desc="Forward pass queries...", leave=False):
-                embeddings_query = self.model(**batch_query).to("cpu")
-                query_embeddings.extend(list(torch.unbind(embeddings_query)))
+                batch_embeddings_query = self.model(**batch_query).to("cpu")
+                query_embeddings.extend(list(torch.unbind(batch_embeddings_query)))
 
         return query_embeddings
 
@@ -71,14 +85,21 @@ class VisionRetriever(BaseVisionRetriever):
             batch_size=batch_size,
             shuffle=False,
             collate_fn=self.process_images,
+            num_workers=self.num_workers,
         )
 
         passage_embeddings: List[torch.Tensor] = []
 
         with torch.no_grad():
             for batch_doc in tqdm(dataloader, desc="Forward pass passages...", leave=False):
-                embeddings_doc = self.model(**batch_doc).to("cpu")
-                passage_embeddings.extend(list(torch.unbind(embeddings_doc)))
+                batch_embeddings_passages = self.model(**batch_doc).to("cpu")
+
+        if self.token_pooler is not None:
+            passage_embeddings = self.token_pooler.pool_embeddings(
+                batch_embeddings_passages,
+                padding=True,
+                padding_side=self.processor.tokenizer.padding_side,
+            )
 
         return passage_embeddings
 
