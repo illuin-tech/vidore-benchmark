@@ -72,6 +72,7 @@ and this project adheres to [Semantic Versioning].
 - Add tests for `BiQwen2Retriever`
 - Add tests for `ColIdefics3Retriever`
 - Add tests and E2E tests for cli command `evaluate-retriever`
+- Add tests for `ViDoReEvaluatorBEIR`
 
 ## [4.0.2] - 2024-10-17
 
