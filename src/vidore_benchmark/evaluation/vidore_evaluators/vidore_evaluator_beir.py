@@ -18,7 +18,10 @@ class BEIRDataset(TypedDict):
         queries: The dataset containing the queries.
         qrels: The dataset containing the query relevance scores.
 
-    Each subset is associated to a key with the same name.
+    `qrels` follows the TREC format, where the structure is `{query_id: {doc_id: relevance_score}}`.
+    `relevance_score` is an integer indicating the relevance of the document to the query. For each query i,
+    the relevance scores are integers in the range [0, N_i], where the higher the score, the more relevant
+    the document is to the given query.
     """
 
     corpus: Dataset
