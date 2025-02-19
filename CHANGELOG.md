@@ -5,48 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog],
 and this project adheres to [Semantic Versioning].
 
-## [Unreleased]
+## [v5.0.0] - 2025-02-19
 
 ### Added
 
-- Add support for ColQwen2, DSEQwen2, and Cohere API embedding models
+- Add CLI eval support for ColQwen2, DSEQwen2, Cohere, ColIdefics3 API embedding models
 - Add Pydantic models for storing the ViDoRe benchmark results and metadata (includes `vidore-benchmark` version)
 - Add option to create an `EvalManager` instance from `ViDoReBenchmarkResults`
-- Add support for ColIdefics3 models
-- Add `num_workers` argument for dataloaders
-- Allow the creation of `VisionRetriever` instances using a PyTorch model and a processor that implements a `process_images` and a `process_queries` methods, similarly to the ColVision processors
-- [Experimental] Add a QA-to-BEIR dataset format conversion script
-- Add `dataloader_prebatch_query` and `dataloader_prebatch_passage` arguments/CLI options to avoid loading the entire datasets in memory
-- Add `--num-workers` option in CLI
+- Add `num_workers` argument when using dataloaders
+- Allow the creation of a `VisionRetriever` instance using a PyTorch model and a processor that implements a `process_images` and a `process_queries` methods, similarly to the ColVision processors
+- Add `dataloader_prebatch_query` and `dataloader_prebatch_passage` arguments to avoid loading the entire datasets in memory (used to cause RAM spikes when loading large image datasets)
+- Add QA-to-BEIR dataset format conversion script
 - Add support for the BEIR dataset format with `ViDoReEvaluatorBEIR`
 
 ### Changed
 
-- [Breaking] Restructure the `vidore-benchmark` package
 - [Breaking] Change the CLI argument names
 - Add option to load a specific checkpoint for Hf models with `pretrained_model_name_or_path`
-- Add better RAM handling during evaluation
-- Add better optional dependency handling
+- Improve soft dependency handling in retriever classes (the `colpali-engine` is now optional)
 - [Breaking] Change the `get_scores` signature
 - [Breaking] Rename `forward_documents` to `forward_passages` to match the literature and reduce confusion
-- Rename `DSERetriever` into `DSEQwen2Retriever`
-- Speed up tests by using smaller inputs
-- [Breaking] Rename args in CLI script
+- [Breaking] Rename `DSERetriever` into `DSEQwen2Retriever`
+- [Breaking] Rename args in the CLI script
 - When available, use `processor.get_scores` instead of custom scoring snippet
-- Improve soft dependency handling in retriever classes
-- Make `colpali-engine` dependency optional
-- Rename `ColQwenRetriever` to `ColQwen2Retriever`
-- Rename `BiQwenRetriever` to `BiQwen2Retriever`
-- Change default checkpoints for ColPali and ColQwen2 retrievers
+- [Breaking] Rename `ColQwenRetriever` to `ColQwen2Retriever`
+- [Breaking] Rename `BiQwenRetriever` to `BiQwen2Retriever`
 - [Breaking] Revamp the `evaluate` module. Evaluation is now handled by the `ViDoReEvaluatorQA` class
 - [Breaking] Rename `ViDoReEvaluator` into `BaseViDoReEvaluator`. The new `ViDoReEvaluator` class allows to create retrievers using the Python API.
 - Set default `num_workers` to 0 in retrievers
-- [Breaking] Remove support for token pooling with `HierarchicalEmbeddingPooler`. This feature was moved into `colpali-engine==0.3.9`.
+- Update default checkpoints for ColPali and ColQwen2 retrievers
 
 ### Fixed
 
 - Fix `evaluate_dataset` when used with the BM25 retriever
-- Fix issue when no `pretrained_model_name_or_path` is `None` in `load_vision_retriever_from_registry`
+- Fix issue when no `pretrained_model_name_or_path = None` in `load_vision_retriever_from_registry`
 - Fix `DummyRetriever`'s `get_scores` method
 - Fix processor output not being sent to the correct device in `ColQwen2Retriever`
 - Fix bugs in `BiQwen2Retriever`
@@ -54,23 +46,22 @@ and this project adheres to [Semantic Versioning].
 
 ### Removed
 
-- Remove experimental quantization
+- Remove experimental quantization module
 - Remove the `interpretability` module. The interpretability code has been moved and improved as part of the [`colpali-engine==0.3.2`](https://github.com/illuin-tech/colpali/releases/tag/v0.3.2) release.
+- [Breaking] Remove support for token pooling. This feature will be re-introduced in `colpali-engine>0.3.9`
 - Replace `loguru` with built-in `logging` module
 - Remove the `retrieve_on_dataset` and `retrieve_on_pdfs` entrypoint scripts
 - Remove the `pdf_utils` module
 - Remove the `get_top_k` method from the `evaluate` module
-- Remove the `experiments` directory
 - Remove the `plot_utils` and `test_utils` modules
+- Remove the `experiments` directory
 
 ### Tests
 
-- Add tests for ColQwen2, DSEQwen2, and Cohere API embedding models
+- Add tests for all built-in vision retrievers
 - Add fixtures in retriever tests to speed up testing
 - Add tests for `ViDoReBenchmarkResults`
 - Add tests for `EvalManager`
-- Add tests for `BiQwen2Retriever`
-- Add tests for `ColIdefics3Retriever`
 - Add tests and E2E tests for cli command `evaluate-retriever`
 - Add tests for `ViDoReEvaluatorBEIR`
 
