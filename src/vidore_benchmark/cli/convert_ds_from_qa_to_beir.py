@@ -1,4 +1,3 @@
-import warnings
 from typing import Annotated, Dict, Generator, List, Optional, TypedDict, cast
 
 import typer
@@ -38,12 +37,6 @@ def main(
         --target-dataset "vidore/vidore_benchmark_beir_dummy"
     ```
     """
-
-    warnings.warn(
-        "The `convert_ds_to_beir.py` script is experimental and may change or be removed in future releases.",
-        category=UserWarning,
-        stacklevel=2,
-    )
 
     if target_dataset is None:
         target_dataset = f"{source_dataset}_beir"
