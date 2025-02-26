@@ -14,15 +14,20 @@ from vidore_benchmark.retrievers.bm25_retriever import BM25Retriever
 class BEIRDataset(TypedDict):
     """
     BEIR dataset type. A BEIR dataset must contain 3 subsets:
-        corpus: The dataset containing the corpus of documents.
-        queries: The dataset containing the queries.
-        qrels: The dataset containing the query relevance scores.
+        corpus: The dataset containing the corpus of documents. Should contain the following columns:
+            - corpus-id: The column containing the document IDs as integers.
+            - image: The column containing the image data (PIL format).
+        queries: The dataset containing the queries. Should contain the following columns:
+            - query-id: The column containing the query IDs as integers.
+            - query: The column containing the query text.
+        qrels: The dataset containing the query relevance scores (TREC format). Should contain the following columns:
+            - query-id: The column containing the query IDs as integers.
+            - corpus-id: The column containing the document IDs as integers.
+            - score: The column containing the relevance scores as integers.
 
-    Notes:
-    - `qrels` follows the TREC format, where the structure is `{query_id: {doc_id: relevance_score}}`.
-    - `relevance_score` is an integer indicating the relevance of the document to the query. For each query i,
-    the relevance scores are integers in the range [0, N_i], where the higher the score, the more relevant
-    the document is to the given query.
+    Note: In the TREC format used here, `score` is an integer indicating the relevance of the document to the query.
+    For each query i, the relevance scores are integers in the range [0, N_i], where the higher the score, the more
+    relevant the document is to the given query.
     """
 
     corpus: Dataset
@@ -89,19 +94,14 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
         ds_queries = ds["queries"]
         ds_qrels = ds["qrels"]
 
-        # Get image data
+        # Cast IDs to string to ensure compatibility with MTEB
         passage_ids: List[str] = [str(elt) for elt in ds_corpus[self.corpus_id_column]]
-
-        # Get query data
         query_ids: List[str] = [str(elt) for elt in ds_queries[self.query_id_column]]
 
-        # Get query relevance data
         qrels: Dict[str, Dict[str, int]] = defaultdict(dict)
         for qrel in ds_qrels:
-            # Cast to str to handle int query IDs:
             query_id = str(qrel[self.query_id_column])
             corpus_id = str(qrel[self.corpus_id_column])
-
             qrels[query_id][corpus_id] = qrel[self.score_column]
 
         # Edge case: using the BM25Retriever
