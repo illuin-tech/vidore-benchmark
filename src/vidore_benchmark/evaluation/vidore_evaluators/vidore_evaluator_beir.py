@@ -73,6 +73,17 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
         dataloader_prebatch_passage: Optional[int] = None,
         **kwargs,
     ) -> Dict[str, Optional[float]]:
+        """
+        Evaluate the given BEIR dataset.
+
+        Args:
+            ds (BEIRDataset): The dataset to evaluate.
+            batch_query (int): The batch size for processing queries.
+            batch_passage (int): The batch size for processing passages.
+            batch_score (Optional[int]): The batch size for computing similarity scores.
+            dataloader_prebatch_query (Optional[int]): The number of queries to pre-batch before processing.
+            dataloader_prebatch_passage (Optional[int]): The number of passages to pre-batch before processing.
+        """
         # Load datasets
         ds_corpus = ds["corpus"]
         ds_queries = ds["queries"]
@@ -87,10 +98,10 @@ class ViDoReEvaluatorBEIR(BaseViDoReEvaluator):
         # Get query relevance data
         qrels: Dict[str, Dict[str, int]] = defaultdict(dict)
         for qrel in ds_qrels:
-            # Convert qrels to have the format expected by MTEB.
-            # NOTE: We expect the IDs to be strings.
+            # Cast to str to handle int query IDs:
             query_id = str(qrel[self.query_id_column])
             corpus_id = str(qrel[self.corpus_id_column])
+
             qrels[query_id][corpus_id] = qrel[self.score_column]
 
         # Edge case: using the BM25Retriever
