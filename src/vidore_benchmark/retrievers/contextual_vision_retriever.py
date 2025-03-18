@@ -74,7 +74,7 @@ class ContextVisionRetriever(BaseVisionRetriever):
         with torch.inference_mode():
             for batch_passage, batch_summary in zip(batched(passages, batch_size), batched(summaries, batch_size)):
                 processed_images = self.processor.process_images(batch_passage, batch_summary).to(self.model.device)
-                embeddings_passages = self.model(**processed_images).to("cpu")
+                embeddings_passages = self.model(**processed_images, passage_mode=True).to("cpu")
                 passage_embeddings.extend(list(torch.unbind(embeddings_passages)))
 
         return passage_embeddings
