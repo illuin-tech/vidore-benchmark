@@ -1,4 +1,4 @@
-# Vision Document Retrieval (ViDoRe): Benchmark 👀
+# Vision Document Retrieval (ViDoRe): Benchmarks 👀
 
 [![arXiv](https://img.shields.io/badge/arXiv-2407.01449-b31b1b.svg?style=for-the-badge)](https://arxiv.org/abs/2407.01449)
 [![GitHub](https://img.shields.io/badge/ColPali_Engine-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/illuin-tech/colpali)
@@ -17,7 +17,7 @@
 
 ## Approach
 
-The Visual Document Retrieval Benchmark (ViDoRe), is introduced to evaluate the performance of document retrieval systems on visually rich documents across various tasks, domains, languages, and settings. It was used to evaluate the ColPali model, a VLM-powered retriever that efficiently retrieves documents based on their visual content and textual queries using a late-interaction mechanism.
+The Visual Document Retrieval Benchmarks (ViDoRe v1 and v2), is introduced to evaluate the performance of document retrieval systems on visually rich documents across various tasks, domains, languages, and settings. It was used to evaluate the ColPali model, a VLM-powered retriever that efficiently retrieves documents based on their visual content and textual queries using a late-interaction mechanism.
 
 ![ViDoRe Examples](assets/vidore_examples.webp)
 
@@ -67,8 +67,8 @@ pip install vidore-benchmark
 
 ### Evaluate a retriever on ViDoRE
 
-You can evaluate any off-the-shelf retriever on the ViDoRe benchmark. For instance, you
-can evaluate the ColPali model on the ViDoRe benchmark to reproduce the results from our paper.
+You can evaluate any off-the-shelf retriever on the ViDoRe benchmark v1. For instance, you
+can evaluate the ColPali model on the ViDoRe benchmark 1 to reproduce the results from our paper.
 
 ```bash
 vidore-benchmark evaluate-retriever \
@@ -79,7 +79,17 @@ vidore-benchmark evaluate-retriever \
     --split test
 ```
 
-Alternatively, you can evaluate your model on a single dataset. If your retriver uses visual embeddings, you can use any dataset path from the [ViDoRe Benchmark](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d) collection, e.g.:
+If you want to evaluate your models on on new collection ViDoRe benchmark 2, a harder version of the previous benchmark you can execute the following command :
+```bash
+vidore-benchmark evaluate-retriever \
+    --model-class colpali \
+    --model-name vidore/colpali-v1.3 \
+    --collection-name https://huggingface.co/collections/vidore/vidore-benchmark-v2-67ae03e3924e85b36e7f53b0 \
+    --dataset-format beir \
+    --split test
+```
+
+Alternatively, you can evaluate your model on a single dataset. If your retriver uses visual embeddings, you can use any dataset path from the [ViDoRe Benchmark v1](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d) collection or the [ViDoRe Benchmark v2](https://huggingface.co/collections/vidore/vidore-benchmark-v2-67ae03e3924e85b36e7f53b0) (beir format instead of qa), e.g.:
 
 ```bash
 vidore-benchmark evaluate-retriever \
@@ -114,7 +124,7 @@ All the above scripts will generate a JSON file in `outputs/{model_id}_metrics.j
 | Dataset                                                                                                    | Dataset format | Deduplicate queries |
 |------------------------------------------------------------------------------------------------------------|----------------|---------------------|
 | [ViDoRe benchmark v1](https://huggingface.co/collections/vidore/vidore-benchmark-667173f98e70a1c0fa4db00d) | QA             | ✅                   |
-| ViDoRe benchmark v2 (harder/multilingual, not released yet)                                                | BEIR           | ❌                   |
+| [ViDoRe benchmark v2](https://huggingface.co/collections/vidore/vidore-benchmark-v2-67ae03e3924e85b36e7f53b0) (harder/multilingual)                                                | BEIR           | ❌                   |
 
 ### Documentation
 
@@ -138,7 +148,7 @@ from colpali_engine.models import ColIdefics3, ColIdefics3Processor
 from datasets import load_dataset
 from tqdm import tqdm
 
-from vidore_benchmark.evaluation.vidore_evaluators import ViDoReEvaluatorQA
+from vidore_benchmark.evaluation.vidore_evaluators import ViDoReEvaluatorQA, ViDoReEvaluatorBEIR
 from vidore_benchmark.retrievers import VisionRetriever
 from vidore_benchmark.utils.data_utils import get_datasets_from_collection
 
@@ -152,16 +162,30 @@ model = ColIdefics3.from_pretrained(
 
 # Get retriever instance
 vision_retriever = VisionRetriever(model=model, processor=processor)
-vidore_evaluator = ViDoReEvaluatorQA(vision_retriever)
 
-# Evaluate on a single dataset
-ds = load_dataset("vidore/tabfquad_test_subsampled", split="test")
-metrics_dataset = vidore_evaluator.evaluate_dataset(
+# Evaluate on a single BEIR format dataset (e.g one of the ViDoRe benchmark 2 dataset)
+vidore_evaluator_beir = ViDoReEvaluatorBEIR(vision_retriever)
+ds = {
+    "corpus" : load_dataset("vidore/synthetic_axa_filtered_v1.0", name="corpus", split="test"),
+    "queries" : load_dataset("vidore/synthetic_axa_filtered_v1.0", name="queries", split="test")
+    "qrels" : load_dataset("vidore/synthetic_axa_filtered_v1.0", name="qrels", split="test")
+}
+metrics_dataset_beir = vidore_evaluator_beir.evaluate_dataset(
     ds=ds,
     batch_query=4,
     batch_passage=4,
 )
-print(metrics_dataset)
+print(metrics_dataset_beir)
+
+# Evaluate on a single QA format dataset
+vidore_evaluator_qa = ViDoReEvaluatorQA(vision_retriever)
+ds = load_dataset("vidore/tabfquad_test_subsampled", split="test")
+metrics_dataset_qa = vidore_evaluator_qa.evaluate_dataset(
+    ds=ds,
+    batch_query=4,
+    batch_passage=4,
+)
+print(metrics_dataset_qa)
 
 # Evaluate on a local directory or a HuggingFace collection
 dataset_names = get_datasets_from_collection("vidore/vidore-benchmark-667173f98e70a1c0fa4db00d")
