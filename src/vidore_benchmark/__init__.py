@@ -8,6 +8,7 @@ from .retrievers import (
     ColIdefics3Retriever,
     ColPaliRetriever,
     ColQwen2Retriever,
+    ContextVisionRetriever,
     DSEQwen2Retriever,
     DummyVisionRetriever,
     JinaClipRetriever,

@@ -7,6 +7,7 @@ from .cohere_api_retriever import CohereAPIRetriever
 from .colidefics3_retriever import ColIdefics3Retriever
 from .colpali_retriever import ColPaliRetriever
 from .colqwen2_retriever import ColQwen2Retriever
+from .contextual_vision_retriever import ContextVisionRetriever
 from .dse_qwen2_retriever import DSEQwen2Retriever
 from .dummy_vision_retriever import DummyVisionRetriever
 from .jina_clip_retriever import JinaClipRetriever
