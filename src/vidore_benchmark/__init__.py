@@ -11,6 +11,7 @@ from .retrievers import (
     ContextVisionRetriever,
     DSEQwen2Retriever,
     DummyVisionRetriever,
+    ImageContextVisionRetriever,
     JinaClipRetriever,
     NomicVisionRetriever,
     SigLIPRetriever,

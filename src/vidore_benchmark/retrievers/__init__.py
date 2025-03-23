@@ -10,6 +10,7 @@ from .colqwen2_retriever import ColQwen2Retriever
 from .contextual_vision_retriever import ContextVisionRetriever
 from .dse_qwen2_retriever import DSEQwen2Retriever
 from .dummy_vision_retriever import DummyVisionRetriever
+from .img_contextual_vision_retriever import ImageContextVisionRetriever
 from .jina_clip_retriever import JinaClipRetriever
 from .nomic_retriever import NomicVisionRetriever
 from .registry_utils import VISION_RETRIEVER_REGISTRY, load_vision_retriever_from_registry, register_vision_retriever
