@@ -39,7 +39,11 @@ class ImageContextVisionRetriever(BaseVisionRetriever):
             raise ValueError("Processor must have `score` method")
 
     def process_images(
-        self, images: List[Image.Image], prev_images: List[Image.Image], next_images: List[Image.Image], **kwargs
+        self,
+        images: List[Image.Image],
+        prev_images: List[Image.Image],
+        next_images: List[Image.Image],
+        **kwargs,
     ):
         return self.processor.process_images(images, prev_images, next_images).to(self.model.device)
 
@@ -80,7 +84,9 @@ class ImageContextVisionRetriever(BaseVisionRetriever):
 
         with torch.inference_mode():
             for batch_passage, batch_prev, batch_next in zip(
-                batched(passages, batch_size), batched(prev_passages, batch_size), batched(next_passages, batch_size)
+                batched(passages, batch_size),
+                batched(prev_passages, batch_size),
+                batched(next_passages, batch_size),
             ):
                 processed_images = self.processor.process_images(batch_passage, batch_prev, batch_next).to(
                     self.model.device
