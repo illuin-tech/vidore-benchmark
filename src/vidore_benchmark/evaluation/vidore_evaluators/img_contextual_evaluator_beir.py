@@ -9,7 +9,9 @@ import torch
 from datasets import Dataset
 from tqdm import tqdm
 
-from vidore_benchmark.evaluation.vidore_evaluators.base_vidore_evaluator import BaseViDoReEvaluator
+from vidore_benchmark.evaluation.vidore_evaluators.base_vidore_evaluator import (
+    BaseViDoReEvaluator,
+)
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.utils.iter_utils import batched
 
@@ -42,10 +44,18 @@ class ImageContextEvaluatorBEIR(BaseViDoReEvaluator):
         if passage_column:
             self.passage_column = passage_column
         else:
-            self.passage_column = "image" if self.vision_retriever.use_visual_embedding else "text_description"
+            self.passage_column = (
+                "image"
+                if self.vision_retriever.use_visual_embedding
+                else "text_description"
+            )
         self.score_column = score_column if score_column else "score"
-        self.prev_image_column = prev_image_column if prev_image_column else "prev-image"
-        self.next_image_column = next_image_column if next_image_column else "next-image"
+        self.prev_image_column = (
+            prev_image_column if prev_image_column else "prev-image"
+        )
+        self.next_image_column = (
+            next_image_column if next_image_column else "next-image"
+        )
 
     def evaluate_dataset(
         self,
@@ -132,8 +142,18 @@ class ImageContextEvaluatorBEIR(BaseViDoReEvaluator):
             total=math.ceil(len(ds_corpus) / (dataloader_prebatch_size)),
         ):
             passages: List[Any] = [batch[passage_column] for batch in ds_batch]
-            prev_passages: List[Any] = [batch[prev_image_column] for batch in ds_batch]
-            next_passages: List[Any] = [batch[next_image_column] for batch in ds_batch]
+            prev_passages: List[Any] = [
+                ds_corpus[passage_column][batch[prev_image_column]]
+                if batch[prev_image_column]
+                else batch[passage_column]
+                for batch in ds_batch
+            ]
+            next_passages: List[Any] = [
+                ds_corpus[passage_column][batch[next_image_column]]
+                if batch[next_image_column]
+                else batch[passage_column]
+                for batch in ds_batch
+            ]
 
             batch_embedding_passages = self.vision_retriever.forward_passages(
                 passages=passages,
@@ -143,7 +163,9 @@ class ImageContextEvaluatorBEIR(BaseViDoReEvaluator):
             )
 
             if isinstance(batch_embedding_passages, torch.Tensor):
-                batch_embedding_passages = list(torch.unbind(batch_embedding_passages.to("cpu")))
+                batch_embedding_passages = list(
+                    torch.unbind(batch_embedding_passages.to("cpu"))
+                )
                 passage_embeddings.extend(batch_embedding_passages)
             else:
                 for embedding_passage in batch_embedding_passages:
