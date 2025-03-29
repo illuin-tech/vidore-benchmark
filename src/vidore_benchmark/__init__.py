@@ -14,4 +14,9 @@ from .retrievers import (
     NomicVisionRetriever,
     SigLIPRetriever,
     VisionRetriever,
+
+    # Custom retrievers
+    TestRetriever,
+    BlipRetriever,
+    LlavaOnevisionRetriever
 )
