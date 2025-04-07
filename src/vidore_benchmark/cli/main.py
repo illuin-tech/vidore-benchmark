@@ -9,7 +9,6 @@ from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
 from tqdm import tqdm
 from transformers import set_seed
-
 from vidore_benchmark.evaluation.interfaces import MetadataModel, ViDoReBenchmarkResults
 from vidore_benchmark.evaluation.vidore_evaluators import ViDoReEvaluatorQA
 from vidore_benchmark.evaluation.vidore_evaluators.vidore_evaluator_beir import ViDoReEvaluatorBEIR

@@ -9,6 +9,7 @@ from .colpali_retriever import ColPaliRetriever
 from .colqwen2_retriever import ColQwen2Retriever
 from .dse_qwen2_retriever import DSEQwen2Retriever
 from .dummy_vision_retriever import DummyVisionRetriever
+from .hf_api_retriever import HFEndpointRetriever
 from .jina_clip_retriever import JinaClipRetriever
 from .nomic_retriever import NomicVisionRetriever
 from .registry_utils import VISION_RETRIEVER_REGISTRY, load_vision_retriever_from_registry, register_vision_retriever

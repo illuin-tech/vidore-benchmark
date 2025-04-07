@@ -4,7 +4,6 @@ import typer
 from datasets import Dataset, load_dataset
 from dotenv import load_dotenv
 from tqdm import tqdm
-
 from vidore_benchmark.utils.image_utils import hash_image
 
 load_dotenv()
