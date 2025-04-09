@@ -18,6 +18,7 @@ from vidore_benchmark.utils.iter_utils import batched
 
 load_dotenv(override=True)
 
+
 @register_vision_retriever("hf-endpoint")
 class HFEndpointRetriever(BaseVisionRetriever):
     def __init__(self, pretrained_model_name_or_path: str, **kwargs):
@@ -26,7 +27,7 @@ class HFEndpointRetriever(BaseVisionRetriever):
         self.HEADERS = {
             "Accept": "application/json",
             "Authorization": f"Bearer {os.getenv('HF_TOKEN')}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
     @staticmethod
@@ -52,12 +53,13 @@ class HFEndpointRetriever(BaseVisionRetriever):
         query_batches = list(batched(queries, batch_size))
 
         async with aiohttp.ClientSession() as session:
+
             async def sem_post(batch):
                 async with semaphore:
                     return await self.post_queries(session, batch)
 
             tasks = [asyncio.create_task(sem_post(batch)) for batch in query_batches]
-            
+
             # ORDER-PRESERVING
             results = await asyncio.gather(*tasks)
 
@@ -73,6 +75,7 @@ class HFEndpointRetriever(BaseVisionRetriever):
         image_batches = list(batched(images_b64, batch_size))
 
         async with aiohttp.ClientSession() as session:
+
             async def sem_post(batch):
                 async with semaphore:
                     return await self.post_images(session, batch)
@@ -92,7 +95,7 @@ class HFEndpointRetriever(BaseVisionRetriever):
         return response
 
     def forward_passages(self, passages: List[Image.Image], batch_size: int, **kwargs) -> torch.Tensor:
-        response = asyncio.run(self.call_api_images( [self.convert_image_to_base64(doc) for doc in passages]))
+        response = asyncio.run(self.call_api_images([self.convert_image_to_base64(doc) for doc in passages]))
         return response
 
     def get_scores(
@@ -101,11 +104,10 @@ class HFEndpointRetriever(BaseVisionRetriever):
         passage_embeddings: Union[torch.Tensor, List[torch.Tensor]],
         batch_size: Optional[int] = None,
     ) -> torch.Tensor:
-
         def score_single_vector(
-                qs: List[torch.Tensor],
-                ps: List[torch.Tensor],
-                device: Optional[Union[str, torch.device]] = None,
+            qs: List[torch.Tensor],
+            ps: List[torch.Tensor],
+            device: Optional[Union[str, torch.device]] = None,
         ) -> torch.Tensor:
             """
             Compute the dot product score for the given single-vector query and passage embeddings.
@@ -127,10 +129,10 @@ class HFEndpointRetriever(BaseVisionRetriever):
             return scores
 
         def score_multi_vector(
-                qs: Union[torch.Tensor, List[torch.Tensor]],
-                ps: Union[torch.Tensor, List[torch.Tensor]],
-                batch_size: int = 128,
-                device: Optional[Union[str, torch.device]] = None,
+            qs: Union[torch.Tensor, List[torch.Tensor]],
+            ps: Union[torch.Tensor, List[torch.Tensor]],
+            batch_size: int = 128,
+            device: Optional[Union[str, torch.device]] = None,
         ) -> torch.Tensor:
             """
             Compute the late-interaction/MaxSim score (ColBERT-like) for the given multi-vector
@@ -166,12 +168,12 @@ class HFEndpointRetriever(BaseVisionRetriever):
 
             for i in range(0, len(qs), batch_size):
                 scores_batch = []
-                qs_batch = torch.nn.utils.rnn.pad_sequence(qs[i: i + batch_size], batch_first=True, padding_value=0).to(
-                    device
-                )
+                qs_batch = torch.nn.utils.rnn.pad_sequence(
+                    qs[i : i + batch_size], batch_first=True, padding_value=0
+                ).to(device)
                 for j in range(0, len(ps), batch_size):
                     ps_batch = torch.nn.utils.rnn.pad_sequence(
-                        ps[j: j + batch_size], batch_first=True, padding_value=0
+                        ps[j : j + batch_size], batch_first=True, padding_value=0
                     ).to(device)
                     scores_batch.append(torch.einsum("bnd,csd->bcns", qs_batch, ps_batch).max(dim=3)[0].sum(dim=2))
                 scores_batch = torch.cat(scores_batch, dim=1).cpu()
