@@ -57,9 +57,11 @@ class HFEndpointRetriever(BaseVisionRetriever):
                     return await self.post_queries(session, batch)
 
             tasks = [asyncio.create_task(sem_post(batch)) for batch in query_batches]
+            
+            # ORDER-PRESERVING
+            results = await asyncio.gather(*tasks)
 
-            for task in tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="Query batches"):
-                result = await task
+            for result in tqdm(results, total=len(results), desc="Query batches"):
                 embeddings.extend(result.get("embeddings", []))
 
         return embeddings
@@ -77,8 +79,10 @@ class HFEndpointRetriever(BaseVisionRetriever):
 
             tasks = [asyncio.create_task(sem_post(batch)) for batch in image_batches]
 
-            for task in tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="Image batches"):
-                result = await task
+            # ORDER-PRESERVING
+            results = await asyncio.gather(*tasks)
+
+            for result in tqdm(results, total=len(results), desc="Doc batches"):
                 embeddings.extend(result.get("embeddings", []))
 
         return embeddings
@@ -179,6 +183,10 @@ class HFEndpointRetriever(BaseVisionRetriever):
             scores = scores.to(torch.float32)
             return scores
 
-        if isinstance(query_embeddings[0], list):
+        try:
+            print("Using multi-vector scoring")
             return score_multi_vector(query_embeddings, passage_embeddings, batch_size=batch_size)
-        return score_single_vector(query_embeddings, passage_embeddings)
+        except Exception as e:
+            print(f"Multi-vector scoring failed: {e}")
+            print("Using single-vector scoring")
+            return score_single_vector(query_embeddings, passage_embeddings)
