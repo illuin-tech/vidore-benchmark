@@ -186,9 +186,9 @@ class HFEndpointRetriever(BaseVisionRetriever):
             return scores
 
         try:
-            print("Using multi-vector scoring")
+            logging.info("Using multi-vector scoring")
             return score_multi_vector(query_embeddings, passage_embeddings, batch_size=batch_size)
         except Exception as e:
-            print(f"Multi-vector scoring failed: {e}")
-            print("Using single-vector scoring")
+            logging.error(f"Multi-vector scoring failed: {e}")
+            logging.info("Using single-vector scoring")
             return score_single_vector(query_embeddings, passage_embeddings)
