@@ -112,8 +112,7 @@ class BaseViDoReEvaluator(ABC):
                 passage_embeddings.extend(batch_embedding_passages)
             else:
                 for embedding_passage in batch_embedding_passages:
-                    passage_embeddings.append(torch.Tensor(embedding_passage).to("cpu"))
-
+                    passage_embeddings.append(torch.as_tensor(embedding_passage).to("cpu"))
         return passage_embeddings
 
     @torch.no_grad()
