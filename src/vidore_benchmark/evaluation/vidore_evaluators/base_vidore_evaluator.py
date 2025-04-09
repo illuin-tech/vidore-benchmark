@@ -169,7 +169,7 @@ class BaseViDoReEvaluator(ABC):
                 query_embeddings.extend(batch_embedding_queries)
             else:
                 for embedding_query in batch_embedding_queries:
-                    query_embeddings.append(torch.Tensor(embedding_query).to("cpu"))
+                    query_embeddings.append(torch.as_tensor(embedding_query).to("cpu"))
 
         return query_embeddings
 
