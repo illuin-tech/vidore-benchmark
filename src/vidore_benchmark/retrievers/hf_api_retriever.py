@@ -10,7 +10,7 @@ import aiohttp
 import torch
 from dotenv import load_dotenv
 from PIL import Image
-from tqdm import tqdm
+from tqdm.asyncio import tqdm_asyncio
 
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import register_vision_retriever
@@ -61,9 +61,9 @@ class HFEndpointRetriever(BaseVisionRetriever):
             tasks = [asyncio.create_task(sem_post(batch)) for batch in query_batches]
 
             # ORDER-PRESERVING
-            results = await asyncio.gather(*tasks)
+            results = await tqdm_asyncio.gather(*tasks, desc="Query batches")
 
-            for result in tqdm(results, total=len(results), desc="Query batches"):
+            for result in results:
                 embeddings.extend(result.get("embeddings", []))
 
         return embeddings
@@ -83,9 +83,9 @@ class HFEndpointRetriever(BaseVisionRetriever):
             tasks = [asyncio.create_task(sem_post(batch)) for batch in image_batches]
 
             # ORDER-PRESERVING
-            results = await asyncio.gather(*tasks)
+            results = await tqdm_asyncio.gather(*tasks, desc="Doc batches")
 
-            for result in tqdm(results, total=len(results), desc="Doc batches"):
+            for result in results:
                 embeddings.extend(result.get("embeddings", []))
 
         return embeddings
