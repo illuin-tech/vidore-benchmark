@@ -21,6 +21,17 @@ load_dotenv(override=True)
 
 @register_vision_retriever("hf-endpoint")
 class HFEndpointRetriever(BaseVisionRetriever):
+    """
+    Retriever that uses a custom Hugging Face endpoint that serves an arbritrary model to generate embeddings.
+    The `pretrained_model_name_or_path` should be the URL of the endpoint.
+
+    Example usage:
+
+    ```python
+    retriever = HFEndpointRetriever(pretrained_model_name_or_path="https://your_endpoint_url.endpoints.huggingface.cloud")
+    ```
+    """
+
     def __init__(self, pretrained_model_name_or_path: str, **kwargs):
         super().__init__(use_visual_embedding=True)
         self.url = pretrained_model_name_or_path
