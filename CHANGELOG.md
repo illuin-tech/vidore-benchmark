@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog],
 and this project adheres to [Semantic Versioning].
 
+## [Unreleased]
+
+### Added
+
+- Add `HFEndpointRetriever` to use a Hf Space as a model provider
+
 ## [v5.0.0] - 2025-02-19
 
 ### Added
