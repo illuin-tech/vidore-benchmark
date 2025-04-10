@@ -65,7 +65,13 @@ all-retrievers = [
     "vidore-benchmark[siglip]",
 ]
 
-all = ["vidore-benchmark[all-retrievers]", "vidore-benchmark[dev]"]
+token-pooling = ["vidore-benchmark[colpali-engine]"]
+
+all = [
+    "vidore-benchmark[all-retrievers]",
+    "vidore-benchmark[token-pooling]",
+    "vidore-benchmark[dev]",
+]
 
 skypilot = ["skypilot==0.6.1,<1.0.0"]
 
