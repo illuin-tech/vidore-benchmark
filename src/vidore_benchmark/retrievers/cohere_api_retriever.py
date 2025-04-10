@@ -20,6 +20,16 @@ load_dotenv(override=True)
 
 @register_vision_retriever("cohere")
 class CohereAPIRetriever(BaseVisionRetriever):
+    """
+    Retriever that uses the Cohere API to generate embeddings.
+
+    Example usage:
+
+    ```python
+    retriever = CohereAPIRetriever(pretrained_model_name_or_path="embed-english-v3.0")
+    ```
+    """
+
     def __init__(
         self,
         pretrained_model_name_or_path: str = "embed-english-v3.0",
