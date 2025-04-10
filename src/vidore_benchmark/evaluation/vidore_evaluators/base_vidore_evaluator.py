@@ -112,8 +112,7 @@ class BaseViDoReEvaluator(ABC):
                 passage_embeddings.extend(batch_embedding_passages)
             else:
                 for embedding_passage in batch_embedding_passages:
-                    passage_embeddings.append(embedding_passage.to("cpu"))
-
+                    passage_embeddings.append(torch.as_tensor(embedding_passage).to("cpu"))
         return passage_embeddings
 
     @torch.no_grad()
@@ -170,7 +169,7 @@ class BaseViDoReEvaluator(ABC):
                 query_embeddings.extend(batch_embedding_queries)
             else:
                 for embedding_query in batch_embedding_queries:
-                    query_embeddings.append(embedding_query.to("cpu"))
+                    query_embeddings.append(torch.as_tensor(embedding_query).to("cpu"))
 
         return query_embeddings
 

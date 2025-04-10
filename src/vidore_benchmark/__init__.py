@@ -10,6 +10,7 @@ from .retrievers import (
     ColQwen2Retriever,
     DSEQwen2Retriever,
     DummyVisionRetriever,
+    HFEndpointRetriever,
     JinaClipRetriever,
     NomicVisionRetriever,
     SigLIPRetriever,
