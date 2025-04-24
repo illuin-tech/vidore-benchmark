@@ -87,13 +87,17 @@ class TestVisionRetrieverWithTokenPoolingIntegration:
         )
         embeddings = vision_retriever_without_pooling.forward_passages(image_passage_fixture, batch_size=1)
 
-        token_pooler = HierarchicalTokenPooler(pool_factor=3)
+        token_pooler = HierarchicalTokenPooler()
         vision_retriever_with_pooling = VisionRetriever(
             model=model,
             processor=processor,
             token_pooler=token_pooler,
         )
-        embeddings_pooled = vision_retriever_with_pooling.forward_passages(image_passage_fixture, batch_size=1)
+        embeddings_pooled = vision_retriever_with_pooling.forward_passages(
+            image_passage_fixture,
+            batch_size=1,
+            pooling_kwargs={"pool_factor": 3},
+        )
 
         for embedding, embedding_pooled in zip(embeddings, embeddings_pooled):
             assert embedding_pooled.shape[0] < embedding.shape[0]

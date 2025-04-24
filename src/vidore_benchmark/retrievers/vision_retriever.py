@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import torch
 from dotenv import load_dotenv
@@ -79,7 +79,32 @@ class VisionRetriever(BaseVisionRetriever):
 
         return query_embeddings
 
-    def forward_passages(self, passages: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
+    def forward_passages(
+        self,
+        passages: List[Image.Image],
+        batch_size: int,
+        pooling_kwargs: Optional[Dict[str, Any]] = None,
+        **kwargs,
+    ) -> List[torch.Tensor]:
+        """
+        Preprocess and forward pass the passages through the model. A passage can a text chunk (e.g. BM25) or
+        an image of a document page (e.g. ColPali).
+
+        Args:
+            passages (Any): The passages to forward pass.
+            batch_size (int): The batch size for the passages.
+            pooling_kwargs (Optional[Dict[str, Any]]): Additional keyword arguments for token pooling.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Union[torch.Tensor, List[torch.Tensor]]: The passage embeddings.
+                This can either be:
+                - a single tensor where the first dimension corresponds to the number of passages.
+                - a list of tensors where each tensor corresponds to a passage.
+        """
+        if pooling_kwargs is None:
+            pooling_kwargs = {}
+
         dataloader = DataLoader(
             dataset=ListDataset[Image.Image](passages),
             batch_size=batch_size,
@@ -93,12 +118,14 @@ class VisionRetriever(BaseVisionRetriever):
         with torch.no_grad():
             for batch_doc in tqdm(dataloader, desc="Forward pass passages...", leave=False):
                 batch_embeddings_passages = self.model(**batch_doc).to("cpu")
+                passage_embeddings.extend(list(torch.unbind(batch_embeddings_passages)))
 
         if self.token_pooler is not None:
             passage_embeddings = self.token_pooler.pool_embeddings(
-                batch_embeddings_passages,
+                passage_embeddings,
                 padding=True,
                 padding_side=self.processor.tokenizer.padding_side,
+                **pooling_kwargs,
             )
 
         return passage_embeddings
