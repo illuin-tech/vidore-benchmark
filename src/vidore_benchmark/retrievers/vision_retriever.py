@@ -87,7 +87,7 @@ class VisionRetriever(BaseVisionRetriever):
         **kwargs,
     ) -> List[torch.Tensor]:
         """
-        Preprocess and forward pass the passages through the model. A passage can a text chunk (e.g. BM25) or
+        Preprocess and forward pass the passages through the model. A passage can be a text chunk (e.g. BM25) or
         an image of a document page (e.g. ColPali).
 
         Args:
