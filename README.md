@@ -39,7 +39,7 @@ pip install "vidore-benchmark[colpali-engine]"
 
 > [!WARNING]
 > If possible, do not `pip install colpali-engine` directly in the env dedicated for the CLI.
-> 
+>
 > In particular, make sure not to install both `vidore-benchmark[colpali-engine]` and `colpali-engine[train]` simultaneously, as it will lead to a circular depencency conflict.
 
 If you want to install all the dependencies for all the models, you can run:
@@ -79,12 +79,13 @@ vidore-benchmark evaluate-retriever \
     --split test
 ```
 
-If you want to evaluate your models on on new collection ViDoRe benchmark 2, a harder version of the previous benchmark you can execute the following command :
+If you want to evaluate your models on on new collection ViDoRe benchmark 2, a harder version of the previous benchmark you can execute the following command:
+
 ```bash
 vidore-benchmark evaluate-retriever \
     --model-class colpali \
     --model-name vidore/colpali-v1.3 \
-    --collection-name https://huggingface.co/collections/vidore/vidore-benchmark-v2-67ae03e3924e85b36e7f53b0 \
+    --collection-name vidore/vidore-benchmark-v2-67ae03e3924e85b36e7f53b0 \
     --dataset-format beir \
     --split test
 ```
@@ -115,7 +116,7 @@ All the above scripts will generate a JSON file in `outputs/{model_id}_metrics.j
 
 > [!NOTE]
 > The `vidore-benchmark` package supports two formats of datasets:
-> 
+>
 > - QA: The dataset is formatted as a question-answering task, where the queries are questions and the passages are the image pages that provide the answers.
 > - BEIR: Following the [BEIR paper](https://doi.org/10.48550/arXiv.2104.08663), the dataset is formatted in 3 sub-datasets: `corpus`, `queries`, and `qrels`. The `corpus` contains the documents, the `queries` contains the queries, and the `qrels` contains the relevance scores between the queries and the documents.
 >

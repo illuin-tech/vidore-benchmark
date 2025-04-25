@@ -9,7 +9,12 @@ and this project adheres to [Semantic Versioning].
 
 ### Added
 
+- Add token pooling option in `VisionRetriever`
 - Add `HFEndpointRetriever` to use a Hf Space as a model provider
+
+### Tests
+
+- Add tests for `VisionRetriever`
 
 ## [v5.0.0] - 2025-02-19
 
