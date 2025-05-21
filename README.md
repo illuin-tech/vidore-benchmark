@@ -167,9 +167,9 @@ vision_retriever = VisionRetriever(model=model, processor=processor)
 # Evaluate on a single BEIR format dataset (e.g one of the ViDoRe benchmark 2 dataset)
 vidore_evaluator_beir = ViDoReEvaluatorBEIR(vision_retriever)
 ds = {
-    "corpus" : load_dataset("vidore/synthetic_axa_filtered_v1.0", name="corpus", split="test"),
-    "queries" : load_dataset("vidore/synthetic_axa_filtered_v1.0", name="queries", split="test")
-    "qrels" : load_dataset("vidore/synthetic_axa_filtered_v1.0", name="qrels", split="test")
+    "corpus" : load_dataset("vidore/synthetic_rse_restaurant_filtered_v1.0", name="corpus", split="test"),
+    "queries" : load_dataset("vidore/synthetic_rse_restaurant_filtered_v1.0", name="queries", split="test")
+    "qrels" : load_dataset("vidore/synthetic_rse_restaurant_filtered_v1.0", name="qrels", split="test")
 }
 metrics_dataset_beir = vidore_evaluator_beir.evaluate_dataset(
     ds=ds,
