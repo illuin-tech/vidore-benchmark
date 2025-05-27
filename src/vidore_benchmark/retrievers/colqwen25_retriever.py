@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 load_dotenv(override=True)
 
 
-@register_vision_retriever("colqwen2")
+@register_vision_retriever("colqwen25")
 class ColQwen25Retriever(BaseVisionRetriever):
     """
     ColQwen2 retriever that implements the model from "ColPali: Efficient Document Retrieval

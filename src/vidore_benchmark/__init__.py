@@ -8,6 +8,7 @@ from .retrievers import (
     ColIdefics3Retriever,
     ColPaliRetriever,
     ColQwen2Retriever,
+    ColQwen25Retriever,
     DSEQwen2Retriever,
     DummyVisionRetriever,
     HFEndpointRetriever,
