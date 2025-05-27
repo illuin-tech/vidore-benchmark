@@ -69,7 +69,7 @@ def _get_metrics_from_vidore_evaluator(
             "queries": cast(Dataset, load_dataset(dataset_name, name="queries", split=split)),
             "qrels": cast(Dataset, load_dataset(dataset_name, name="qrels", split=split)),
         }
-        vidore_evaluator = ViDoReEvaluatorBEIR(vision_retriever)
+        vidore_evaluator = ViDoReEvaluatorBEIR(vision_retriever, query_column="gpt-4o-reasoning")
     else:
         raise ValueError(f"Unsupported dataset format: {dataset_format}")
 
