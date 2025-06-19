@@ -39,7 +39,7 @@ class JinaV4Retriever(BaseVisionRetriever):
         self.max_pixels = max_pixels
         self.model = AutoModel.from_pretrained(pretrained_model_name_or_path, trust_remote_code=True)
         self.model = self.model.eval().to(self.device)
-        self.model.set_task(task='retrieval')
+        self.model.task = 'retrieval'
 
     def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
         return self.model.encode_texts(
