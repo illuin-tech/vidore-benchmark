@@ -9,7 +9,7 @@
 
 Jina VDR is a multilingual, multi-domain benchmark for visual document retrieval.
 In contrast to other VDR  benchmarks that focus on question answering and OCR-related tasks, it has an expanded scope of visual document benchmarking:
-more query types, a much more diverse array of materials (e.g. maps, markdown documents, advertisements, scans of historical documents), and includes task available in many languages.
+more query types, a much more diverse array of materials (e.g. maps, markdown documents, advertisements, scans of historical documents), and includes tasks available in many languages.
 
 The code is based on the [vidore-benchmark](https://github.com/illuin-tech/vidore-benchmark) code.
 
