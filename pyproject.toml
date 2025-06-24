@@ -11,15 +11,25 @@ packages = ["src/vidore_benchmark"]
 [project]
 name = "vidore_benchmark"
 dynamic = ["version"]
-description = "Vision Document Retrieval (ViDoRe): Benchmark. Evaluation code for the ColPali paper."
+description = "Jina VDR: a multilingual, multi-domain benchmark for visual document retrieval."
 authors = [
     { name = "Manuel Faysse", email = "manuel.faysse@illuin.tech" },
     { name = "Hugues Sibille", email = "hugues.sibille@illuin.tech" },
     { name = "Tony Wu", email = "tony.wu@illuin.tech" },
+    { name = "Bo Wang", email = "bo.wang@jina.ai" },
+    { name = "Michael Guenther", email = "michael.guenther@jina.ai" },
+    { name = "Isabelle Mohr"},
+    { name = "Mohammad Kalim Akram", email = "kalim.akram@jina.ai" },
+    { name = "Saba Sturua", email = "saba.sturua@jina.ai" },
+    { name = "Andrei Ungureanu", email = "andrei.ungureanu@jina.ai" },
 ]
 maintainers = [
-    { name = "Manuel Faysse", email = "manuel.faysse@illuin.tech" },
-    { name = "Tony Wu", email = "tony.wu@illuin.tech" },
+    { name = "Bo Wang", email = "bo.wang@jina.ai" },
+    { name = "Michael Guenther", email = "michael.guenther@jina.ai" },
+    { name = "Isabelle Mohr"},
+    { name = "Mohammad Kalim Akram", email = "kalim.akram@jina.ai" },
+    { name = "Saba Sturua", email = "saba.sturua@jina.ai" },
+    { name = "Andrei Ungureanu", email = "andrei.ungureanu@jina.ai" },
 ]
 readme = "README.md"
 requires-python = ">=3.9"
