@@ -1,4 +1,4 @@
-# Jina VDR (Jina Vision Document Retrieval)
+# Jina VDR (Jina Visual Document Retrieval)
 
 [![arXiv](https://img.shields.io/badge/arXiv-2506.18902-b31b1b.svg?style=for-the-badge)](https://arxiv.org/abs/2506.18902)
 [![GitHub](https://img.shields.io/badge/Jina%20VDR-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/jina-ai/jina-vdr)
