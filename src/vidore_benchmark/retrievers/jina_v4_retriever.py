@@ -42,22 +42,22 @@ class JinaV4Retriever(BaseVisionRetriever):
         self.model.task = 'retrieval'
 
     def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
-        return self.model.encode_texts(
+        return self.model.encode_text(
             texts=queries,
             max_length=self.max_length,
             truncate_dim=self.truncate,
             batch_size=batch_size,
-            vector_type=self.vector_type,
+            return_multivector = (self.vector_type.lower() == 'multi_vector'),
             **kwargs,
         )
 
     def forward_passages(self, passages: List[Image.Image], batch_size: int, **kwargs) -> List[torch.Tensor]:
-        return self.model.encode_images(
+        return self.model.encode_image(
             images=passages,
             batch_size=batch_size,
             truncate_dim=self.truncate,
             max_pixels=self.max_pixels,
-            vector_type=self.vector_type,
+            return_multivector = (self.vector_type.lower() == 'multi_vector'),
             **kwargs,
         )
 

@@ -139,6 +139,12 @@ def evaluate_retriever(
         Optional[str], typer.Option(help="Vector type")
     ] = "single_vector",
     output_dir: Annotated[str, typer.Option(help="Directory where to save the metrics")] = "outputs",
+    max_pixels: Annotated[
+        Optional[int],
+        typer.Option(
+            help="Maximum number of pixels - should be max_vision_tokens*(28*28)"
+        ),
+    ] = None,
 ):
     """
     Evaluate a retriever on a given dataset or dataset collection.
@@ -153,6 +159,8 @@ def evaluate_retriever(
     retriever_kwargs = {}
     if vector_type != 'single_vector':
         retriever_kwargs['vector_type'] = vector_type
+    if max_pixels:
+        retriever_kwargs['max_pixels'] = max_pixels
 
     retriever = load_vision_retriever_from_registry(
         model_class,
