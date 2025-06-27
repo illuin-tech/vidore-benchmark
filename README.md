@@ -67,12 +67,24 @@ vidore-benchmark evaluate-retriever \
 
 #### Example for Jina Embeddings v4:
 ```bash
+# For single vector
+vidore-benchmark evaluate-retriever \
+    --model-class jev4 \
+    --model-name jinaai/jina-embeddings-v4 \
+    --collection-name jinaai/jinavdr-visual-document-retrieval-684831c022c53b21c313b449 \
+    --dataset-format qa \
+    --languages ar,bn,de,en,es,fr,hi,hu,id,it,jp,ko,my,nl,pt,ru,th,ur,vi,zh
+    --split test
+    
+# For multi vector"
 vidore-benchmark evaluate-retriever \
     --model-class jev4 \
     --model-name jinaai/jina-embeddings-v4 \
     --collection-name jinaai/jinavdr-visual-document-retrieval-684831c022c53b21c313b449 \
     --dataset-format qa \
     --split test
+    --languages ar,bn,de,en,es,fr,hi,hu,id,it,jp,ko,my,nl,pt,ru,th,ur,vi,zh
+    --vector-type multi_vector
 ```
 
 ## Overview of the Dataset Collection
