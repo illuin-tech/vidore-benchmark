@@ -21,7 +21,59 @@ The Visual Document Retrieval Benchmarks (ViDoRe v1 and v2), is introduced to ev
 
 ![ViDoRe Examples](assets/vidore_examples.webp)
 
-## Usage
+## ⚠️ Deprecation Warning: Moving from `vidore-benchmark` to `mteb`
+
+Since `mteb` now supports image-text retrieval, we recommend using `mteb` to evaluate your retriever on the ViDoRe benchmark. We are deprecating `vidore-benchmark` to facilitate maintenance and have a single source of truth for the ViDoRe benchmark.
+
+If you want your results to appear on the ViDoRe Leaderboard, you should add them to the `results` [Github Project](https://github.com/embeddings-benchmark/results). Check the *Submit your model* section of the [ViDoRe Leaderboard](https://huggingface.co/spaces/vidore/vidore-leaderboard) for more information.
+
+### New Evaluation Process
+
+Follow the instructions to setup `mteb` [here](https://github.com/embeddings-benchmark/mteb/tree/main?tab=readme-ov-file#installation). Then you have 2 options. 
+
+#### Option 1: CLI
+
+```bash
+mteb run -b "ViDoRe(v1)" -m "vidore/colqwen2.5-v0.2"
+mteb run -b "ViDoRe(v2)" -m "vidore/colqwen2.5-v0.2"
+```
+
+#### Option 2: Python Script
+
+```python
+import mteb
+from mteb.model_meta import ModelMeta
+from mteb.models.colqwen_models import ColQwen2_5Wrapper
+
+# === Configuration ===
+MODEL_NAME = "johndoe/mycolqwen2.5"
+BENCHMARKS = ["ViDoRe(v1)", "ViDoRe(v2)"]
+
+# === Model Metadata ===
+custom_model_meta = ModelMeta(
+    loader=ColQwen2_5Wrapper,
+    name=MODEL_NAME,
+    modalities=["image", "text"],
+    framework="Colpali",
+    similarity_fn_name="max_sim",
+    # Optional metadata (fill in if available else None)
+    ...
+)
+
+# === Load Model ===
+custom_model = custom_model_meta.load_model(MODEL_NAME)
+
+# === Load Tasks ===
+tasks = mteb.get_benchmarks(names=BENCHMARKS)
+evaluator = mteb.MTEB(tasks=tasks)
+
+# === Run Evaluation ===
+results = evaluator.run(custom_model)
+```
+
+For custom models, you should implement your own wrapper. Check the [ColPaliEngineWrapper](https://github.com/embeddings-benchmark/mteb/blob/main/mteb/models/colpali_models.py) for an example.
+
+## [Deprecated] Usage
 
 This packages comes with a Python API and a CLI to evaluate your own retriever on the ViDoRe benchmark. Both are compatible with `Python>=3.9`.
 
