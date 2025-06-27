@@ -32,8 +32,8 @@ Follow the instructions to setup `mteb` [here](https://github.com/embeddings-ben
 #### Option 1: CLI
 
 ```bash
-mteb run -b "Vidore(v1)" -m "vidore/colqwen2.5-v0.2"
-mteb run -b "Vidore(v2)" -m "vidore/colqwen2.5-v0.2"
+mteb run -b "ViDoRe(v1)" -m "vidore/colqwen2.5-v0.2"
+mteb run -b "ViDoRe(v2)" -m "vidore/colqwen2.5-v0.2"
 ```
 
 #### Option 2: Python Script
@@ -47,7 +47,7 @@ from mteb.models.colqwen_models import ColQwen2_5Wrapper
 MODEL_NAME = "johndoe/mycolqwen2.5"
 BENCHMARKS = ["ViDoRe(v1)", "ViDoRe(v2)"]
 
-# === Model Metadata ＝ニ=
+# === Model Metadata ===
 custom_model_meta = ModelMeta(
     loader=ColQwen2_5Wrapper,
     name=MODEL_NAME,
