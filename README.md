@@ -23,11 +23,13 @@ The Visual Document Retrieval Benchmarks (ViDoRe v1 and v2), is introduced to ev
 
 ## ⚠️ Deprecation Warning: Moving from `vidore-benchmark` to `mteb`
 
-The `vidore-benchmark` package is deprecated. Since `mteb` now supports image-text retrieval, we recommend using `mteb` instead to evaluate your retriever on the ViDoRe benchmark.
+Since `mteb` now supports image-text retrieval, we recommend using `mteb` to evaluate your retriever on the ViDoRe benchmark. We are deprecating `vidore-benchmark` to facilitate maintenance and have a single source of truth for the ViDoRe benchmark.
+
+If you want your results to appear on the ViDoRe Leaderboard, you should add them to the `results` [Github Project](https://github.com/embeddings-benchmark/results). Check the *Submit your model* section of the [ViDoRe Leaderboard](https://huggingface.co/spaces/vidore/vidore-leaderboard) for more information.
 
 ### New Evaluation Process
 
-Follow the instructions to setup `mteb` [here](https://github.com/embeddings-benchmark/mteb/tree/main?tab=readme-ov-file#installation). Then you have 2 options.
+Follow the instructions to setup `mteb` [here](https://github.com/embeddings-benchmark/mteb/tree/main?tab=readme-ov-file#installation). Then you have 2 options. 
 
 #### Option 1: CLI
 
