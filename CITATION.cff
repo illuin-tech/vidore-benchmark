@@ -10,9 +10,26 @@ authors:
 - family-names: "Wu"
   given-names: "Tony"
   email: "tony.wu@illuin.tech"
-title: "Vision Document Retrieval (ViDoRe): Benchmark"
+- family-names: "Wang"
+  given-names: "Bo"
+  email: "bo.wang@jina.ai"
+- family-names: "Guenther"
+  given-names: "Michael"
+  email: "michael.guenther@jina.ai"
+- family-names: "Mohr"
+  given-names: "Isabelle"
+- family-names: "Akram"
+  given-names: "Mohammad Kalim"
+  email: "kalim.akram@jina.ai"
+- family-names: "Sturua"
+  given-names: "Saba"
+  email: "saba.sturua@jina.ai"
+- family-names: "Ungureanu"
+  given-names: "Andrei"
+  email: "andrei.ungureanu@jina.ai"
+title: "Jina VDR: a multilingual, multi-domain benchmark for visual document retrieval"
 date-released: 2024-06-26
-url: "https://github.com/illuin-tech/vidore-benchmark"
+url: "https://github.com/jina-ai/jina-vdr"
 preferred-citation:
   type: article
   authors:
@@ -35,3 +52,33 @@ preferred-citation:
   title: "ColPali: Efficient Document Retrieval with Vision Language Models"
   year: 2024
   url: "https://arxiv.org/abs/2407.01449"
+references:
+- type: article
+  authors:
+  - family-names: "Günther"
+    given-names: "Michael"
+  - family-names: "Sturua"
+    given-names: "Saba"
+  - family-names: "Akram"
+    given-names: "Mohammad Kalim"
+  - family-names: "Mohr"
+    given-names: "Isabelle"
+  - family-names: "Ungureanu"
+    given-names: "Andrei"
+  - family-names: "Wang"
+    given-names: "Bo"
+  - family-names: "Eslami"
+    given-names: "Sedigheh"
+  - family-names: "Martens"
+    given-names: "Scott"
+  - family-names: "Werk"
+    given-names: "Maximilian"
+  - family-names: "Wang"
+    given-names: "Nan"
+  - family-names: "Xiao"
+    given-names: "Han"
+  doi: "arXiv.2506.18902"
+  month: 6
+  title: "jina-embeddings-v4: Universal Embeddings for Multimodal Multilingual Retrieval"
+  year: 2025
+  url: "https://arxiv.org/abs/2506.18902"

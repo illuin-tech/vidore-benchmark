@@ -15,15 +15,58 @@ The code is based on the [vidore-benchmark](https://github.com/illuin-tech/vidor
 
 ## How to run the Vidore Evaluation
 
-If you want to run the vidore evaluation on the jina-embeddings-v4 model (and on the Document Retrieval Benchmark curated by Jina AI), you need to install requirements:
+To evaluate models on the Jina VDR benchmark, install the requirements corresponding to your selected model:
 
-```
+### Installation
+
+
+```bash
+# For Jina Embeddings v4
 pip install ".[jina-v4]"
+
+# For Jina Embeddings v3
+pip install ".[jina-v3]"
+
+# For BM25
+pip install ".[bm25]"
+# Additionally install stopwords if you haven't already
+python -c "import nltk; nltk.download('stopwords')"
+
+# For Jina CLIP
+pip install ".[jina-clip]"
+
+# For Colpali
+pip install ".[colpali-engine]"
+
+# For DSE-Qwen2b
+pip install ".[dse]"
 ```
 
-Then, you can run the evaluation with the following command:
+### Running Evaluation
 
+Use the base command below with the appropriate model configuration:
+
+```bash
+vidore-benchmark evaluate-retriever \
+    --model-class <MODEL_CLASS> \
+    --model-name <MODEL_NAME> \
+    --collection-name jinaai/jinavdr-visual-document-retrieval-684831c022c53b21c313b449 \
+    --dataset-format qa \
+    --split test
 ```
+
+### Model Configurations
+| Model              | --model-class | --model-name                |
+|--------------------|---------------|-----------------------------|
+| Jina Embeddings v4 | jev4          | jinaai/jina-embeddings-v4   |
+| Jina Embeddings v3 | jev3          | jinaai/jina-embeddings-v3   |
+| BM25               | bm25          | bm25                        |
+| Jina CLIP          | jina-clip     | jinaai/jina-clip-v2         |
+| Colpali            | colpali       | vidore/colpali-v1.2         |
+| DSE-Qwen2-2b       | dse-qwen2     | MrLight/dse-qwen2-2b-mrl-v1 |
+
+#### Example for Jina Embeddings v4:
+```bash
 vidore-benchmark evaluate-retriever \
     --model-class jev4 \
     --model-name jinaai/jina-embeddings-v4 \
@@ -31,7 +74,6 @@ vidore-benchmark evaluate-retriever \
     --dataset-format qa \
     --split test
 ```
-
 
 ## Overview of the Dataset Collection
 

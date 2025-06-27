@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 load_dotenv(override=True)
 
+
 @register_vision_retriever("jev4")
 class JinaV4Retriever(BaseVisionRetriever):
     def __init__(

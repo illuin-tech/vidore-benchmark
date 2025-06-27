@@ -14,11 +14,11 @@ from vidore_benchmark.utils.iter_utils import batched
 from vidore_benchmark.utils.torch_utils import get_torch_device
 
 
-@register_vision_retriever("jina-clip-v1")
+@register_vision_retriever("jina-clip")
 class JinaClipRetriever(BaseVisionRetriever):
     def __init__(
         self,
-        pretrained_model_name_or_path: str = "jinaai/jina-clip-v1",
+        pretrained_model_name_or_path: str = "jinaai/jina-clip-v2",
         device: str = "auto",
         **kwargs,
     ):
