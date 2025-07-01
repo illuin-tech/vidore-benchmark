@@ -60,7 +60,7 @@ vidore-benchmark evaluate-retriever \
 |--------------------|---------------|-----------------------------|
 | Jina Embeddings v4 | jev4          | jinaai/jina-embeddings-v4   |
 | Jina Embeddings v3 | jev3          | jinaai/jina-embeddings-v3   |
-| BM25               | bm25          | bm25                        |
+| BM25               | bm25          | None                        |
 | Jina CLIP          | jina-clip     | jinaai/jina-clip-v2         |
 | Colpali            | colpali       | vidore/colpali-v1.2         |
 | DSE-Qwen2-2b       | dse-qwen2     | MrLight/dse-qwen2-2b-mrl-v1 |
@@ -73,7 +73,11 @@ vidore-benchmark evaluate-retriever \
     --model-name jinaai/jina-embeddings-v4 \
     --collection-name jinaai/jinavdr-visual-document-retrieval-684831c022c53b21c313b449 \
     --dataset-format qa \
-    --languages ar,bn,de,en,es,fr,hi,hu,id,it,jp,ko,my,nl,pt,ru,th,ur,vi,zh
+    --max-pixels 37788800 \
+    --batch-query 1 \
+    --batch-passage 1 \ 
+    --batch-score 1 \
+    --languages ar,bn,de,en,es,fr,hi,hu,id,it,jp,ko,my,nl,pt,ru,th,ur,vi,zh \
     --split test
     
 # For multi vector"
@@ -82,8 +86,12 @@ vidore-benchmark evaluate-retriever \
     --model-name jinaai/jina-embeddings-v4 \
     --collection-name jinaai/jinavdr-visual-document-retrieval-684831c022c53b21c313b449 \
     --dataset-format qa \
-    --split test
-    --languages ar,bn,de,en,es,fr,hi,hu,id,it,jp,ko,my,nl,pt,ru,th,ur,vi,zh
+    --max-pixels 37788800 \
+    --batch-query 1 \
+    --batch-passage 1 \ 
+    --batch-score 1 \
+    --split test \
+    --languages ar,bn,de,en,es,fr,hi,hu,id,it,jp,ko,my,nl,pt,ru,th,ur,vi,zh \
     --vector-type multi_vector
 ```
 
