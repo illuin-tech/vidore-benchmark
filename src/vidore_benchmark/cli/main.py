@@ -135,15 +135,11 @@ def evaluate_retriever(
     num_workers: Annotated[
         int, typer.Option(help="Number of workers for dataloader in retrievers, when supported")
     ] = 0,
-    vector_type: Annotated[
-        Optional[str], typer.Option(help="Vector type")
-    ] = "single_vector",
+    vector_type: Annotated[Optional[str], typer.Option(help="Vector type")] = "single_vector",
     output_dir: Annotated[str, typer.Option(help="Directory where to save the metrics")] = "outputs",
     max_pixels: Annotated[
         Optional[int],
-        typer.Option(
-            help="Maximum number of pixels - should be max_vision_tokens*(28*28)"
-        ),
+        typer.Option(help="Maximum number of pixels - should be max_vision_tokens*(28*28)"),
     ] = None,
 ):
     """
@@ -155,18 +151,15 @@ def evaluate_retriever(
         raise ValueError("Please provide a dataset name or collection name")
     elif dataset_name is not None and collection_name is not None:
         raise ValueError("Please provide only one of dataset name or collection name")
-        
+
     retriever_kwargs = {}
-    if vector_type != 'single_vector':
-        retriever_kwargs['vector_type'] = vector_type
+    if vector_type != "single_vector":
+        retriever_kwargs["vector_type"] = vector_type
     if max_pixels:
-        retriever_kwargs['max_pixels'] = max_pixels
+        retriever_kwargs["max_pixels"] = max_pixels
 
     retriever = load_vision_retriever_from_registry(
-        model_class,
-        pretrained_model_name_or_path=model_name,
-        num_workers=num_workers,
-        **retriever_kwargs
+        model_class, pretrained_model_name_or_path=model_name, num_workers=num_workers, **retriever_kwargs
     )
     model_id = _sanitize_model_id(model_class, model_name=model_name)
 
@@ -187,15 +180,12 @@ def evaluate_retriever(
 
     for dataset_name in tqdm(dataset_names, desc="Evaluating dataset(s)"):
         print(f"\n---------------------------\n{dataset_name}")
-        langs_to_evaluate = get_configs_to_evaluate(
-            dataset_name, language_configs
-        ) if dataset_format.lower() == "qa" else [None]
+        langs_to_evaluate = (
+            get_configs_to_evaluate(dataset_name, language_configs) if dataset_format.lower() == "qa" else [None]
+        )
         for config in sorted(langs_to_evaluate):
             config_suffix = config or "default"
-            prediction_output_path = (
-                    savedir_datasets
-                    / f"{model_id}_{dataset_name}_{config_suffix}_predictions.json"
-            )
+            prediction_output_path = savedir_datasets / f"{model_id}_{dataset_name}_{config_suffix}_predictions.json"
             prediction_output_path.parent.mkdir(parents=True, exist_ok=True)
             logger.info(f"Predictions saved to `{prediction_output_path}`")
 

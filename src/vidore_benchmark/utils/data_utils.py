@@ -75,9 +75,8 @@ def get_datasets_from_collection(collection_name: str) -> List[str]:
         dataset_names = [dataset_item.item_id for dataset_item in collection.items]
     return dataset_names
 
-def get_configs_to_evaluate(
-    dataset: str, language_configs: List[str], exclude_default: bool = False
-) -> List[str]:
+
+def get_configs_to_evaluate(dataset: str, language_configs: List[str], exclude_default: bool = False) -> List[str]:
     """
     Get the list of language configurations to evaluate for a given dataset. The returned list will either
     be the intersection of the available configurations and the provided language configurations, or if there
@@ -99,9 +98,7 @@ def get_configs_to_evaluate(
         elif language_configs:
             configs = list(set(available_configs) & set(language_configs))
             if not configs:
-                logging.info(
-                    f"No matching language configs for dataset {dataset}. Available: {available_configs}"
-                )
+                logging.info(f"No matching language configs for dataset {dataset}. Available: {available_configs}")
                 return []
             return configs
         else:
