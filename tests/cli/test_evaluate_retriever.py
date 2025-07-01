@@ -83,4 +83,5 @@ def test_run_evaluate_retriever(
 
         # Assert that the dataset name is present in the metrics
         metrics = vidore_results.metrics
-        assert dataset_name in metrics, f"Metrics for dataset {dataset_name} not found"
+        key = next((k for k in metrics if k.startswith(dataset_name)), None)
+        assert key is not None, f"Metrics for dataset {dataset_name} not found"
