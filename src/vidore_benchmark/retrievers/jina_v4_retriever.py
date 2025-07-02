@@ -106,7 +106,7 @@ class JinaV4Retriever(BaseVisionRetriever):
     def score_multi_vector(
         qs: List[torch.Tensor],
         ps: List[torch.Tensor],
-        batch_size: int = 16,
+        batch_size: int = 128,
         device: Optional[Union[str, torch.device]] = None,
     ) -> torch.Tensor:
         """

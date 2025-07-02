@@ -95,6 +95,17 @@ vidore-benchmark evaluate-retriever \
     --vector-type multi_vector
 ```
 
+<b>Parameters</b>:
+
+`--max-pixels` Sets the maximum number of pixels allowed per image during encoding, typically 
+`max_vision_tokens * 28 * 28`. This parameter helps control input size during image preprocessing 
+and encoding. 
+\
+The Jina Embeddings v4 results in the paper were generated using `--max-pixels 37788800`.
+
+
+
+
 ## Overview of the Dataset Collection
 
 | Dataset Name | Domain | Document Format | Query Format | Number of Queries / Documents | Languages |
