@@ -72,7 +72,7 @@ class JinaV4Retriever(BaseVisionRetriever):
         if self.vector_type == "single_vector":
             return self.score_single_vector(query_embeddings, passage_embeddings, device=self.device)
         elif self.vector_type == "multi_vector":
-            return self.score_multi_vector(query_embeddings, passage_embeddings, device=self.device)
+            return self.score_multi_vector(query_embeddings, passage_embeddings, device=self.device, batch_size=batch_size)
         else:
             raise ValueError('vector_type must be one of the following: [`single_vector`, `multi_vector`]')
 
