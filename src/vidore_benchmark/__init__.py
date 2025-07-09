@@ -3,6 +3,7 @@ from .retrievers import (
     BGEM3ColbertRetriever,
     BGEM3Retriever,
     BiQwen2Retriever,
+    BiSiglipRetriever,
     BM25Retriever,
     CohereAPIRetriever,
     ColIdefics3Retriever,
