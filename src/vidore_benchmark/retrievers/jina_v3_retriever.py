@@ -36,7 +36,6 @@ class JinaV3Retriever(BaseVisionRetriever):
             .eval()
         )
 
-
     def forward_queries(self, queries, batch_size: int, **kwargs) -> List[torch.Tensor]:
         list_emb_queries: List[torch.Tensor] = []
         for query_batch in tqdm(

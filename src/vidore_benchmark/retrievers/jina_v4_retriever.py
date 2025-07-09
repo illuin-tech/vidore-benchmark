@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 load_dotenv(override=True)
 
+
 @register_vision_retriever("jev4")
 class JinaV4Retriever(BaseVisionRetriever):
     def __init__(
@@ -39,7 +40,7 @@ class JinaV4Retriever(BaseVisionRetriever):
         self.max_pixels = max_pixels
         self.model = AutoModel.from_pretrained(pretrained_model_name_or_path, trust_remote_code=True)
         self.model = self.model.eval().to(self.device)
-        self.model.task = 'retrieval'
+        self.model.task = "retrieval"
 
     def forward_queries(self, queries: List[str], batch_size: int, **kwargs) -> List[torch.Tensor]:
         return self.model.encode_text(
@@ -47,7 +48,7 @@ class JinaV4Retriever(BaseVisionRetriever):
             max_length=self.max_length,
             truncate_dim=self.truncate,
             batch_size=batch_size,
-            return_multivector = (self.vector_type.lower() == 'multi_vector'),
+            return_multivector=(self.vector_type.lower() == "multi_vector"),
             **kwargs,
         )
 
@@ -57,7 +58,7 @@ class JinaV4Retriever(BaseVisionRetriever):
             batch_size=batch_size,
             truncate_dim=self.truncate,
             max_pixels=self.max_pixels,
-            return_multivector = (self.vector_type.lower() == 'multi_vector'),
+            return_multivector=(self.vector_type.lower() == "multi_vector"),
             **kwargs,
         )
 
@@ -74,7 +75,7 @@ class JinaV4Retriever(BaseVisionRetriever):
         elif self.vector_type == "multi_vector":
             return self.score_multi_vector(query_embeddings, passage_embeddings, device=self.device, batch_size=batch_size)
         else:
-            raise ValueError('vector_type must be one of the following: [`single_vector`, `multi_vector`]')
+            raise ValueError("vector_type must be one of the following: [`single_vector`, `multi_vector`]")
 
     @staticmethod
     def score_single_vector(
@@ -122,12 +123,12 @@ class JinaV4Retriever(BaseVisionRetriever):
 
         for i in range(0, len(qs), batch_size):
             scores_batch = []
-            qs_batch = torch.nn.utils.rnn.pad_sequence(qs[i: i + batch_size], batch_first=True, padding_value=0).to(
+            qs_batch = torch.nn.utils.rnn.pad_sequence(qs[i : i + batch_size], batch_first=True, padding_value=0).to(
                 device
             )
             for j in range(0, len(ps), batch_size):
                 ps_batch = torch.nn.utils.rnn.pad_sequence(
-                    ps[j: j + batch_size], batch_first=True, padding_value=0
+                    ps[j : j + batch_size], batch_first=True, padding_value=0
                 ).to(device)
                 scores_batch.append(torch.einsum("bnd,csd->bcns", qs_batch, ps_batch).max(dim=3)[0].sum(dim=2))
             scores_batch = torch.cat(scores_batch, dim=1).cpu()
