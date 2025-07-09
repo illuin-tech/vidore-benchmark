@@ -108,51 +108,51 @@ The Jina Embeddings v4 results in the paper were generated using `--max-pixels 3
 
 ## Overview of the Dataset Collection
 
-| Dataset Name | Domain | Document Format | Query Format | Number of Queries / Documents | Languages |
-|---|---|---|---|---|---|
-| jinaai/airbnb-synthetic-retrieval† | Housing | Tables | Instruction | 4953 / 10000 | ar, de, en, es, fr, hi, hu, ja ru, zh |
-| jinaai/arabic_chartqa_ar | Mixed | Charts | Question | 745 / 745 | ar |
-| jinaai/arabic_infographicsvqa_ar | Mixed | Illustrations | Question | 120 / 40 | ar |
-| jinaai/automobile_catalogue_jp | Marketing | Catalog | Question | 45 / 15 | ja |
-| jinaai/arxivqa | Science | Mixed | Question | 30 / 499 | en |
-| jinaai/beverages_catalogue_ru | Marketing | Digital Docs | Question | 100 / 34 | ru |
-| jinaai/ChartQA | Mixed | Charts | Question | 7996 / 1000 | en |
-| jinaai/CharXiv-en | Science | Charts | Question | 999 / 1000 | en |
-| jinaai/docvqa | Mixed | Scans | Question | 39 / 499 | en |
-| jinaai/donut_vqa | Medical | Scans / Handwriting | Question | 704 / 800 | en |
-| jinaai/docqa_artificial_intelligence | Software / IT | Digital Docs | Question | 70 / 962 | en |
-| jinaai/docqa_energy | Energy | Digital Docs | Question | 69 / 972 | en |
-| jinaai/docqa_gov_report | Government | Digital Docs | Question | 77 / 970 | en |
-| jinaai/docqa_healthcare_industry | Medical | Digital Docs | Question | 90 / 963 | en |
-| jinaai/europeana-de-news | Historic | Scans / News Articles | Question | 379 / 137 | de |
-| jinaai/europeana-es-news | Historic | Scans / News Articles | Question | 474 / 179 | es |
-| jinaai/europeana-fr-news | Historic | Scans / News Articles | Question | 237 / 145 | fr |
-| jinaai/europeana-it-scans | Historic | Scans | Question | 618 / 265 | it |
-| jinaai/europeana-nl-legal | Legal | Scans | Question | 199 / 300 | nl |
-| jinaai/github-readme-retrieval-multilingual† | Software / IT | Markdown Docs | Description | 16755 / 4398 | ar, bn, de, en, es, fr, hi, id, it, ja, ko, nl pt, ru, th, vi, zh |
-| jinaai/hindi-gov-vqa | Governmental | Digital Docs | Question | 454 / 340 | hi |
-| jinaai/hungarian_doc_qa_hu | Mixed | Digital Docs | Question | 54 / 54 | hu |
-| jinaai/infovqa | Mixed | Illustrations | Question | 363 / 500 | en |
-| jinaai/jdocqa | News | Digital Docs | Question | 744 / 758 | ja |
-| jinaai/jina_2024_yearly_book | Software / IT | Digital Docs | Question | 75 / 33 | en |
-| jinaai/medical-prescriptions | Medical | Digital Docs | Question | 100 / 100 | en |
-| jinaai/mpmqa-small | Manuals | Digital Docs | Question | 155 / 782 | en |
-| jinaai/MMTab | Mixed | Tables | Fact | 987 / 906 | en |
-| jinaai/openai-news | Software / IT | Digital Docs | Question | 31 / 30 | en |
-| jinaai/owid_charts_en | Mixed | Charts | Question | 132 / 972 | en |
-| jinaai/plotqa | Mixed | Charts | Question | 610 / 986 | en |
-| jinaai/ramen_benchmark_jp | Marketing | Catalog | Question | 29 / 10 | ja |
-| jinaai/shanghai_master_plan | Governmental | Digital Docs | Question / Key Phrase | 57 / 23 | zh, en |
-| jinaai/wikimedia-commons-documents-ml† | Mixed | Mixed | Description | 14061 / 14661 | ar, bn, de, en, es, fr, hi, hu, id, it, ja, ko, my, nl, pt, ru, th, ur, vi, zh |
-| jinaai/shiftproject | Environmental Documents | Digital Docs | Question | 89 / 998 | fr |
-| jinaai/stanford_slide | Education | Slides | Question | 14 / 1000 | en |
-| jinaai/student-enrollment | Demographics | Charts | Question | 1000 / 489 | en |
-| jinaai/tabfquad | Mixed | Tables | Question | 126 / 70 | fr, en |
-| jinaai/table-vqa | Science | Tables | Question | 992 / 1000 | en |
-| jinaai/tatqa | Finance | Digital Docs | Question | 121 / 176 | en |
-| jinaai/tqa | Education | Illustrations | Question | 981 / 394 | en |
-| jinaai/tweet-stock-synthetic-retrieval† | Finance | Charts | Question | 6278 / 10000 | ar, de, en, es, hi, hu, ja, ru, zh |
-| jinaai/wikimedia-commons-maps | Mixed | Maps | Description | 443 / 455 | en |
+| Dataset Name                                 | Domain                  | Document Format       | Query Format          | Number of Queries / Documents | Languages                                                                      |
+|----------------------------------------------|-------------------------|-----------------------|-----------------------|-------------------------------|--------------------------------------------------------------------------------|
+| jinaai/airbnb-synthetic-retrieval†           | Housing                 | Tables                | Instruction           | 4953 / 10000                  | ar, de, en, es, fr, hi, hu, ja ru, zh                                          |
+| jinaai/arabic_chartqa_ar                     | Mixed                   | Charts                | Question              | 745 / 745                     | ar                                                                             |
+| jinaai/arabic_infographicsvqa_ar             | Mixed                   | Illustrations         | Question              | 120 / 40                      | ar                                                                             |
+| jinaai/automobile_catalogue_jp               | Marketing               | Catalog               | Question              | 45 / 15                       | ja                                                                             |
+| jinaai/arxivqa                               | Science                 | Mixed                 | Question              | 30 / 499                      | en                                                                             |
+| jinaai/beverages_catalogue_ru                | Marketing               | Digital Docs          | Question              | 100 / 34                      | ru                                                                             |
+| jinaai/ChartQA                               | Mixed                   | Charts                | Question              | 996 / 834                     | en                                                                             |
+| jinaai/CharXiv-en                            | Science                 | Charts                | Question              | 999 / 1000                    | en                                                                             |
+| jinaai/docvqa                                | Mixed                   | Scans                 | Question              | 39 / 499                      | en                                                                             |
+| jinaai/donut_vqa                             | Medical                 | Scans / Handwriting   | Question              | 704 / 800                     | en                                                                             |
+| jinaai/docqa_artificial_intelligence         | Software / IT           | Digital Docs          | Question              | 70 / 962                      | en                                                                             |
+| jinaai/docqa_energy                          | Energy                  | Digital Docs          | Question              | 69 / 971                      | en                                                                             |
+| jinaai/docqa_gov_report                      | Government              | Digital Docs          | Question              | 77 / 970                      | en                                                                             |
+| jinaai/docqa_healthcare_industry             | Medical                 | Digital Docs          | Question              | 90 / 961                      | en                                                                             |
+| jinaai/europeana-de-news                     | Historic                | Scans / News Articles | Question              | 379 / 137                     | de                                                                             |
+| jinaai/europeana-es-news                     | Historic                | Scans / News Articles | Question              | 474 / 179                     | es                                                                             |
+| jinaai/europeana-fr-news                     | Historic                | Scans / News Articles | Question              | 237 / 145                     | fr                                                                             |
+| jinaai/europeana-it-scans                    | Historic                | Scans                 | Question              | 618 / 265                     | it                                                                             |
+| jinaai/europeana-nl-legal                    | Legal                   | Scans                 | Question              | 199 / 244                     | nl                                                                             |
+| jinaai/github-readme-retrieval-multilingual† | Software / IT           | Markdown Docs         | Description           | 16953 / 16998                 | ar, bn, de, en, es, fr, hi, id, it, ja, ko, nl pt, ru, th, vi, zh              |
+| jinaai/hindi-gov-vqa                         | Governmental            | Digital Docs          | Question              | 454 / 337                     | hi                                                                             |
+| jinaai/hungarian_doc_qa_hu                   | Mixed                   | Digital Docs          | Question              | 54 / 51                       | hu                                                                             |
+| jinaai/infovqa                               | Mixed                   | Illustrations         | Question              | 363 / 500                     | en                                                                             |
+| jinaai/jdocqa                                | News                    | Digital Docs          | Question              | 744 / 758                     | ja                                                                             |
+| jinaai/jina_2024_yearly_book                 | Software / IT           | Digital Docs          | Question              | 75 / 33                       | en                                                                             |
+| jinaai/medical-prescriptions                 | Medical                 | Digital Docs          | Question              | 100 / 100                     | en                                                                             |
+| jinaai/mpmqa-small                           | Manuals                 | Digital Docs          | Question              | 155 / 782                     | en                                                                             |
+| jinaai/MMTab                                 | Mixed                   | Tables                | Fact                  | 987 / 906                     | en                                                                             |
+| jinaai/openai-news                           | Software / IT           | Digital Docs          | Question              | 31 / 30                       | en                                                                             |
+| jinaai/owid_charts_en                        | Mixed                   | Charts                | Question              | 132 / 937                     | en                                                                             |
+| jinaai/plotqa                                | Mixed                   | Charts                | Question              | 610 / 986                     | en                                                                             |
+| jinaai/ramen_benchmark_jp                    | Marketing               | Catalog               | Question              | 29 / 10                       | ja                                                                             |
+| jinaai/shanghai_master_plan                  | Governmental            | Digital Docs          | Question / Key Phrase | 57 / 23                       | zh, en                                                                         |
+| jinaai/wikimedia-commons-documents-ml†       | Mixed                   | Mixed                 | Description           | 15593 / 15217                 | ar, bn, de, en, es, fr, hi, hu, id, it, ja, ko, my, nl, pt, ru, th, ur, vi, zh |
+| jinaai/shiftproject                          | Environmental Documents | Digital Docs          | Question              | 89 / 998                      | fr                                                                             |
+| jinaai/stanford_slide                        | Education               | Slides                | Question              | 14 / 994                      | en                                                                             |
+| jinaai/student-enrollment                    | Demographics            | Charts                | Question              | 1000 / 489                    | en                                                                             |
+| jinaai/tabfquad                              | Mixed                   | Tables                | Question              | 126 / 70                      | fr, en                                                                         |
+| jinaai/table-vqa                             | Science                 | Tables                | Question              | 992 / 385                     | en                                                                             |
+| jinaai/tatqa                                 | Finance                 | Digital Docs          | Question              | 121 / 270                     | en                                                                             |
+| jinaai/tqa                                   | Education               | Illustrations         | Question              | 981 / 393                     | en                                                                             |
+| jinaai/tweet-stock-synthetic-retrieval†      | Finance                 | Charts                | Question              | 6278 / 10000                  | ar, de, en, es, hi, hu, ja, ru, zh                                             |
+| jinaai/wikimedia-commons-maps                | Mixed                   | Maps                  | Description           | 443 / 451                     | en                                                                             |
 
 ---
 
