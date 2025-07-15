@@ -49,11 +49,11 @@ class ColQwenOmniRetriever(BaseVisionRetriever):
 
         # Load the model and LORA adapter
         self.model = ColQwen2_5Omni.from_pretrained(
-                pretrained_model_name_or_path,
-                torch_dtype=torch.bfloat16,
-                device_map=self.device,
-                attn_implementation="flash_attention_2" if is_flash_attn_2_available() else None,
-            ).eval()
+            pretrained_model_name_or_path,
+            torch_dtype=torch.bfloat16,
+            device_map=self.device,
+            attn_implementation="flash_attention_2" if is_flash_attn_2_available() else None,
+        ).eval()
 
         # Load the processor
         self.processor = ColQwen2_5OmniProcessor.from_pretrained(pretrained_model_name_or_path)
