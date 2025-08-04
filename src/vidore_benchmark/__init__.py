@@ -9,6 +9,7 @@ from .retrievers import (
     ColPaliRetriever,
     ColQwen2_5_Retriever,
     ColQwen2Retriever,
+    ColQwenOmniRetriever,
     DSEQwen2Retriever,
     DummyVisionRetriever,
     HFEndpointRetriever,

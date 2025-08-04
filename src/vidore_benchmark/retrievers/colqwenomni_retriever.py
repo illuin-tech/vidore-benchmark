@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Optional, Union, cast
+from typing import List, Optional, Union
 
 import torch
 from dotenv import load_dotenv
@@ -20,16 +20,16 @@ logger = logging.getLogger(__name__)
 load_dotenv(override=True)
 
 
-@register_vision_retriever("colqwen2_5")
-class ColQwen2_5_Retriever(BaseVisionRetriever):  # noqa: N801
+@register_vision_retriever("colqwen-omni")
+class ColQwenOmniRetriever(BaseVisionRetriever):
     """
-    ColQwen2.5 retriever that implements the model from "ColPali: Efficient Document Retrieval
-    with Vision Language Models".
+    ColQwenOmni retriever that implements the model from "ColPali: Efficient Document Retrieval
+    with Vision Language Models". Based on the ColQwen2.5 Omni model.
     """
 
     def __init__(
         self,
-        pretrained_model_name_or_path: str = "vidore/colqwen2-v1.0",
+        pretrained_model_name_or_path: str = "vidore/colqwen-omni-v0.1",
         device: str = "auto",
         num_workers: int = 0,
         **kwargs,
@@ -37,32 +37,26 @@ class ColQwen2_5_Retriever(BaseVisionRetriever):  # noqa: N801
         super().__init__(use_visual_embedding=True)
 
         try:
-            from colpali_engine.models import ColQwen2_5, ColQwen2_5_Processor
+            from colpali_engine.models import ColQwen2_5Omni, ColQwen2_5OmniProcessor
         except ImportError:
             raise ImportError(
                 'Install the missing dependencies with `pip install "vidore-benchmark[colpali-engine]"` '
-                "to use ColQwen2_5_Retriever."
+                "to use ColQwenOmniRetriever."
             )
 
         self.device = get_torch_device(device)
         self.num_workers = num_workers
 
         # Load the model and LORA adapter
-        self.model = cast(
-            ColQwen2_5,
-            ColQwen2_5.from_pretrained(
-                pretrained_model_name_or_path,
-                torch_dtype=torch.bfloat16,
-                device_map=self.device,
-                attn_implementation="flash_attention_2" if is_flash_attn_2_available() else None,
-            ).eval(),
-        )
+        self.model = ColQwen2_5Omni.from_pretrained(
+            pretrained_model_name_or_path,
+            torch_dtype=torch.bfloat16,
+            device_map=self.device,
+            attn_implementation="flash_attention_2" if is_flash_attn_2_available() else None,
+        ).eval()
 
         # Load the processor
-        self.processor = cast(
-            ColQwen2_5_Processor,
-            ColQwen2_5_Processor.from_pretrained(pretrained_model_name_or_path),
-        )
+        self.processor = ColQwen2_5OmniProcessor.from_pretrained(pretrained_model_name_or_path)
 
     def process_images(self, images: List[Image.Image], **kwargs):
         return self.processor.process_images(images=images).to(self.device)
