@@ -7,6 +7,7 @@ from .retrievers import (
     CohereAPIRetriever,
     ColIdefics3Retriever,
     ColPaliRetriever,
+    ColQwen2_5_Retriever,
     ColQwen2Retriever,
     ColQwenOmniRetriever,
     DSEQwen2Retriever,
