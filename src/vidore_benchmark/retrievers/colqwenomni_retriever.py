@@ -23,8 +23,8 @@ load_dotenv(override=True)
 @register_vision_retriever("colqwen-omni")
 class ColQwenOmniRetriever(BaseVisionRetriever):
     """
-    ColQwen2 retriever that implements the model from "ColPali: Efficient Document Retrieval
-    with Vision Language Models".
+    ColQwenOmni retriever that implements the model from "ColPali: Efficient Document Retrieval
+    with Vision Language Models". Based on the ColQwen2.5 Omni model.
     """
 
     def __init__(
@@ -41,7 +41,7 @@ class ColQwenOmniRetriever(BaseVisionRetriever):
         except ImportError:
             raise ImportError(
                 'Install the missing dependencies with `pip install "vidore-benchmark[colpali-engine]"` '
-                "to use ColQwen2Retriever."
+                "to use ColQwenOmniRetriever."
             )
 
         self.device = get_torch_device(device)
