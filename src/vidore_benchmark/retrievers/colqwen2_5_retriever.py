@@ -21,7 +21,7 @@ load_dotenv(override=True)
 
 
 @register_vision_retriever("colqwen2_5")
-class ColQwen2_5_Retriever(BaseVisionRetriever):
+class ColQwen2_5_Retriever(BaseVisionRetriever): #noqa: N801
     """
     ColQwen2.5 retriever that implements the model from "ColPali: Efficient Document Retrieval
     with Vision Language Models".

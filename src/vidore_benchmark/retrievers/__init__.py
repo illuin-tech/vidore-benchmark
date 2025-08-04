@@ -6,8 +6,8 @@ from .bm25_retriever import BM25Retriever
 from .cohere_api_retriever import CohereAPIRetriever
 from .colidefics3_retriever import ColIdefics3Retriever
 from .colpali_retriever import ColPaliRetriever
-from .colqwen2_retriever import ColQwen2Retriever
 from .colqwen2_5_retriever import ColQwen2_5_Retriever
+from .colqwen2_retriever import ColQwen2Retriever
 from .dse_qwen2_retriever import DSEQwen2Retriever
 from .dummy_vision_retriever import DummyVisionRetriever
 from .hf_api_retriever import HFEndpointRetriever
