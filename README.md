@@ -10,9 +10,21 @@
 
 ---
 
-**⚠️ Repository Focus Change**: This repository is now focused on **pipeline evaluation** for visual document retrieval tasks. All other functionalities (vision retriever evaluation, legacy benchmarks) are kept for reproducibility purposes but are **deprecated and no longer actively maintained**.
+> [!IMPORTANT]
+> ## 🔄 Repository Focus Change
+> 
+> This repository is now focused on **pipeline evaluation** for visual document retrieval tasks. 
+> 
+> All other functionalities (vision retriever evaluation, legacy benchmarks) are kept for reproducibility purposes but are **deprecated and no longer actively maintained**.
 
 ---
+
+## 📊 Results Repository
+
+**This repository serves as a community results repository for visual document retrieval benchmarks.** We encourage researchers and practitioners to submit their pipeline evaluation results by adding JSON files to the `results/` folder via pull requests. This creates a centralized location where the community can compare different approaches and track progress on ViDoRe v3 datasets.
+
+**To contribute your results**: Run evaluations using this framework, then submit a PR with your result files organized as `results/your_pipeline_name/dataset_name.json`.
+
 
 ## What is Pipeline Evaluation?
 
@@ -331,28 +343,6 @@ vidore_benchmark/
 - ✅ Evaluate on single or all datasets
 - ✅ Language filtering for multilingual datasets
 
-## Migration Guide
-
-### From Legacy Retriever Evaluation
-
-If you were previously using the legacy retriever evaluation system:
-
-**Old approach** (deprecated):
-```bash
-vidore-benchmark evaluate-retriever \
-    --model-class colpali \
-    --model-name vidore/colpali-v1.3 \
-    --dataset-name vidore/tabfquad_test_subsampled
-```
-
-**New approach** (pipeline evaluation):
-1. Implement your retriever as a `BasePipeline` subclass
-2. Use the pipeline evaluation API/CLI
-
-**📖 Complete migration guide:** See [MIGRATION.md](MIGRATION.md) for detailed migration instructions.
-
-See [`README_OLD.md`](README_OLD.md) for legacy documentation.
-
 ## Reproducibility & Legacy Features
 
 This repository previously focused on evaluating vision retrievers on the ViDoRe benchmarks v1 and v2. All code related to these functionalities is **still available but deprecated**:
@@ -371,7 +361,7 @@ For reproducibility of published results, see [`REPRODUCIBILITY.md`](REPRODUCIBI
 
 We welcome contributions for:
 - New example pipelines
-- Additional evaluation metrics
+- Additional evaluation results
 - Dataset utilities
 - Documentation improvements
 
@@ -406,6 +396,17 @@ If you use this framework or the ViDoRe benchmark in your research, please cite:
       archivePrefix={arXiv},
       primaryClass={cs.IR},
       url={https://arxiv.org/abs/2505.17166}, 
+}
+```
+
+**ViDoRe V3: A Comprehensive Evaluation of Retrieval Augmented Generation in Complex Real-World Scenarios**
+
+```bibtex
+@misc{loison2026vidore,
+      title={ViDoRe V3: A Comprehensive Evaluation of Retrieval Augmented Generation in Complex Real-World Scenarios},
+      author={Loison, Ant{\'o}nio and Mac{\'e}, Quentin and Edy, Antoine and Xing, Victor and Balough, Tom and Moreira, Gabriel and Liu, Bo and Faysse, Manuel and Hudelot, C{\'e}line and Viaud, Gautier},
+      journal={arXiv preprint arXiv:2601.08620},
+      year={2026}
 }
 ```
 
