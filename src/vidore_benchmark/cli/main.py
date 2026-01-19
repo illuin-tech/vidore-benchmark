@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 from tqdm import tqdm
 from transformers import set_seed
 
+# Add pipeline evaluation subcommand
+from vidore_benchmark.cli.pipeline_evaluation import app as pipeline_app
 from vidore_benchmark.evaluation.interfaces import MetadataModel, ViDoReBenchmarkResults
 from vidore_benchmark.evaluation.vidore_evaluators import ViDoReEvaluatorQA
 from vidore_benchmark.evaluation.vidore_evaluators.vidore_evaluator_beir import ViDoReEvaluatorBEIR
@@ -30,6 +32,8 @@ app = typer.Typer(
     """,
     no_args_is_help=True,
 )
+
+app.add_typer(pipeline_app, name="pipeline", help="Evaluate custom pipelines on ViDoRe v3 datasets")
 
 
 def _sanitize_model_id(
