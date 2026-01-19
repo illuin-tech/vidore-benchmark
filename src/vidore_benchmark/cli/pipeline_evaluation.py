@@ -201,7 +201,7 @@ def evaluate(
     # Load the dataset
     logger.info(f"Loading dataset: {dataset_name}")
     try:
-        query_ids, queries, corpus_ids, corpus, qrels = load_vidore_dataset(
+        query_ids, queries, corpus_ids, corpus, qrels, query_languages = load_vidore_dataset(
             dataset_name=dataset_name, split=split, language=language
         )
     except Exception as e:
@@ -263,38 +263,77 @@ def evaluate(
         print(f"\n❌ Error during evaluation: {e}\n")
         raise typer.Exit(code=1)
 
-    # Calculate aggregates
-    aggregated = aggregate_results(results)
+    # Calculate aggregates (with language splitting if applicable)
+    aggregated = aggregate_results(results, query_languages)
 
     # Display results
     print("\n" + "=" * 70)
     print("Evaluation Results")
     print("=" * 70)
 
-    # Separate timing metrics from retrieval metrics
-    timing_metrics = {k: v for k, v in aggregated.items() if k.startswith(("total_", "average_", "queries_", "num_"))}
-    retrieval_metrics = {k: v for k, v in aggregated.items() if k not in timing_metrics}
+    # Check if we have language-split results
+    if "overall" in aggregated and "by_language" in aggregated:
+        # Display overall metrics
+        overall_metrics = aggregated["overall"]
+        timing_info = aggregated.get("timing", {})
 
-    # Display key retrieval metrics only
-    key_metrics = ["ndcg_cut_10", "ndcg_cut_5", "recall_10", "recall_5", "map", "recip_rank"]
-    if retrieval_metrics:
-        print("\nKey Retrieval Metrics:")
+        print("\n--- Overall Results ---")
+        key_metrics = ["ndcg_cut_10", "ndcg_cut_5", "recall_10", "recall_5", "map", "recip_rank"]
         for metric in key_metrics:
-            if metric in retrieval_metrics:
-                print(f"  {metric:25s}: {retrieval_metrics[metric]:.4f}")
+            if metric in overall_metrics:
+                print(f"  {metric:25s}: {overall_metrics[metric]:.4f}")
 
-        other_count = len(retrieval_metrics) - len([m for m in key_metrics if m in retrieval_metrics])
+        # Display per-language breakdown
+        print("\n--- Results by Language ---")
+        for lang, lang_metrics in aggregated["by_language"].items():
+            num_queries = lang_metrics.get("num_queries", 0)
+            print(f"\n{lang.capitalize()} ({num_queries} queries):")
+            for metric in key_metrics:
+                if metric in lang_metrics:
+                    print(f"  {metric:25s}: {lang_metrics[metric]:.4f}")
+
+        # Calculate how many additional metrics were saved
+        all_metrics_count = len(overall_metrics)
+        displayed_count = len([m for m in key_metrics if m in overall_metrics])
+        other_count = all_metrics_count - displayed_count
         if other_count > 0:
-            print(f"\n  ({other_count} additional metrics saved to file)")
+            print(f"\n({other_count} additional metrics saved to file)")
 
-    # Display timing metrics
-    if timing_metrics:
-        print("\nTiming Metrics:")
-        for metric, value in timing_metrics.items():
-            if "seconds" in metric:
-                print(f"  {metric:35s}: {value:.4f}ms")
-            else:
-                print(f"  {metric:35s}: {value:.2f}")
+        # Display timing metrics
+        if timing_info:
+            print("\n--- Timing Metrics ---")
+            for metric, value in timing_info.items():
+                if "milliseconds" in metric:
+                    print(f"  {metric:40s}: {value:.2f}ms")
+                else:
+                    print(f"  {metric:40s}: {value:.2f}")
+    else:
+        # Original flat display (backward compatibility)
+        timing_metrics = {
+            k: v for k, v in aggregated.items() if k.startswith(("total_", "average_", "queries_", "num_"))
+        }
+        retrieval_metrics = {k: v for k, v in aggregated.items() if k not in timing_metrics}
+
+        # Display key retrieval metrics only
+        key_metrics = ["ndcg_cut_10", "ndcg_cut_5", "recall_10", "recall_5", "map", "recip_rank"]
+        if retrieval_metrics:
+            print("\nKey Retrieval Metrics:")
+            for metric in key_metrics:
+                if metric in retrieval_metrics:
+                    print(f"  {metric:25s}: {retrieval_metrics[metric]:.4f}")
+
+            other_count = len(retrieval_metrics) - len([m for m in key_metrics if m in retrieval_metrics])
+            if other_count > 0:
+                print(f"\n  ({other_count} additional metrics saved to file)")
+
+        # Display timing metrics
+        if timing_metrics:
+            print("\nTiming Metrics:")
+            for metric, value in timing_metrics.items():
+                if "milliseconds" in metric:
+                    print(f"  {metric:40s}: {value:.2f}ms")
+                else:
+                    print(f"  {metric:40s}: {value:.2f}")
 
     print("=" * 70 + "\n")
 
@@ -322,7 +361,6 @@ def evaluate(
         "class_name": class_name,
         "pipeline_args": kwargs,
         "aggregated_metrics": aggregated,
-        "per_query_metrics": results,
     }
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -401,7 +439,7 @@ def evaluate_all(
 
         try:
             # Load dataset
-            query_ids, queries, corpus_ids, corpus, qrels = load_vidore_dataset(
+            query_ids, queries, corpus_ids, corpus, qrels, query_languages = load_vidore_dataset(
                 dataset_name=dataset_name, split=split, language=language
             )
 
@@ -444,8 +482,8 @@ def evaluate_all(
                 ],
             )
 
-            # Calculate aggregates
-            aggregated = aggregate_results(results)
+            # Calculate aggregates (with language splitting)
+            aggregated = aggregate_results(results, query_languages)
 
             # Store results
             all_results[dataset_name] = {
@@ -481,9 +519,24 @@ def evaluate_all(
                 json.dump(output_data, f, indent=2)
 
             # Display summary with timing
-            ndcg_score = aggregated.get("ndcg_cut_10", 0.0)
-            avg_time = aggregated.get("average_time_per_query_seconds", 0.0)
-            print(f"NDCG@10: {ndcg_score:.4f} | Avg time/query: {avg_time:.4f}s")
+            # Handle both language-split and flat result formats
+            if "overall" in aggregated:
+                ndcg_score = aggregated["overall"].get("ndcg_cut_10", 0.0)
+                timing = aggregated.get("timing", {})
+                avg_time = timing.get("average_time_per_query_milliseconds", 0.0)
+                print(f"NDCG@10: {ndcg_score:.4f} | Avg time/query: {avg_time:.2f}ms")
+
+                # Show language breakdown if available
+                if "by_language" in aggregated and len(aggregated["by_language"]) > 1:
+                    for lang, lang_metrics in aggregated["by_language"].items():
+                        lang_ndcg = lang_metrics.get("ndcg_cut_10", 0.0)
+                        num_queries = lang_metrics.get("num_queries", 0)
+                        print(f"  - {lang}: {lang_ndcg:.4f} ({num_queries} queries)")
+            else:
+                ndcg_score = aggregated.get("ndcg_cut_10", 0.0)
+                avg_time = aggregated.get("average_time_per_query_milliseconds", 0.0)
+                print(f"NDCG@10: {ndcg_score:.4f} | Avg time/query: {avg_time:.2f}ms")
+
             print(f"  Saved to: {result_file}")
 
         except Exception as e:
@@ -507,7 +560,16 @@ def evaluate_all(
     if successful_datasets:
         print(f"\nSuccessfully evaluated {len(successful_datasets)}/{len(datasets)} datasets")
         print("\nAverage NDCG@10 across datasets:")
-        ndcg_scores = [all_results[ds]["aggregated_metrics"].get("ndcg_cut_10", 0.0) for ds in successful_datasets]
+
+        # Extract NDCG scores handling both flat and nested formats
+        ndcg_scores = []
+        for ds in successful_datasets:
+            aggregated = all_results[ds]["aggregated_metrics"]
+            if "overall" in aggregated:
+                ndcg_scores.append(aggregated["overall"].get("ndcg_cut_10", 0.0))
+            else:
+                ndcg_scores.append(aggregated.get("ndcg_cut_10", 0.0))
+
         avg_ndcg = sum(ndcg_scores) / len(ndcg_scores) if ndcg_scores else 0.0
         print(f"  {avg_ndcg:.4f}")
 
