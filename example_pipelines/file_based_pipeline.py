@@ -3,7 +3,8 @@ FileBasedPipeline: Load pre-computed retrieval results from a JSON file.
 
 This pipeline is useful for evaluating retrieval results that were
 computed offline or by external systems. The run file should be in
-pytrec_eval format: {query_id: {corpus_id: score}}.
+the ViDoRe pipeline format:
+{query_id: {"results": {corpus_id: score}, "runtime_milliseconds": float}}.
 """
 
 import json
@@ -18,8 +19,14 @@ class FileBasedPipeline(BasePipeline):
 
     The JSON file should contain retrieval results in the format:
     {
-        "query_id_1": {"corpus_id_1": score, "corpus_id_2": score, ...},
-        "query_id_2": {"corpus_id_1": score, "corpus_id_3": score, ...},
+        "query_id_1": {
+            "results": {"corpus_id_1": score, "corpus_id_2": score, ...},
+            "runtime_milliseconds": 41.2
+        },
+        "query_id_2": {
+            "results": {"corpus_id_1": score, "corpus_id_3": score, ...},
+            "runtime_milliseconds": 38.8
+        },
         ...
     }
 
@@ -60,17 +67,35 @@ class FileBasedPipeline(BasePipeline):
         if not isinstance(self.run_data, dict):
             raise ValueError(f"Run file must contain a JSON object (dict), got {type(self.run_data)}")
 
-        # Validate that values are dicts (query_id -> {corpus_id: score})
-        for query_id, corpus_scores in self.run_data.items():
+        # Validate that values match the pipeline contract:
+        # query_id -> {"results": {corpus_id: score}, "runtime_milliseconds": float}
+        for query_id, query_payload in self.run_data.items():
+            if not isinstance(query_payload, dict):
+                raise ValueError(
+                    f"Each query must map to a dict payload, but query '{query_id}' maps to {type(query_payload)}"
+                )
+
+            if "results" not in query_payload or "runtime_milliseconds" not in query_payload:
+                raise ValueError(
+                    f"Each query payload must contain keys 'results' and 'runtime_milliseconds', "
+                    f"but query '{query_id}' has keys: {list(query_payload.keys())}"
+                )
+
+            corpus_scores = query_payload["results"]
             if not isinstance(corpus_scores, dict):
                 raise ValueError(
-                    f"Each query must map to a dict of corpus scores, "
-                    f"but query '{query_id}' maps to {type(corpus_scores)}"
+                    f"Query '{query_id}' key 'results' must be a dict of corpus scores, got {type(corpus_scores)}"
+                )
+
+            runtime_ms = query_payload["runtime_milliseconds"]
+            if not isinstance(runtime_ms, (int, float)):
+                raise ValueError(
+                    f"Query '{query_id}' key 'runtime_milliseconds' must be a number, got {type(runtime_ms)}"
                 )
 
     def retrieve(
         self, query_ids: List[str], queries: List[str], corpus_ids: List[str], corpus: List[Any]
-    ) -> Dict[str, Dict[str, float]]:
+    ) -> Dict[str, Dict[str, Any]]:
         """
         Return pre-computed retrieval results from the loaded file.
 
@@ -85,7 +110,7 @@ class FileBasedPipeline(BasePipeline):
             corpus: List of corpus items (not used)
 
         Returns:
-            Dictionary mapping query_id to {corpus_id: score} pairs,
+            Dictionary mapping query_id to {"results": {corpus_id: score}, "runtime_milliseconds": float},
             loaded from the run file
         """
         # Note: We could add validation here to check that run_data

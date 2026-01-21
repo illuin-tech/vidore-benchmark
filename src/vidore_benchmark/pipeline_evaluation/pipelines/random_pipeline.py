@@ -3,6 +3,7 @@ Random baseline pipeline for testing and benchmarking.
 """
 
 import random
+import time
 from typing import Any, Dict, List
 
 from vidore_benchmark.pipeline_evaluation.base_pipeline import BasePipeline
@@ -33,7 +34,7 @@ class RandomPipeline(BasePipeline):
         queries: List[str],
         corpus_ids: List[str],
         corpus: List[Any],
-    ) -> Dict[str, Dict[str, float]]:
+    ) -> Dict[str, Dict[str, Any]]:
         """
         Retrieve random corpus items for each query.
 
@@ -42,6 +43,7 @@ class RandomPipeline(BasePipeline):
         results = {}
 
         for query_id in query_ids:
+            start = time.perf_counter()
             # Randomly sample top_k corpus items (or all if corpus is smaller)
             k = min(self.top_k, len(corpus_ids))
             sampled_corpus_ids = self.rng.sample(corpus_ids, k)
@@ -49,6 +51,7 @@ class RandomPipeline(BasePipeline):
             # Assign random scores to sampled items
             query_results = {corpus_id: self.rng.random() for corpus_id in sampled_corpus_ids}
 
-            results[query_id] = query_results
+            runtime_milliseconds = (time.perf_counter() - start) * 1000.0
+            results[query_id] = {"results": query_results, "runtime_milliseconds": runtime_milliseconds}
 
         return results

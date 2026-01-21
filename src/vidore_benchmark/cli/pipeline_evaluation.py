@@ -303,6 +303,9 @@ def evaluate(
         if timing_info:
             print("\n--- Timing Metrics ---")
             for metric, value in timing_info.items():
+                if not isinstance(value, (int, float)):
+                    # e.g. per-query timing maps; saved to file, not printed.
+                    continue
                 if "milliseconds" in metric:
                     print(f"  {metric:40s}: {value:.2f}ms")
                 else:
@@ -330,6 +333,9 @@ def evaluate(
         if timing_metrics:
             print("\nTiming Metrics:")
             for metric, value in timing_metrics.items():
+                if not isinstance(value, (int, float)):
+                    # e.g. per-query timing maps; saved to file, not printed.
+                    continue
                 if "milliseconds" in metric:
                     print(f"  {metric:40s}: {value:.2f}ms")
                 else:

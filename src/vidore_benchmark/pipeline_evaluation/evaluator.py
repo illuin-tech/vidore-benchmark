@@ -2,7 +2,6 @@
 Core evaluation orchestration using pytrec_eval.
 """
 
-import time
 from collections import defaultdict
 from typing import Any, Dict, List, Optional
 
@@ -20,7 +19,7 @@ def evaluate_retrieval(
     qrels: Dict[str, Dict[str, int]],
     metrics: List[str] = None,
     track_time: bool = True,
-) -> Dict[str, Dict[str, float]]:
+) -> Dict[str, Any]:
     """
     Evaluate a pipeline using pytrec_eval.
 
@@ -47,24 +46,61 @@ def evaluate_retrieval(
     if metrics is None:
         metrics = ["ndcg_cut_10"]
 
-    # Call user's pipeline implementation with time tracking
-    if track_time:
-        start_time = time.time()
-
-    run = pipeline.retrieve(query_ids, queries, corpus_ids, corpus)
-
-    if track_time:
-        end_time = time.time()
-        total_time = (end_time - start_time) * 1000  # in milliseconds
+    # Call user's pipeline implementation.
+    #
+    # Contract:
+    # {
+    #   query_id: {
+    #     "results": {corpus_id: score, ...},
+    #     "runtime_milliseconds": float,
+    #   },
+    #   ...
+    # }
+    run_with_timing = pipeline.retrieve(query_ids, queries, corpus_ids, corpus)
 
     # Validate run format
-    if not isinstance(run, dict):
-        raise ValueError(f"Pipeline must return a dict, got {type(run)}")
+    if not isinstance(run_with_timing, dict):
+        raise ValueError(f"Pipeline must return a dict, got {type(run_with_timing)}")
 
+    run: Dict[str, Dict[str, float]] = {}
+    per_query_runtime_milliseconds: Dict[str, float] = {}
     for query_id in query_ids:
-        if query_id not in run:
-            # If pipeline didn't return results for a query, add empty results
+        if query_id not in run_with_timing:
+            # If pipeline didn't return results for a query, add empty results.
             run[query_id] = {}
+            per_query_runtime_milliseconds[query_id] = 0.0
+            continue
+
+        query_payload = run_with_timing[query_id]
+        if not isinstance(query_payload, dict):
+            raise ValueError(
+                f"Pipeline must return dict payload per query_id, but query '{query_id}' "
+                f"maps to {type(query_payload)}"
+            )
+
+        if "results" not in query_payload:
+            raise ValueError(f"Pipeline payload for query '{query_id}' missing required key 'results'")
+        if "runtime_milliseconds" not in query_payload:
+            raise ValueError(
+                f"Pipeline payload for query '{query_id}' missing required key 'runtime_milliseconds'"
+            )
+
+        query_results = query_payload["results"]
+        if not isinstance(query_results, dict):
+            raise ValueError(
+                f"Pipeline payload 'results' for query '{query_id}' must be a dict, got {type(query_results)}"
+            )
+
+        runtime_ms = query_payload["runtime_milliseconds"]
+        if not isinstance(runtime_ms, (int, float)):
+            raise ValueError(
+                f"Pipeline payload 'runtime_milliseconds' for query '{query_id}' must be a number, "
+                f"got {type(runtime_ms)}"
+            )
+
+        # pytrec_eval "run" format expects {query_id: {doc_id: score}}
+        run[query_id] = query_results
+        per_query_runtime_milliseconds[query_id] = float(runtime_ms)
 
     # Create pytrec_eval evaluator
     evaluator = pytrec_eval.RelevanceEvaluator(qrels, set(metrics))
@@ -72,21 +108,26 @@ def evaluate_retrieval(
     # Evaluate
     results = evaluator.evaluate(run)
 
-    # Add timing information if tracking
+    # Timing summary is derived solely from per-query runtimes (no wall-clock timing here).
+    # `track_time` is kept only for the public signature; per-query runtime is required regardless.
     if track_time:
         num_queries = len(query_ids)
+        total_time_milliseconds = sum(per_query_runtime_milliseconds.values())
         results["_timing"] = {
-            "total_retrieval_time_milliseconds": total_time,
-            "average_time_per_query_milliseconds": total_time / num_queries if num_queries > 0 else 0.0,
+            "total_retrieval_time_milliseconds": total_time_milliseconds,
+            "average_time_per_query_milliseconds": total_time_milliseconds / num_queries if num_queries > 0 else 0.0,
             "num_queries": num_queries,
-            "queries_per_second": num_queries / (total_time / 1000) if total_time > 0 else 0.0,
+            "queries_per_second": num_queries / (total_time_milliseconds / 1000)
+            if total_time_milliseconds > 0
+            else 0.0,
+            "per_query_retrieval_time_milliseconds": per_query_runtime_milliseconds,
         }
 
     return results
 
 
 def aggregate_results(
-    results: Dict[str, Dict[str, float]], query_languages: Optional[Dict[str, str]] = None
+    results: Dict[str, Any], query_languages: Optional[Dict[str, str]] = None
 ) -> Dict[str, Any]:
     """
     Calculate aggregate statistics across all queries.

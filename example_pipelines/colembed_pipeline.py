@@ -268,7 +268,7 @@ class ColEmbedPipeline(BasePipeline):
         queries: List[str],
         corpus_ids: List[str],
         corpus: List[Any],
-    ) -> Dict[str, Dict[str, float]]:
+    ) -> Dict[str, Dict[str, Any]]:
         """
         Retrieve relevant corpus items for each query using late-interaction.
 
@@ -316,4 +316,10 @@ class ColEmbedPipeline(BasePipeline):
         print(f"\nRetrieval complete in {elapsed:.2f} seconds")
         print(f"Average time per query: {elapsed / len(query_ids):.2f} seconds")
 
-        return results
+        # This example pipeline runs in large batches. We record per-query runtime as
+        # an even split of the total wall-clock retrieval time.
+        avg_runtime_milliseconds = (elapsed * 1000.0) / len(query_ids) if query_ids else 0.0
+        return {
+            query_id: {"results": results[query_id], "runtime_milliseconds": avg_runtime_milliseconds}
+            for query_id in query_ids
+        }
