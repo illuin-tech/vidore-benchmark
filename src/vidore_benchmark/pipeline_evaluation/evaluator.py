@@ -3,7 +3,8 @@ Core evaluation orchestration using pytrec_eval.
 """
 
 import time
-from typing import Any, Dict, List
+from collections import defaultdict
+from typing import Any, Dict, List, Optional
 
 import pytrec_eval
 
@@ -46,15 +47,19 @@ def evaluate_retrieval(
     if metrics is None:
         metrics = ["ndcg_cut_10"]
 
-    # Call user's pipeline implementation with time tracking
     if track_time:
         start_time = time.time()
 
-    run = pipeline.retrieve(query_ids, queries, corpus_ids, corpus)
+    # Call pipeline.retrieve() and handle both single and tuple returns
+    result = pipeline.retrieve(query_ids, queries, corpus_ids, corpus)
+    if isinstance(result, tuple):
+        run, infos = result
+    else:
+        run, infos = result, None
 
     if track_time:
         end_time = time.time()
-        total_time = (end_time - start_time) * 1000  # in milliseconds
+        total_time = (end_time - start_time) * 1000  # milliseconds
 
     # Validate run format
     if not isinstance(run, dict):
@@ -76,24 +81,39 @@ def evaluate_retrieval(
         num_queries = len(query_ids)
         results["_timing"] = {
             "total_retrieval_time_milliseconds": total_time,
-            "average_time_per_query_milliseconds": total_time / num_queries if num_queries > 0 else 0.0,
             "num_queries": num_queries,
             "queries_per_second": num_queries / (total_time / 1000) if total_time > 0 else 0.0,
         }
+    # Add additional pipeline infos if provided
+    if infos is not None:
+        results["_infos"] = infos
 
     return results
 
 
-def aggregate_results(results: Dict[str, Dict[str, float]]) -> Dict[str, float]:
+def aggregate_results(
+    results: Dict[str, Dict[str, float]], query_languages: Optional[Dict[str, str]] = None
+) -> Dict[str, Any]:
     """
     Calculate aggregate statistics across all queries.
 
+    If query_languages is provided, also computes per-language aggregates.
+
     Args:
         results: Per-query evaluation results from evaluate_retrieval()
+        query_languages: Optional mapping of query_id to language
 
     Returns:
-        Dictionary of aggregated metrics (mean across queries).
-        If timing information is present, it is included directly.
+        Dictionary of aggregated metrics. If query_languages is provided:
+        {
+            'overall': {'ndcg_cut_10': 0.85, ...},
+            'by_language': {
+                'english': {'ndcg_cut_10': 0.87, ...},
+                'french': {'ndcg_cut_10': 0.82, ...},
+            },
+            'timing': {...}  # if timing info present
+        }
+        Otherwise, just returns flat aggregated metrics.
     """
     if not results:
         return {}
@@ -103,18 +123,54 @@ def aggregate_results(results: Dict[str, Dict[str, float]]) -> Dict[str, float]:
 
     if not results:
         # Only timing info was present
-        return timing_info if timing_info else {}
+        return {"timing": timing_info} if timing_info else {}
 
     # Get all metric names from first query
     metric_names = list(next(iter(results.values())).keys())
 
-    aggregated = {}
+    # If no language splitting requested, return simple aggregation
+    if query_languages is None:
+        aggregated = {}
+        for metric in metric_names:
+            scores = [results[qid][metric] for qid in results]
+            aggregated[metric] = sum(scores) / len(scores)
+
+        # Add timing information back if it was present
+        if timing_info:
+            aggregated.update(timing_info)
+
+        return aggregated
+
+    # Split results by language
+    results_by_language = defaultdict(dict)
+    for query_id, query_results in results.items():
+        lang = query_languages.get(query_id, "unknown")
+        results_by_language[lang][query_id] = query_results
+
+    # Compute overall aggregates
+    overall_aggregated = {}
     for metric in metric_names:
         scores = [results[qid][metric] for qid in results]
-        aggregated[metric] = sum(scores) / len(scores)
+        overall_aggregated[metric] = sum(scores) / len(scores)
 
-    # Add timing information back if it was present
+    # Compute per-language aggregates
+    by_language_aggregated = {}
+    for lang, lang_results in results_by_language.items():
+        lang_aggregated = {}
+        for metric in metric_names:
+            scores = [lang_results[qid][metric] for qid in lang_results]
+            lang_aggregated[metric] = sum(scores) / len(scores)
+        lang_aggregated["num_queries"] = len(lang_results)
+        by_language_aggregated[lang] = lang_aggregated
+
+    # Build final result structure
+    final_result = {
+        "overall": overall_aggregated,
+        "by_language": by_language_aggregated,
+    }
+
+    # Add timing information
     if timing_info:
-        aggregated.update(timing_info)
+        final_result["timing"] = timing_info
 
-    return aggregated
+    return final_result

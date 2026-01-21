@@ -1,0 +1,16 @@
+{
+    "pipeline_name": "qwen_qwen3-embedding-8b",
+    "description": "Retrieves relevant documents based on qwen/qwen3-embedding-8b textual retriever without additional steps",
+    "nodes": [
+        {
+            "id": "retriever_node",
+            "component_type": "Retriever",
+            "model_name": "qwen/qwen3-embedding-8b",
+            "modalities": [
+                "textual"
+            ],
+            "description": "Queries the document store and returns the top matching results."
+        }
+    ],
+    "edges": []
+}

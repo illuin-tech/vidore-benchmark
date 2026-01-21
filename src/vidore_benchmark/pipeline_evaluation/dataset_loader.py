@@ -13,7 +13,7 @@ from PIL import Image
 
 def load_vidore_dataset(
     dataset_name: str, split: str = "test", language: str = None
-) -> Tuple[List[str], List[str], List[str], List[Image.Image], Dict[str, Dict[str, int]]]:
+) -> Tuple[List[str], List[str], List[str], List[Image.Image], Dict[str, Dict[str, int]], Dict[str, str]]:
     """
     Load a vidore v3 dataset from HuggingFace.
 
@@ -31,19 +31,20 @@ def load_vidore_dataset(
         - corpus_ids: List of corpus IDs (as strings)
         - corpus: List of PIL.Image objects
         - qrels: Ground truth relevance judgments in format {query_id: {corpus_id: score}}
+        - query_languages: Mapping of query_id to language {query_id: language}
 
     Raises:
         ValueError: If dataset_name is not a valid vidore v3 dataset
         RuntimeError: If dataset loading fails
 
     Example:
-        >>> query_ids, queries, corpus_ids, corpus, qrels = load_vidore_dataset(
+        >>> query_ids, queries, corpus_ids, corpus, qrels, query_languages = load_vidore_dataset(
         ...     "vidore/vidore_v3_industrial"
         ... )
         >>> print(f"Loaded {len(queries)} queries and {len(corpus)} corpus items")
 
         >>> # Load only English queries
-        >>> query_ids, queries, corpus_ids, corpus, qrels = load_vidore_dataset(
+        >>> query_ids, queries, corpus_ids, corpus, qrels, query_languages = load_vidore_dataset(
         ...     "vidore/vidore_v3_hr",
         ...     language="english"
         ... )
@@ -62,11 +63,18 @@ def load_vidore_dataset(
         raise RuntimeError(f"Failed to load dataset '{dataset_name}' from HuggingFace: {e}") from e
 
     # Extract queries (with optional language filtering)
+    query_languages = {}  # Map query_id to language
+
     if language:
         queries_ds = [item for item in queries_ds if item.get("language") == language]
 
     query_ids = [str(item["query_id"]) for item in queries_ds]
     queries = [item["query"] for item in queries_ds]
+
+    # Store language information for each query
+    for item in queries_ds:
+        query_id = str(item["query_id"])
+        query_languages[query_id] = item.get("language", "unknown")
 
     # Extract corpus (images)
     corpus_ids = [str(item["corpus_id"]) for item in corpus_ds]
@@ -101,7 +109,7 @@ def load_vidore_dataset(
         lang_msg = f" with language='{language}'" if language else ""
         raise ValueError(f"No relevance judgments found in dataset '{dataset_name}'{lang_msg}")
 
-    return query_ids, queries, corpus_ids, corpus, qrels
+    return query_ids, queries, corpus_ids, corpus, qrels, query_languages
 
 
 def get_available_datasets() -> List[str]:

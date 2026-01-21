@@ -1,0 +1,16 @@
+{
+    "pipeline_name": "mixedbread_mxbai-edge-colbert-v0-32m",
+    "description": "Retrieves relevant documents based on mixedbread/mxbai-edge-colbert-v0-32m textual retriever without additional steps",
+    "nodes": [
+        {
+            "id": "retriever_node",
+            "component_type": "Retriever",
+            "model_name": "mixedbread/mxbai-edge-colbert-v0-32m",
+            "modalities": [
+                "textual"
+            ],
+            "description": "Queries the document store and returns the top matching results."
+        }
+    ],
+    "edges": []
+}

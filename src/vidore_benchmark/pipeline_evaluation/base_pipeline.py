@@ -3,7 +3,7 @@ Base class for implementing pipelines.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 
 class BasePipeline(ABC):
@@ -21,7 +21,7 @@ class BasePipeline(ABC):
         queries: List[str],
         corpus_ids: List[str],
         corpus: List[Any],
-    ) -> Dict[str, Dict[str, float]]:
+    ) -> Union[Dict[str, Dict[str, float]], Tuple[Dict[str, Dict[str, float]], Optional[Dict[str, Any]]]]:
         """
         Retrieve relevant corpus items for each query.
 
@@ -32,8 +32,13 @@ class BasePipeline(ABC):
             corpus: List of corpus items (images as PIL.Image objects in vidore v3)
 
         Returns:
-            Dictionary mapping query_id to a dictionary of corpus_id: score pairs.
+            Either:
+            - A dictionary mapping query_id to a dictionary of corpus_id: score pairs.
+            - A tuple of (results_dict, infos_dict) where infos_dict contains optional
+              tracking metrics such as cost, granular timing, num_gpus, etc.
+
             Scores should be floats where higher values indicate higher relevance.
+            The infos dictionary is optional and can be None or omitted entirely.
 
             Example return format:
             {
