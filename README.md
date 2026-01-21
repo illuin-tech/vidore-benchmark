@@ -19,13 +19,6 @@
 
 ---
 
-## 📊 Results Repository
-
-**This repository serves as a community results repository for visual document retrieval benchmarks.** We encourage researchers and practitioners to submit their pipeline evaluation results by adding JSON files to the `results/` folder via pull requests. This creates a centralized location where the community can compare different approaches and track progress on ViDoRe v3 datasets.
-
-**To contribute your results**: Run evaluations using this framework, then submit a PR with your result files organized as `results/your_pipeline_name/dataset_name.json`.
-
-
 ## What is Pipeline Evaluation?
 
 Pipeline evaluation allows you to evaluate **complete end-to-end retrieval systems** on the ViDoRe v3 benchmark datasets. Unlike traditional retriever evaluation that focuses on individual model components, pipeline evaluation lets you test:
@@ -34,6 +27,27 @@ Pipeline evaluation allows you to evaluate **complete end-to-end retrieval syste
 - **Hybrid approaches** (e.g., dense + sparse retrieval fusion)
 - **Custom preprocessing pipelines** (e.g., OCR → chunking → embedding)
 - **Arbitrary retrieval logic** that goes beyond standard dense/sparse retrievers
+
+## 📊 Results Repository & Submission Guidelines
+
+**This repository serves as the primary community results repository for visual document retrieval benchmarks using complex pipelines.** We encourage researchers and practitioners to submit their pipeline evaluation results to create a centralized location where the community can compare different approaches and track progress on ViDoRe v3 datasets.
+
+### How to Submit Your Results
+
+To contribute your pipeline results to the leaderboard:
+
+1. **Run evaluations** using this framework on the ViDoRe v3 datasets
+2. **Open a Pull Request** with the following:
+   - **Results files**: Add your JSON result files to the `results/metrics` folder, organized as:
+     ```
+     results/metrics/your_pipeline_name/
+     ├── vidore_v3_hr.json
+     ├── vidore_v3_finance_en.json
+     ├── vidore_v3_industrial.json
+     └── ... (other datasets)
+     ```
+   - **Pipeline description**: Include a `description.json` file in the same PR that describes the architecture used. A pipeline is represented as a graph of a set of modules (OCR, retriever, reranker, mcp server... linked together via edges)
+     Some pipeline descriptions files example are written in `results/pipeline_descriptions`
 
 ### Installation
 
@@ -260,6 +274,56 @@ results = evaluate_retrieval(pipeline, query_ids, queries, corpus_ids, corpus, q
 
 ## Advanced Usage
 
+### Tracking Additional Metrics (Optional)
+
+Pipelines can optionally return additional tracking information alongside retrieval results. This is useful for monitoring costs, timing, resource usage, or other custom metrics:
+
+```python
+from typing import Dict, List, Any, Optional, Tuple
+
+class PipelineWithMetrics(BasePipeline):
+    def retrieve(
+        self,
+        query_ids: List[str],
+        queries: List[str],
+        corpus_ids: List[str],
+        corpus: List[Any],
+    ) -> Tuple[Dict[str, Dict[str, float]], Optional[Dict[str, Any]]]:
+        """
+        Return both retrieval results and optional tracking metrics.
+        
+        Returns:
+            Tuple of (results, infos) where infos can contain:
+            - Cost tracking (e.g., API costs, GPU hours)
+            - Granular timing information
+            - Resource usage (num_gpus, memory, etc.)
+            - Model-specific metadata
+        """
+        # Your retrieval logic here
+        results = {...}
+        
+        # Optional: track additional metrics
+        infos = {
+            "estimated_cost_usd": 0.05,
+            "num_gpus": 1,
+            "total_time_ms": 1234.5,
+            "model_name": "my-model-v1",
+        }
+        
+        return results, infos
+```
+
+The `infos` dictionary will be stored in the evaluation results under the `_infos` key. This is completely **optional** - pipelines can still return just the results dictionary for backward compatibility:
+
+```python
+class SimplePipeline(BasePipeline):
+    def retrieve(...) -> Dict[str, Dict[str, float]]:
+        # Just return results, no tracking needed
+        return results
+```
+
+See [`example_pipelines/pipeline_with_metrics.py`](example_pipelines/pipeline_with_metrics.py) for a complete example.
+
 ### Dataset Information
 
 ```python
@@ -290,7 +354,7 @@ print_dataset_info(
 
 ### Custom Metrics
 
-By default, the evaluation computes `ndcg_cut_10`. You can specify custom metrics:
+By default, the evaluation computes `ndcg@10`. You can specify custom metrics:
 
 ```python
 results = evaluate_retrieval(
