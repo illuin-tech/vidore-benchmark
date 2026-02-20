@@ -201,7 +201,7 @@ def evaluate(
     # Load the dataset
     logger.info(f"Loading dataset: {dataset_name}")
     try:
-        query_ids, queries, corpus_ids, corpus, qrels, query_languages = load_vidore_dataset(
+        query_ids, queries, corpus_ids, corpus_images, corpus_texts, qrels, query_languages = load_vidore_dataset(
             dataset_name=dataset_name, split=split, language=language
         )
     except Exception as e:
@@ -210,7 +210,7 @@ def evaluate(
 
     # Show dataset info if requested
     if show_dataset_info:
-        print_dataset_info(dataset_name, query_ids, queries, corpus_ids, corpus, qrels)
+        print_dataset_info(dataset_name, query_ids, queries, corpus_ids, corpus_images, corpus_texts, qrels)
 
     # Load the pipeline
     try:
@@ -238,7 +238,8 @@ def evaluate(
             query_ids=query_ids,
             queries=queries,
             corpus_ids=corpus_ids,
-            corpus=corpus,
+            corpus_images=corpus_images,
+            corpus_texts=corpus_texts,
             qrels=qrels,
             metrics=[
                 "ndcg_cut_1",

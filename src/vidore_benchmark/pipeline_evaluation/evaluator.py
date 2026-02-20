@@ -16,7 +16,8 @@ def evaluate_retrieval(
     query_ids: List[str],
     queries: List[str],
     corpus_ids: List[str],
-    corpus: List[Any],
+    corpus_images: List[Any],
+    corpus_texts: List[str],
     qrels: Dict[str, Dict[str, int]],
     metrics: List[str] = None,
     track_time: bool = True,
@@ -29,7 +30,8 @@ def evaluate_retrieval(
         query_ids: List of query identifiers
         queries: List of query texts
         corpus_ids: List of corpus item identifiers
-        corpus: List of corpus items (e.g., PIL.Image objects)
+        corpus_images: List of corpus images (PIL.Image objects)
+        corpus_texts: List of corpus texts (markdown strings)
         qrels: Ground truth relevance judgments in pytrec_eval format
                {query_id: {doc_id: relevance_score}}
         metrics: List of metrics to calculate (default: ['ndcg_cut_10'])
@@ -51,7 +53,7 @@ def evaluate_retrieval(
         start_time = time.time()
 
     # Call pipeline.retrieve() and handle both single and tuple returns
-    result = pipeline.retrieve(query_ids, queries, corpus_ids, corpus)
+    result = pipeline.retrieve(query_ids, queries, corpus_ids, corpus_images, corpus_texts)
     if isinstance(result, tuple):
         run, infos = result
     else:

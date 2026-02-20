@@ -69,7 +69,7 @@ class FileBasedPipeline(BasePipeline):
                 )
 
     def retrieve(
-        self, query_ids: List[str], queries: List[str], corpus_ids: List[str], corpus: List[Any]
+        self, query_ids: List[str], queries: List[str], corpus_ids: List[str], corpus_images: List[Any], corpus_texts: List[Any]
     ) -> Dict[str, Dict[str, float]]:
         """
         Return pre-computed retrieval results from the loaded file.
@@ -82,7 +82,8 @@ class FileBasedPipeline(BasePipeline):
             query_ids: List of query identifiers
             queries: List of query texts (not used)
             corpus_ids: List of corpus item identifiers (not used)
-            corpus: List of corpus items (not used)
+            corpus_images: List of corpus images (not used)
+            corpus_texts: List of corpus texts (not used)
 
         Returns:
             Dictionary mapping query_id to {corpus_id: score} pairs,

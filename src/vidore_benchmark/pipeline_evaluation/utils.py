@@ -34,7 +34,7 @@ def evaluate_single_dataset(dataset_name: str, pipeline, language: str = None) -
     """
     try:
         # Load dataset
-        query_ids, queries, corpus_ids, corpus, qrels = load_vidore_dataset(dataset_name, language=language)
+        query_ids, queries, corpus_ids, corpus_images, corpus_texts, qrels, query_languages = load_vidore_dataset(dataset_name, language=language)
 
         # Run evaluation
         results = evaluate_retrieval(
@@ -42,13 +42,14 @@ def evaluate_single_dataset(dataset_name: str, pipeline, language: str = None) -
             query_ids=query_ids,
             queries=queries,
             corpus_ids=corpus_ids,
-            corpus=corpus,
+            corpus_images=corpus_images,
+            corpus_texts=corpus_texts,
             qrels=qrels,
             metrics=["ndcg_cut_10"],
         )
 
         # Aggregate results
-        aggregated = aggregate_results(results)
+        aggregated = aggregate_results(results, query_languages=query_languages)
         ndcg_score = aggregated["ndcg_cut_10"]
         num_queries = len(results)
 

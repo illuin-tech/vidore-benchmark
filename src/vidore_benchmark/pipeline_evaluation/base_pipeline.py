@@ -20,7 +20,8 @@ class BasePipeline(ABC):
         query_ids: List[str],
         queries: List[str],
         corpus_ids: List[str],
-        corpus: List[Any],
+        corpus_images: List[Any],
+        corpus_texts: List[str],
     ) -> Union[Dict[str, Dict[str, float]], Tuple[Dict[str, Dict[str, float]], Optional[Dict[str, Any]]]]:
         """
         Retrieve relevant corpus items for each query.
@@ -29,7 +30,8 @@ class BasePipeline(ABC):
             query_ids: List of query identifiers (e.g., ['q1', 'q2', 'q3'])
             queries: List of query texts corresponding to query_ids
             corpus_ids: List of corpus item identifiers (e.g., ['doc1', 'doc2', ...])
-            corpus: List of corpus items (images as PIL.Image objects in vidore v3)
+            corpus_images: List of corpus images (PIL.Image objects in vidore v3)
+            corpus_texts: List of corpus texts (markdown strings in vidore v3)
 
         Returns:
             Either:

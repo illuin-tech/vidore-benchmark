@@ -29,7 +29,8 @@ def load_vidore_dataset(
         - query_ids: List of query IDs (as strings)
         - queries: List of query texts
         - corpus_ids: List of corpus IDs (as strings)
-        - corpus: List of PIL.Image objects
+        - corpus_images: List of PIL.Image objects
+        - corpus_texts: List of corpus texts (as strings)
         - qrels: Ground truth relevance judgments in format {query_id: {corpus_id: score}}
         - query_languages: Mapping of query_id to language {query_id: language}
 
@@ -78,7 +79,11 @@ def load_vidore_dataset(
 
     # Extract corpus (images)
     corpus_ids = [str(item["corpus_id"]) for item in corpus_ds]
-    corpus = [item["image"] for item in corpus_ds]
+    corpus_images = [item["image"] for item in corpus_ds]
+    corpus_texts = [item["markdown"] for item in corpus_ds]
+
+    assert len(corpus_ids) == len(corpus_images), "Mismatch in corpus items lengths"
+    assert len(corpus_images) == len(corpus_texts), "Mismatch in corpus items lengths"
 
     # Build qrels dictionary in pytrec_eval format
     # Format: {query_id: {corpus_id: relevance_score}}
@@ -103,13 +108,15 @@ def load_vidore_dataset(
     if not queries:
         lang_msg = f" with language='{language}'" if language else ""
         raise ValueError(f"No queries found in dataset '{dataset_name}'{lang_msg}")
-    if not corpus:
-        raise ValueError(f"No corpus items found in dataset '{dataset_name}'")
+    if not corpus_images:
+        raise ValueError(f"No corpus images found in dataset '{dataset_name}'")
+    if not corpus_texts:
+        raise ValueError(f"No corpus texts found in dataset '{dataset_name}'")
     if not qrels:
         lang_msg = f" with language='{language}'" if language else ""
         raise ValueError(f"No relevance judgments found in dataset '{dataset_name}'{lang_msg}")
 
-    return query_ids, queries, corpus_ids, corpus, qrels, query_languages
+    return query_ids, queries, corpus_ids, corpus_images, corpus_texts, qrels, query_languages
 
 
 def get_available_datasets() -> List[str]:
@@ -136,7 +143,8 @@ def print_dataset_info(
     query_ids: List[str],
     queries: List[str],
     corpus_ids: List[str],
-    corpus: List[Image.Image],
+    corpus_images: List[Image.Image],
+    corpus_texts: List[str],
     qrels: Dict[str, Dict[str, int]],
 ) -> None:
     """
@@ -147,17 +155,22 @@ def print_dataset_info(
         query_ids: List of query IDs
         queries: List of query texts
         corpus_ids: List of corpus IDs
-        corpus: List of corpus images
+        corpus_images: List of corpus images
+        corpus_texts: List of corpus texts (markdowns)
         qrels: Ground truth relevance judgments
     """
     total_judgments = sum(len(corpus_dict) for corpus_dict in qrels.values())
     avg_judgments_per_query = total_judgments / len(query_ids) if query_ids else 0
 
+    assert len(corpus_texts) == len(corpus_images), "Corpus texts and images must have the same length"
+    assert len(corpus_ids) == len(corpus_images), "Corpus IDs and images must have the same length"
+
     print(f"\n{'=' * 60}")
     print(f"Dataset: {dataset_name}")
     print(f"{'=' * 60}")
     print(f"Queries:                {len(queries)}")
-    print(f"Corpus items:           {len(corpus)}")
+    print(f"Corpus images:          {len(corpus_images)}")
+    print(f"Corpus texts (markdowns): {len(corpus_texts)}")
     print(f"Total relevance pairs:  {total_judgments}")
     print(f"Avg judgments/query:    {avg_judgments_per_query:.1f}")
     print(f"{'=' * 60}\n")
