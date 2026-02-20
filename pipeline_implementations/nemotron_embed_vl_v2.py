@@ -57,14 +57,14 @@ def _l2_normalize(x: torch.Tensor, eps: float = 1e-12) -> torch.Tensor:
 
 def _l2_normalize_fp32(x: torch.Tensor, eps: float = 1e-12) -> torch.Tensor:
     x32 = x.to(torch.float32)
-    return x32 / (x32.norm(p=2, dim=-1, keepdim=True) + eps)
-
-
+    x32 = _l2_normalize(x32, eps)
+    return x32
+    
 class NemotronEmbedVL():
     """
     Encapsulates logic for the Nemotron Embed VL model
     """    
-    def __init__(self, model_name = "nvidia/llama-nemotron-embed-vl-1b-v2", batch_size: int = 32):
+    def __init__(self, model_name = "nvidia/llama-nemotron-embed-vl-1b-v2", batch_size: int = 32, modality: str = "image_text"):
         """
         Initialize the pipeline.
 
@@ -72,6 +72,7 @@ class NemotronEmbedVL():
             batch_size: Number of items to process per GPU batch
         """
         self.batch_size = batch_size
+        self.modality = modality
         self.device = "cuda"
 
         # Check CUDA availability - required for this pipeline
@@ -98,6 +99,7 @@ class NemotronEmbedVL():
                 attn_implementation="flash_attention_2",
             )
             self.model.eval()
+            self._set_processor_config()
             print("Model loaded successfully!")
             print(f"GPU Memory allocated: {torch.cuda.memory_allocated() / 1e9:.2f} GB")
             print(f"GPU Memory reserved: {torch.cuda.memory_reserved() / 1e9:.2f} GB")
@@ -119,7 +121,31 @@ class NemotronEmbedVL():
             print(f"GPU Memory allocated: {torch.cuda.memory_allocated() / 1e9:.2f} GB")
             print(f"GPU Memory reserved: {torch.cuda.memory_reserved() / 1e9:.2f} GB")
 
-    def _embed_corpus_batched(self, corpus: List[Any]) -> torch.Tensor:
+    def _set_processor_config(self):
+        """
+        Sets some configuration of the processor for better accuracy
+        """
+        def _doc_len_by_modality(modality: str) -> int:
+            m = str(modality or "").strip().lower()
+            if m == "image":
+                return 2048
+            if m == "text":
+                return 8192
+            if m == "image_text":
+                return 10240
+            raise ValueError(f"Unknown doc_modality '{modality}'. Expected: 'image', 'text', or 'image_text'.")
+
+
+        p_max_length = _doc_len_by_modality(self.modality)
+        self.model.processor.p_max_length = p_max_length
+        # Sets max number of tiles an image can be split. Each tile consumes 256 tokens.
+        self.model.processor.max_input_tiles = 6
+        # Enables an extra tile with the full image at lower resolution
+        self.model.processor.use_thumbnail = True
+
+    def _embed_corpus_batched(self, 
+                              corpus_images: List[Any],
+                              corpus_texts: List[str]) -> torch.Tensor:
         """
         Embed corpus images in batches on GPU, return on CPU.
 
@@ -129,21 +155,28 @@ class NemotronEmbedVL():
         Returns:
             Tensor of shape [num_items, seq_len, embed_dim] on CPU
         """
-        print(f"\nEmbedding {len(corpus)} corpus images in batches of {self.batch_size}...")
+        corpus_size = len(corpus_images)
+        print(f"\nEmbedding {corpus_size} corpus images in batches of {self.batch_size}...")
         corpus_embeddings = []
 
-        num_batches = (len(corpus) + self.batch_size - 1) // self.batch_size
+        num_batches = (corpus_size + self.batch_size - 1) // self.batch_size
 
-        for i in range(0, len(corpus), self.batch_size):
+        for i in range(0, corpus_size, self.batch_size):
             batch_idx = i // self.batch_size + 1
-            batch = corpus[i : i + self.batch_size]
+            batch_images = None
+            batch_text = None
+            if self.modality in ["image", "image_text"]:
+                batch_images = corpus_images[i : i + self.batch_size]
+                batch_images = [img.convert("RGB") for img in batch_images]
+            if self.modality in ["text", "image_text"]:
+                batch_text = corpus_texts[i : i + self.batch_size]
 
-            print(f"  Batch {batch_idx}/{num_batches}: Processing {len(batch)} images on GPU...")
+            #print(f"  Batch {batch_idx}/{num_batches}: Processing {len(batch_images)} images on GPU...")
 
-            with torch.no_grad():
+            with torch.inference_mode():
                 # Embed on GPU
-                batch_embeddings = self.model.encode_documents(images=batch)
-                batch_embeddings = _l2_normalize_fp32(batch_embeddings).to(torch.bfloat16)
+                batch_embeddings = self.model.encode_documents(images=batch_images, texts=batch_text)
+                batch_embeddings = _l2_normalize_fp32(batch_embeddings).to(torch.float16)
 
                 # Move to CPU immediately to free GPU memory
                 batch_embeddings_cpu = batch_embeddings.cpu()
@@ -187,10 +220,10 @@ class NemotronEmbedVL():
 
             print(f"  Batch {batch_idx}/{num_batches}: Processing {len(batch)} queries on GPU...")
 
-            with torch.no_grad():
+            with torch.inference_mode():
                 # Embed on GPU
                 batch_embeddings = self.model.encode_queries(batch)
-                batch_embeddings = _l2_normalize_fp32(batch_embeddings).to(torch.bfloat16)
+                batch_embeddings = _l2_normalize_fp32(batch_embeddings).to(torch.float16)
 
                 # Move to CPU
                 batch_embeddings_cpu = batch_embeddings.cpu()
@@ -267,9 +300,10 @@ class NemotronEmbedVLPipeline(BasePipeline):
     while maintaining reasonable scoring performance on CPU.
     """
 
-    def __init__(self, model_name = "nvidia/llama-nemotron-embed-vl-1b-v2", batch_size: int = 32, top_k: int = 100):
+    def __init__(self, model_name = "nvidia/llama-nemotron-embed-vl-1b-v2", batch_size: int = 32, top_k: int = 100, modality: str = "image_text"):
         self.top_k = top_k
-        self.embedding_model = NemotronEmbedVL(model_name=model_name, batch_size=batch_size)
+        self.modality = modality
+        self.embedding_model = NemotronEmbedVL(model_name=model_name, batch_size=batch_size, modality=self.modality)
 
     def retrieve(
         self,
@@ -296,12 +330,11 @@ class NemotronEmbedVLPipeline(BasePipeline):
 
         Returns:
             Dictionary mapping query_id to {corpus_id: score} for top-k results
-        """     
-        import pdb; pdb.set_trace()
+        """
         start_time = time.time()
 
         # Step 1: Embed corpus (GPU → CPU)
-        corpus_embeddings = self.embedding_model._embed_corpus_batched(corpus_images)
+        corpus_embeddings = self.embedding_model._embed_corpus_batched(corpus_images, corpus_texts)
 
         # Step 2: Embed queries (GPU → CPU)
         query_embeddings = self.embedding_model._embed_queries_batched(queries)
