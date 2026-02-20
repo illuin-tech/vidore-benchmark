@@ -34,7 +34,9 @@ def evaluate_single_dataset(dataset_name: str, pipeline, language: str = None) -
     """
     try:
         # Load dataset
-        query_ids, queries, corpus_ids, corpus_images, corpus_texts, qrels, query_languages = load_vidore_dataset(dataset_name, language=language)
+        query_ids, queries, corpus_ids, corpus_images, corpus_texts, qrels, query_languages = load_vidore_dataset(
+            dataset_name, language=language
+        )
 
         # Run evaluation
         results = evaluate_retrieval(

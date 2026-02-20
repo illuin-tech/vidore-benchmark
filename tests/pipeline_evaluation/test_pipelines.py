@@ -3,11 +3,8 @@ Tests for example pipeline implementations.
 """
 
 import json
-import tempfile
-from pathlib import Path
 
 import pytest
-from PIL import Image
 
 from vidore_benchmark.pipeline_evaluation.base_pipeline import BasePipeline
 from vidore_benchmark.pipeline_evaluation.pipelines.file_based_pipeline import FileBasedPipeline
@@ -275,9 +272,7 @@ class TestFileBasedPipeline:
 
     def test_scores_preserved_exactly(self, tmp_path):
         """Test that score values are preserved exactly."""
-        run_data = {
-            "q1": {"doc1": 0.123456789, "doc2": 1e-10, "doc3": 0.999999999}
-        }
+        run_data = {"q1": {"doc1": 0.123456789, "doc2": 1e-10, "doc3": 0.999999999}}
         file_path = tmp_path / "precise_scores.json"
         with open(file_path, "w") as f:
             json.dump(run_data, f)

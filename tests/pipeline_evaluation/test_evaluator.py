@@ -2,8 +2,7 @@
 Tests for pipeline evaluation evaluator functions.
 """
 
-from typing import Any, Dict, List, Optional, Tuple
-from unittest.mock import MagicMock
+from typing import Any, Dict, List, Optional
 
 import pytest
 
@@ -311,9 +310,9 @@ class TestAggregateResults:
         assert aggregated["overall"]["ndcg_cut_10"] == 0.75
 
         # English average: (0.9 + 0.8) / 2 = 0.85
-        assert aggregated["by_language"]["english"]["ndcg_cut_10"] == (0.9+0.8) / 2
+        assert aggregated["by_language"]["english"]["ndcg_cut_10"] == (0.9 + 0.8) / 2
         # French average: (0.7 + 0.6) / 2 = 0.65
-        assert aggregated["by_language"]["french"]["ndcg_cut_10"] == (0.7+0.6) / 2
+        assert aggregated["by_language"]["french"]["ndcg_cut_10"] == (0.7 + 0.6) / 2
 
     def test_language_aggregation_includes_query_counts(self):
         """Test that language aggregation includes query counts."""

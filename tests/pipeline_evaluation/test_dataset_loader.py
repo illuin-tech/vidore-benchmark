@@ -2,7 +2,7 @@
 Tests for pipeline evaluation dataset loader.
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from PIL import Image
@@ -119,9 +119,7 @@ class TestLoadVidoreDataset:
                 "3": "french",
             }
 
-    def test_load_dataset_with_language_filter(
-        self, mock_queries_dataset, mock_corpus_dataset, mock_qrels_dataset
-    ):
+    def test_load_dataset_with_language_filter(self, mock_queries_dataset, mock_corpus_dataset, mock_qrels_dataset):
         """Test language filtering correctly filters queries and qrels."""
         with patch("vidore_benchmark.pipeline_evaluation.dataset_loader.load_dataset") as mock_load:
 
@@ -151,9 +149,7 @@ class TestLoadVidoreDataset:
             # Query languages should only have English queries
             assert all(lang == "english" for lang in query_languages.values())
 
-    def test_load_dataset_with_french_filter(
-        self, mock_queries_dataset, mock_corpus_dataset, mock_qrels_dataset
-    ):
+    def test_load_dataset_with_french_filter(self, mock_queries_dataset, mock_corpus_dataset, mock_qrels_dataset):
         """Test filtering for French queries only."""
         with patch("vidore_benchmark.pipeline_evaluation.dataset_loader.load_dataset") as mock_load:
 
@@ -205,9 +201,7 @@ class TestLoadVidoreDataset:
             assert "No queries found" in str(exc_info.value)
             assert "german" in str(exc_info.value)
 
-    def test_corpus_images_and_texts_same_length(
-        self, mock_queries_dataset, mock_qrels_dataset
-    ):
+    def test_corpus_images_and_texts_same_length(self, mock_queries_dataset, mock_qrels_dataset):
         """Test that corpus images and texts must have same length."""
         img = Image.new("RGB", (100, 100), color="red")
         # Mismatched corpus - more images than texts

@@ -69,7 +69,12 @@ class FileBasedPipeline(BasePipeline):
                 )
 
     def retrieve(
-        self, query_ids: List[str], queries: List[str], corpus_ids: List[str], corpus_images: List[Any], corpus_texts: List[Any]
+        self,
+        query_ids: List[str],
+        queries: List[str],
+        corpus_ids: List[str],
+        corpus_images: List[Any],
+        corpus_texts: List[Any],
     ) -> Dict[str, Dict[str, float]]:
         """
         Return pre-computed retrieval results from the loaded file.
