@@ -32,7 +32,8 @@ class RandomPipeline(BasePipeline):
         query_ids: List[str],
         queries: List[str],
         corpus_ids: List[str],
-        corpus: List[Any],
+        corpus_images: List[Any],
+        corpus_texts: List[Any],
     ) -> Dict[str, Dict[str, float]]:
         """
         Retrieve random corpus items for each query.

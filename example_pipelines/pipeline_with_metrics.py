@@ -38,7 +38,8 @@ class PipelineWithMetrics(BasePipeline):
         query_ids: List[str],
         queries: List[str],
         corpus_ids: List[str],
-        corpus: List[Any],
+        corpus_images: List[Any],
+        corpus_texts: List[Any],
     ) -> Tuple[Dict[str, Dict[str, float]], Optional[Dict[str, Any]]]:
         """
         Retrieve relevant corpus items and optionally track metrics.
@@ -104,7 +105,8 @@ class SimpleExamplePipeline(BasePipeline):
         query_ids: List[str],
         queries: List[str],
         corpus_ids: List[str],
-        corpus: List[Any],
+        corpus_images: List[Any],
+        corpus_texts: List[Any],
     ) -> Dict[str, Dict[str, float]]:
         """Simple retrieval without additional metrics."""
         results = {}
