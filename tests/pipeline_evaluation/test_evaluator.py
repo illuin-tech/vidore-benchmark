@@ -307,7 +307,7 @@ class TestAggregateResults:
         assert "french" in aggregated["by_language"]
 
         # Overall average
-        assert aggregated["overall"]["ndcg_cut_10"] == 0.75
+        assert aggregated["overall"]["ndcg_cut_10"] == (0.9 + 0.8 + 0.7 + 0.6) / 4
 
         # English average: (0.9 + 0.8) / 2 = 0.85
         assert aggregated["by_language"]["english"]["ndcg_cut_10"] == (0.9 + 0.8) / 2
@@ -382,9 +382,9 @@ class TestAggregateResults:
 
         aggregated = aggregate_results(results)
 
-        assert aggregated["ndcg_cut_5"] == 0.8
-        assert aggregated["ndcg_cut_10"] == 0.85
-        assert aggregated["map"] == 0.7
+        assert aggregated["ndcg_cut_5"] == (0.9 + 0.7) / 2
+        assert aggregated["ndcg_cut_10"] == (0.95 + 0.75) / 2
+        assert aggregated["map"] == (0.8 + 0.6) / 2
 
     def test_timing_only_results(self):
         """Test results that only contain timing info."""
