@@ -267,7 +267,8 @@ class ColEmbedPipeline(BasePipeline):
         query_ids: List[str],
         queries: List[str],
         corpus_ids: List[str],
-        corpus: List[Any],
+        corpus_images: List[Any],
+        corpus_texts: List[Any],
     ) -> Dict[str, Dict[str, float]]:
         """
         Retrieve relevant corpus items for each query using late-interaction.
@@ -282,7 +283,8 @@ class ColEmbedPipeline(BasePipeline):
             query_ids: List of query identifiers
             queries: List of query texts
             corpus_ids: List of corpus item identifiers
-            corpus: List of PIL.Image objects
+            corpus_images: List of PIL.Image objects
+            corpus_texts: List of str objects
 
         Returns:
             Dictionary mapping query_id to {corpus_id: score} for top-k results
@@ -290,7 +292,7 @@ class ColEmbedPipeline(BasePipeline):
         start_time = time.time()
 
         # Step 1: Embed corpus (GPU → CPU)
-        corpus_embeddings = self._embed_corpus_batched(corpus)
+        corpus_embeddings = self._embed_corpus_batched(corpus_images)
 
         # Step 2: Embed queries (GPU → CPU)
         query_embeddings = self._embed_queries_batched(queries)
