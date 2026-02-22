@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: MIT.
+
 """
 Retrieval visual retrieval pipeline for Vidore v3 Evaluation using NVIDIA's nvidia/llama-nemotron-embed-vl-1b-v2 embedding model + nvidia/llama-nemotron-rerank-vl-1b-v2 reranker model
 

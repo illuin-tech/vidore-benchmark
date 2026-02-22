@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: MIT.
+
 """
 Pipeline for Vidore v3 Evaluation using nvidia/llama-nemotron-embed-vl-1b-v2
 
