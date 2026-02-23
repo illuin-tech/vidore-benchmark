@@ -47,7 +47,7 @@ class Qwen3Embedding8BPipeline(BasePipeline):
 
     def __init__(
         self,
-        batch_size: int = 32,
+        batch_size: int = 1,
         scoring_batch_size: int = 8,
         top_k: int = 100,
         device: str = "auto",
@@ -86,7 +86,11 @@ class Qwen3Embedding8BPipeline(BasePipeline):
             try:
                 self.model = SentenceTransformer(
                     "Qwen/Qwen3-Embedding-8B",
-                    model_kwargs={"attn_implementation": "flash_attention_2", "device_map": "auto"},
+                    model_kwargs={
+                        "attn_implementation": "flash_attention_2",
+                        "device_map": "auto",
+                        "torch_dtype": "torch.bfloat16",
+                    },
                     tokenizer_kwargs={"padding_side": "left"},
                 )
                 print("Model loaded with flash attention!")

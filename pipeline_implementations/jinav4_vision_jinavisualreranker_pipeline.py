@@ -96,6 +96,7 @@ class JinaV4VisionJinaVisualRerankerPipeline(BasePipeline):
             "jinaai/jina-embeddings-v4",
             trust_remote_code=True,
             torch_dtype=torch.bfloat16,
+            attn_implementation="flash_attention_2",
         ).to(self.device)
         self.retriever.eval()
         print("Retriever model loaded successfully!")
@@ -134,9 +135,10 @@ class JinaV4VisionJinaVisualRerankerPipeline(BasePipeline):
             images=images,
             task="retrieval",
             batch_size=self.batch_size,
+            return_multivector=True,
         )
 
-        return torch.vstack(embeddings)
+        return embeddings
 
     def _embed_queries(self, queries: List[str]) -> torch.Tensor:
         """
@@ -146,7 +148,7 @@ class JinaV4VisionJinaVisualRerankerPipeline(BasePipeline):
             queries: List of query strings
 
         Returns:
-            Tensor of embeddings
+            List of tensors, each of shape [num_tokens, embed_dim] for each query
         """
         # Use jina-embeddings-v4 encode_text API with retrieval task
         embeddings = self.retriever.encode_text(
@@ -154,49 +156,72 @@ class JinaV4VisionJinaVisualRerankerPipeline(BasePipeline):
             task="retrieval",
             prompt_name="query",
             batch_size=self.batch_size,
+            return_multivector=True,
         )
 
-        return torch.vstack(embeddings)
+        return embeddings
 
-    def _compute_similarity(self, query_embeddings: torch.Tensor, corpus_embeddings: torch.Tensor) -> torch.Tensor:
+    def _compute_similarity(
+        self, query_embeddings: List[torch.Tensor], corpus_embeddings: List[torch.Tensor]
+    ) -> torch.Tensor:
         """
-        Compute cosine similarity between queries and corpus in batches.
+        Compute max similarity between multi-vector queries and corpus.
+
+        For multi-vector embeddings, the similarity between a query and a document
+        is computed as the average of the maximum cosine similarity for each query
+        token across all document tokens (ColBERT-style late interaction).
 
         Args:
-            query_embeddings: [num_queries, embed_dim]
-            corpus_embeddings: [num_corpus, embed_dim]
+            query_embeddings: List of [num_query_tokens, embed_dim] tensors
+            corpus_embeddings: List of [num_doc_tokens, embed_dim] tensors
 
         Returns:
-            scores: [num_queries, num_corpus] tensor of similarity scores
+            scores: [num_queries, num_corpus] tensor of max similarity scores
         """
-        # Normalize embeddings for cosine similarity
-        query_embeddings = torch.nn.functional.normalize(query_embeddings, p=2, dim=1)
-        corpus_embeddings = torch.nn.functional.normalize(corpus_embeddings, p=2, dim=1)
+        num_queries = len(query_embeddings)
+        num_corpus = len(corpus_embeddings)
 
-        num_queries = query_embeddings.shape[0]
-        num_corpus = corpus_embeddings.shape[0]
+        # Normalize all embeddings for cosine similarity
+        query_embeddings_norm = [torch.nn.functional.normalize(q, p=2, dim=1) for q in query_embeddings]
+        corpus_embeddings_norm = [torch.nn.functional.normalize(c, p=2, dim=1) for c in corpus_embeddings]
 
-        # Process in batches to manage memory
-        all_scores = []
+        # Compute max similarity for each query-corpus pair
+        scores = torch.zeros(num_queries, num_corpus, device=self.device)
 
-        for q_start in range(0, num_queries, self.scoring_batch_size):
-            q_end = min(q_start + self.scoring_batch_size, num_queries)
-            query_batch = query_embeddings[q_start:q_end]
+        for q_idx in range(num_queries):
+            query_vecs = query_embeddings_norm[q_idx]  # [num_query_tokens, embed_dim]
 
-            batch_scores = []
             for c_start in range(0, num_corpus, self.scoring_batch_size):
                 c_end = min(c_start + self.scoring_batch_size, num_corpus)
-                corpus_batch = corpus_embeddings[c_start:c_end]
+                batch_corpus = corpus_embeddings_norm[c_start:c_end]
+                batch_size = len(batch_corpus)
 
-                # Compute cosine similarity for this batch
-                scores_chunk = torch.mm(query_batch, corpus_batch.T)
-                batch_scores.append(scores_chunk)
+                # Pad corpus embeddings to same length for batched computation
+                max_doc_tokens = max(c.size(0) for c in batch_corpus)
+                embed_dim = batch_corpus[0].size(1)
 
-            # Concatenate corpus dimension
-            all_scores.append(torch.cat(batch_scores, dim=1))
+                # Create padded tensor and mask
+                padded_corpus = torch.zeros(batch_size, max_doc_tokens, embed_dim, device=self.device)
+                mask = torch.zeros(batch_size, max_doc_tokens, device=self.device, dtype=torch.bool)
 
-        # Concatenate query dimension
-        scores = torch.cat(all_scores, dim=0)
+                for i, c in enumerate(batch_corpus):
+                    num_tokens = c.size(0)
+                    padded_corpus[i, :num_tokens] = c
+                    mask[i, :num_tokens] = True
+
+                # Compute similarities: [batch_size, num_query_tokens, max_doc_tokens]
+                sim_matrix = torch.einsum("qd,bcd->bqc", query_vecs, padded_corpus)
+
+                # Apply mask: set padded positions to -inf so they don't affect max
+                sim_matrix = sim_matrix.masked_fill(~mask.unsqueeze(1), float("-inf"))
+
+                # Max over doc tokens for each query token: [batch_size, num_query_tokens]
+                max_per_query_token = sim_matrix.max(dim=-1).values
+
+                # Average over query tokens: [batch_size]
+                batch_scores = max_per_query_token.mean(dim=-1)
+
+                scores[q_idx, c_start:c_end] = batch_scores
 
         return scores
 
