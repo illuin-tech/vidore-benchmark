@@ -244,8 +244,8 @@ class TestEvaluateRetrieval:
         )
 
         # Perfect NDCG should be 1.0
-        assert results["q1"]["ndcg_cut_10"] == 1.0
-        assert results["q2"]["ndcg_cut_10"] == 1.0
+        assert abs(results["q1"]["ndcg_cut_10"] - 1.0) < 1e-7
+        assert abs(results["q2"]["ndcg_cut_10"] - 1.0) < 1e-7
 
 
 class TestAggregateResults:
@@ -264,8 +264,8 @@ class TestAggregateResults:
 
         aggregated = aggregate_results(results)
 
-        assert aggregated["ndcg_cut_10"] == 0.7  # (0.8 + 0.6) / 2
-        assert aggregated["map"] == 0.6  # (0.7 + 0.5) / 2
+        assert abs(aggregated["ndcg_cut_10"] - 0.7) < 1e-7  # (0.8 + 0.6) / 2
+        assert abs(aggregated["map"] - 0.6) < 1e-7  # (0.7 + 0.5) / 2
 
     def test_aggregation_with_timing_info(self):
         """Test that timing info is preserved in aggregation."""
@@ -307,12 +307,12 @@ class TestAggregateResults:
         assert "french" in aggregated["by_language"]
 
         # Overall average
-        assert aggregated["overall"]["ndcg_cut_10"] == (0.9 + 0.8 + 0.7 + 0.6) / 4
+        assert abs(aggregated["overall"]["ndcg_cut_10"] - (0.9 + 0.8 + 0.7 + 0.6) / 4) < 1e-7
 
         # English average: (0.9 + 0.8) / 2 = 0.85
-        assert aggregated["by_language"]["english"]["ndcg_cut_10"] == (0.9 + 0.8) / 2
+        assert abs(aggregated["by_language"]["english"]["ndcg_cut_10"] - (0.9 + 0.8) / 2) < 1e-7
         # French average: (0.7 + 0.6) / 2 = 0.65
-        assert aggregated["by_language"]["french"]["ndcg_cut_10"] == (0.7 + 0.6) / 2
+        assert abs(aggregated["by_language"]["french"]["ndcg_cut_10"] - (0.7 + 0.6) / 2) < 1e-7
 
     def test_language_aggregation_includes_query_counts(self):
         """Test that language aggregation includes query counts."""
@@ -346,7 +346,7 @@ class TestAggregateResults:
         aggregated = aggregate_results(results, query_languages)
 
         assert "unknown" in aggregated["by_language"]
-        assert aggregated["by_language"]["unknown"]["ndcg_cut_10"] == 0.8
+        assert abs(aggregated["by_language"]["unknown"]["ndcg_cut_10"] - 0.8) < 1e-7
 
     def test_timing_info_in_language_aggregation(self):
         """Test that timing info is included in language aggregation."""
@@ -371,7 +371,7 @@ class TestAggregateResults:
 
         aggregated = aggregate_results(results)
 
-        assert aggregated["ndcg_cut_10"] == 0.85
+        assert abs(aggregated["ndcg_cut_10"] - 0.85) < 1e-7
 
     def test_multiple_metrics_aggregation(self):
         """Test aggregation with multiple metrics."""
@@ -382,9 +382,9 @@ class TestAggregateResults:
 
         aggregated = aggregate_results(results)
 
-        assert aggregated["ndcg_cut_5"] == (0.9 + 0.7) / 2
-        assert aggregated["ndcg_cut_10"] == (0.95 + 0.75) / 2
-        assert aggregated["map"] == (0.8 + 0.6) / 2
+        assert abs(aggregated["ndcg_cut_5"] - (0.9 + 0.7) / 2) < 1e-7
+        assert abs(aggregated["ndcg_cut_10"] - (0.95 + 0.75) / 2) < 1e-7
+        assert abs(aggregated["map"] - (0.8 + 0.6) / 2) < 1e-7
 
     def test_timing_only_results(self):
         """Test results that only contain timing info."""

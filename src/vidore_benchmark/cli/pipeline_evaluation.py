@@ -352,9 +352,11 @@ def evaluate(
         dataset_short = dataset_name.split("/")[-1]
         if not os.path.exists("results"):
             os.makedirs("results")
-        if not os.path.exists(f"results/{pipeline_name}"):
-            os.makedirs(f"results/{pipeline_name}")
-        output_file = f"results/{pipeline_name}/{dataset_short}.json"
+        if not os.path.exists(f"results/metrics"):
+            os.makedirs(f"results/metrics")
+        if not os.path.exists(f"results/metrics/{pipeline_name}"):
+            os.makedirs(f"results/metrics/{pipeline_name}")
+        output_file = f"results/metrics/{pipeline_name}/{dataset_short}.json"
 
     output_path = Path(output_file)
     output_data = {
@@ -373,6 +375,7 @@ def evaluate(
         json.dump(output_data, f, indent=2)
 
     print(f"✓ Results saved to: {output_path}\n")
+    print(f"To submit your pipeline to the leaderboard, please also write a description file following the template in 'results/pipeline_descriptions/' and submit a pull request to the GitHub repository.")
 
 
 @app.command()
