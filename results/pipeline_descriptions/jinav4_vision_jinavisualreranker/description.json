@@ -1,11 +1,11 @@
 {
-    "pipeline_name": "nvidia_jinav4_vision_jinavisualretriever",
-    "description": "Retrieves relevant documents based on image embeddings using jinaai/jinav4 and jinaai/jinavisualretriever for reranking.",
+    "pipeline_name": "nvidia_jinav4_vision_jina-reranker-m0",
+    "description": "Retrieves relevant documents based on image embeddings using jinaai/jina-embeddings-v4 and jinaai/jina-reranker-m0 for reranking.",
     "nodes": [
         {
             "id": "retriever_node",
             "component_type": "Retriever",
-            "model_name": "jinaai/jinav4",
+            "model_name": "jinaai/jina-embeddings-v4",
             "modalities": [
                 "visual"
             ],
@@ -14,7 +14,7 @@
         {
             "id": "reranker_node",
             "component_type": "Reranker",
-            "model_name": "jinaai/jinavisualretriever",
+            "model_name": "jinaai/jina-reranker-m0",
             "modalities": [
                 "visual"
             ],

@@ -5,7 +5,7 @@
         {
             "id": "retriever_node",
             "component_type": "Retriever",
-            "model_name": "qwen/qwen3-embedding-8b",
+            "model_name": "Qwen/Qwen3-Embedding-8B",
             "modalities": [
                 "textual"
             ],

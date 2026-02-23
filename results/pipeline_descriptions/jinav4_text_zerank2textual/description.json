@@ -1,11 +1,11 @@
 {
     "pipeline_name": "nvidia_jinav4_text_zerank2_textual",
-    "description": "Retrieves relevant documents based on textual embeddings using jinaai/jinav4 on text transcription and zerank2 for reranking.",
+    "description": "Retrieves relevant documents based on textual embeddings using jinaai/jina-embeddings-v4 on text transcription and zerank2 for reranking.",
     "nodes": [
         {
             "id": "retriever_node",
             "component_type": "Retriever",
-            "model_name": "jinaai/jinav4",
+            "model_name": "jinaai/jina-embeddings-v4",
             "modalities": [
                 "text"
             ],
@@ -14,7 +14,7 @@
         {
             "id": "reranker_node",
             "component_type": "Reranker",
-            "model_name": "zeroentropy/zerank2",
+            "model_name": "zeroentropy/zerank-2",
             "modalities": [
                 "text"
             ],
