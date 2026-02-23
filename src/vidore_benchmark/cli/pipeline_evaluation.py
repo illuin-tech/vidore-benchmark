@@ -352,8 +352,8 @@ def evaluate(
         dataset_short = dataset_name.split("/")[-1]
         if not os.path.exists("results"):
             os.makedirs("results")
-        if not os.path.exists(f"results/metrics"):
-            os.makedirs(f"results/metrics")
+        if not os.path.exists("results/metrics"):
+            os.makedirs("results/metrics")
         if not os.path.exists(f"results/metrics/{pipeline_name}"):
             os.makedirs(f"results/metrics/{pipeline_name}")
         output_file = f"results/metrics/{pipeline_name}/{dataset_short}.json"
@@ -375,7 +375,9 @@ def evaluate(
         json.dump(output_data, f, indent=2)
 
     print(f"✓ Results saved to: {output_path}\n")
-    print(f"To submit your pipeline to the leaderboard, please also write a description file following the template in 'results/pipeline_descriptions/' and submit a pull request to the GitHub repository.")
+    print(
+        "To submit your pipeline to the leaderboard, please also write a description file following the template in 'results/pipeline_descriptions/' and submit a pull request to the GitHub repository."
+    )
 
 
 @app.command()
@@ -447,7 +449,7 @@ def evaluate_all(
 
         try:
             # Load dataset
-            query_ids, queries, corpus_ids, corpus, qrels, query_languages = load_vidore_dataset(
+            query_ids, queries, corpus_ids, corpus_images, corpus_texts, qrels, query_languages = load_vidore_dataset(
                 dataset_name=dataset_name, split=split, language=language
             )
 
@@ -468,7 +470,8 @@ def evaluate_all(
                 query_ids=query_ids,
                 queries=queries,
                 corpus_ids=corpus_ids,
-                corpus=corpus,
+                corpus_images=corpus_images,
+                corpus_texts=corpus_texts,
                 qrels=qrels,
                 metrics=[
                     "ndcg_cut_1",
