@@ -136,7 +136,7 @@ class JinaV4VisionJinaVisualRerankerPipeline(BasePipeline):
             batch_size=self.batch_size,
         )
 
-        return torch.tensor(embeddings)
+        return torch.vstack(embeddings)
 
     def _embed_queries(self, queries: List[str]) -> torch.Tensor:
         """
@@ -156,7 +156,7 @@ class JinaV4VisionJinaVisualRerankerPipeline(BasePipeline):
             batch_size=self.batch_size,
         )
 
-        return torch.tensor(embeddings)
+        return torch.vstack(embeddings)
 
     def _compute_similarity(self, query_embeddings: torch.Tensor, corpus_embeddings: torch.Tensor) -> torch.Tensor:
         """
