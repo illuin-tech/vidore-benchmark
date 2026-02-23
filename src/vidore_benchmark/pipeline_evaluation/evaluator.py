@@ -114,6 +114,7 @@ def aggregate_results(
                 'french': {'ndcg_cut_10': 0.82, ...},
             },
             'timing': {...}  # if timing info present
+            'infos': {...}  # if pipeline infos present
         }
         Otherwise, just returns flat aggregated metrics.
     """
@@ -123,9 +124,16 @@ def aggregate_results(
     # Extract timing information if present
     timing_info = results.pop("_timing", None)
 
+    additional_infos = results.pop("_infos", None)
+
     if not results:
         # Only timing info was present
-        return {"timing": timing_info} if timing_info else {}
+        final_result = {}
+        if timing_info:
+            final_result["timing"] = timing_info
+        if additional_infos:
+            final_result["infos"] = additional_infos
+        return final_result
 
     # Get all metric names from first query
     metric_names = list(next(iter(results.values())).keys())
@@ -140,6 +148,8 @@ def aggregate_results(
         # Add timing information back if it was present
         if timing_info:
             aggregated.update(timing_info)
+        if additional_infos:
+            aggregated.update(additional_infos)
 
         return aggregated
 
@@ -174,5 +184,6 @@ def aggregate_results(
     # Add timing information
     if timing_info:
         final_result["timing"] = timing_info
-
+    if additional_infos:
+        final_result["infos"] = additional_infos
     return final_result
