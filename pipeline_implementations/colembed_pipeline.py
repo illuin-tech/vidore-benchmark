@@ -55,21 +55,23 @@ class ColEmbedPipeline(BasePipeline):
     1. Embed corpus images on GPU in batches
     2. Move embeddings to CPU immediately to save GPU memory
     3. Embed queries on GPU
-    4. Perform ColBERT-style MaxSim scoring on CPU
+    4. Perform ColBERT-style MaxSim scoring with batched computation
 
     This approach allows handling large corpora that wouldn't fit in GPU memory
-    while maintaining reasonable scoring performance on CPU.
+    while maintaining reasonable scoring performance.
     """
 
-    def __init__(self, batch_size: int = 32, top_k: int = 100):
+    def __init__(self, batch_size: int = 32, scoring_batch_size: int = 32, top_k: int = 100):
         """
         Initialize the ColEmbed pipeline.
 
         Args:
-            batch_size: Number of items to process per GPU batch
+            batch_size: Number of items to process per GPU batch for embedding
+            scoring_batch_size: Number of items to process per batch for MaxSim scoring
             top_k: Number of top results to return per query
         """
         self.batch_size = batch_size
+        self.scoring_batch_size = scoring_batch_size
         self.top_k = top_k
         self.device = "cuda"
 
@@ -219,7 +221,7 @@ class ColEmbedPipeline(BasePipeline):
 
     def _compute_maxsim_scores(self, query_embeddings: torch.Tensor, corpus_embeddings: torch.Tensor) -> torch.Tensor:
         """
-        Compute ColBERT-style MaxSim scores between queries and corpus on CPU.
+        Compute ColBERT-style MaxSim scores between queries and corpus with batched computation.
 
         Args:
             query_embeddings: [num_queries, query_seq_len, embed_dim]
@@ -228,7 +230,7 @@ class ColEmbedPipeline(BasePipeline):
         Returns:
             scores: [num_queries, num_corpus] tensor of similarity scores
         """
-        print("\nComputing MaxSim scores on CPU...")
+        print("\nComputing MaxSim scores with batched computation...")
         print(f"  Query embeddings: {query_embeddings.shape}")
         print(f"  Corpus embeddings: {corpus_embeddings.shape}")
 
@@ -236,31 +238,39 @@ class ColEmbedPipeline(BasePipeline):
         num_corpus = corpus_embeddings.shape[0]
 
         # Initialize scores tensor
-        scores = torch.zeros(num_queries, num_corpus, dtype=torch.float32)
+        scores: List[torch.Tensor] = []
 
-        # Process each query
-        for q_idx in range(num_queries):
-            if q_idx % 10 == 0:
-                print(f"  Processing query {q_idx + 1}/{num_queries}...")
+        # Process queries in batches
+        for q_start in range(0, num_queries, self.scoring_batch_size):
+            q_end = min(q_start + self.scoring_batch_size, num_queries)
+            query_batch = query_embeddings[q_start:q_end]  # [batch_q, q_seq, embed_dim]
 
-            # Get query embedding: [query_seq_len, embed_dim]
-            q_emb = query_embeddings[q_idx]
+            if q_start % (self.scoring_batch_size * 5) == 0:
+                print(f"  Processing queries {q_start + 1}-{q_end}/{num_queries}...")
 
-            # Compute similarity with all corpus items
-            # For each query token, find max similarity with corpus tokens
-            for c_idx in range(num_corpus):
-                # Get corpus embedding: [corpus_seq_len, embed_dim]
-                c_emb = corpus_embeddings[c_idx]
+            batch_scores = []
 
-                # Compute token-level similarities: [query_seq_len, corpus_seq_len]
-                token_sims = torch.matmul(q_emb, c_emb.T)
+            # Process corpus in batches
+            for c_start in range(0, num_corpus, self.scoring_batch_size):
+                c_end = min(c_start + self.scoring_batch_size, num_corpus)
+                corpus_batch = corpus_embeddings[c_start:c_end]  # [batch_c, c_seq, embed_dim]
 
-                # MaxSim: for each query token, take max over corpus tokens, then sum
-                maxsim_score = token_sims.max(dim=1)[0].sum()
-                scores[q_idx, c_idx] = maxsim_score.item()
+                # Compute token-level similarities: [batch_q, batch_c, q_seq, c_seq]
+                # Using einsum: for each query token and corpus token, compute dot product
+                token_sims = torch.einsum("bnd,csd->bcns", query_batch, corpus_batch)
 
-        print(f"Scoring complete. Score range: [{scores.min():.4f}, {scores.max():.4f}]")
-        return scores
+                # MaxSim: max over corpus tokens (dim=3), then sum over query tokens (dim=2)
+                chunk_scores = token_sims.max(dim=3)[0].sum(dim=2)  # [batch_q, batch_c]
+                batch_scores.append(chunk_scores)
+
+            # Concatenate corpus dimension
+            scores.append(torch.cat(batch_scores, dim=1))
+
+        # Concatenate query dimension
+        all_scores = torch.cat(scores, dim=0)
+        print(f"Scoring complete. Score range: [{all_scores.min():.4f}, {all_scores.max():.4f}]")
+
+        return all_scores
 
     def retrieve(
         self,
