@@ -152,6 +152,11 @@
         "recip_rank": 0.745062,
         "map": 0.54219
       }
+    },
+    "timing": {
+      "total_retrieval_time_milliseconds": 7.529020309448242,
+      "num_queries": 1908,
+      "queries_per_second": 253419.42531429115
     }
   }
 }
