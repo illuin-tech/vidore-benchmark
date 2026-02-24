@@ -312,7 +312,7 @@ class JinaV4TextZeRank2TextualPipeline(BasePipeline):
             "query_embed_time_ms": query_embed_time * 1000,
             "similarity_time_ms": similarity_time * 1000,
             "rerank_time_ms": rerank_time * 1000,
-            "total_time_ms": total_time * 1000,
+            "total_search_time_ms": total_time * 1000,
             "retriever_model": "jinaai/jina-embeddings-v4",
             "reranker_model": "zeroentropy/zerank-2",
             "device": self.device,

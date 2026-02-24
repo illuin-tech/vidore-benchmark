@@ -335,9 +335,9 @@ class ColEmbedPipeline(BasePipeline):
         print(f"Average time per query: {elapsed / len(query_ids):.2f} seconds")
 
         additional_info = {
-            "embedding_time_seconds": embed_query_time,
-            "scoring_time_seconds": scoring_time,
-            "total_time_seconds": elapsed,
+            "embedding_time_ms": embed_query_time * 1000,
+            "scoring_time_ms": scoring_time * 1000,
+            "total_search_time_ms": elapsed * 1000,
         }
 
         return results, additional_info
