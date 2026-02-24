@@ -18,8 +18,6 @@ import typer
 
 from vidore_benchmark.pipeline_evaluation import (
     BasePipeline,
-    FileBasedPipeline,
-    RandomPipeline,
     aggregate_results,
     evaluate_retrieval,
     get_available_datasets,
@@ -215,11 +213,11 @@ def evaluate(
     # Load the pipeline
     try:
         if pipeline_type == "random":
-            logger.info("Loading RandomPipeline")
-            pipeline = RandomPipeline(**kwargs)
+            module_path = "pipeline_implementations/random_pipeline.py"
+            pipeline = _load_pipeline_from_module(module_path, "RandomPipeline", **kwargs)
         elif pipeline_type == "file-based":
-            logger.info("Loading FileBasedPipeline")
-            pipeline = FileBasedPipeline(**kwargs)
+            module_path = "pipeline_implementations/file_based_pipeline.py"
+            pipeline = _load_pipeline_from_module(module_path, "FileBasedPipeline", **kwargs)
         elif module_path:
             logger.info(f"Loading custom pipeline from {module_path}")
             pipeline = _load_pipeline_from_module(module_path, class_name, **kwargs)
@@ -376,7 +374,8 @@ def evaluate(
 
     print(f"✓ Results saved to: {output_path}\n")
     print(
-        "To submit your pipeline to the leaderboard, please also write a description file following the template in 'results/pipeline_descriptions/' and submit a pull request to the GitHub repository."
+        "To submit your pipeline to the leaderboard, please also write a description file following the template in"
+        " 'results/pipeline_descriptions/' and submit a pull request to the GitHub repository."
     )
 
 
@@ -455,9 +454,11 @@ def evaluate_all(
 
             # Load pipeline (create fresh instance for each dataset)
             if pipeline_type == "random":
-                pipeline = RandomPipeline(**kwargs)
+                module_path = "pipeline_implementations/random_pipeline.py"
+                pipeline = _load_pipeline_from_module(module_path, "RandomPipeline", **kwargs)
             elif pipeline_type == "file-based":
-                pipeline = FileBasedPipeline(**kwargs)
+                module_path = "pipeline_implementations/file_based_pipeline.py"
+                pipeline = _load_pipeline_from_module(module_path, "FileBasedPipeline", **kwargs)
             elif module_path:
                 pipeline = _load_pipeline_from_module(module_path, class_name, **kwargs)
             else:

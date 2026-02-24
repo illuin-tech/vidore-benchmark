@@ -1,6 +1,5 @@
 from .pipeline_evaluation import (
     BasePipeline,
-    FileBasedPipeline,
     aggregate_results,
     evaluate_retrieval,
     get_available_datasets,
