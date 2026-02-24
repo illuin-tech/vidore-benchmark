@@ -91,13 +91,13 @@ def evaluate_retrieval(
         num_queries = len(query_ids)
         num_corpus = len(corpus_ids)
         results["_timing"] = {
-            "total_retrieval_time_milliseconds": total_time,
-            "indexing_time_milliseconds": indexing_time,
-            "search_time_milliseconds": search_time,
+            "total_retrieval_time_milliseconds": total_time * 1000,
+            "indexing_time_milliseconds": indexing_time * 1000,
+            "search_time_milliseconds": search_time * 1000,
             "num_queries": num_queries,
             "num_corpus": num_corpus,
-            "throughput_indexing": indexing_time / num_corpus if num_corpus > 0 else None,
-            "throughput_search": search_time / num_queries if num_queries > 0 else None,
+            "throughput_indexing": (indexing_time * 1000) / num_corpus if num_corpus > 0 else None,
+            "throughput_search": (search_time * 1000) / num_queries if num_queries > 0 else None,
         }
     # Add additional pipeline infos if provided
     if infos is not None:
