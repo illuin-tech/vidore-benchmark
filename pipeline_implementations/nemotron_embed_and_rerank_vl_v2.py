@@ -30,7 +30,7 @@ Usage:
 
 import sys
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 from collections import OrderedDict
 from tqdm import tqdm
 
@@ -391,6 +391,8 @@ class NemotronEmbedRerankVLPipeline(BasePipeline):
                  modality: str = "image_text"):
         self.top_k = top_k   
         self.modality = modality
+        self.batch_size = batch_size
+        self.ranker_batch_size = ranker_batch_size
         self.embedding_model = NemotronEmbedVL(model_name="nvidia/llama-nemotron-embed-vl-1b-v2", 
                                                batch_size=batch_size, 
                                                modality=self.modality)
@@ -398,47 +400,65 @@ class NemotronEmbedRerankVLPipeline(BasePipeline):
                                         batch_size=ranker_batch_size,
                                         modality=self.modality)
         
-
-    def retrieve(
-        self,
-        query_ids: List[str],
-        queries: List[str],
-        corpus_ids: List[str],
-        corpus_images: List[Any],
-        corpus_texts: List[str],
-    ) -> Dict[str, Dict[str, float]]:
+    def index(self, corpus_ids, corpus_images, corpus_texts):
         """
-        Retrieve relevant corpus items for each query using dense retrieval.
+        Store corpus data for use in search().
+
+        This pipeline does not require additional indexing or preprocessing steps,
+        so we simply store the corpus data for use during retrieval.
+
+        Args:
+            corpus_ids: List of corpus item identifiers
+            corpus_images: List of PIL.Image objects
+            corpus_texts: List of markdown text strings (not used in this vision pipeline)
+        """
+        self.corpus_ids = corpus_ids
+        self.corpus_images = corpus_images
+        self.corpus_texts = corpus_texts
+
+        # Step 1: Embed corpus (GPU → CPU)
+        corpus_embed_start = time.time()
+        print(f"\nEmbedding {len(self.corpus_images)} corpus images...")
+        self.corpus_embeddings = self.embedding_model._embed_corpus_batched(self.corpus_images, self.corpus_texts)
+        corpus_embed_time = time.time() - corpus_embed_start
+        print(
+            f"Corpus embedding complete. Shape: {self.corpus_embeddings.shape}"
+            f", Time taken: {corpus_embed_time:.2f} seconds"
+        )
+        
+    def search(self, query_ids: List[str], queries: List[str]) -> Tuple[Dict[str, Dict[str, float]], Dict[str, Any]]:
+        """
+        Retrieve relevant documents using two-stage retrieval + visual reranking.
 
         This method:
-        1. Embeds all corpus images on GPU → CPU
-        2. Embeds all queries on GPU → CPU
-        3. Computes embedding scores on CPU
-        4. Re-ranks top-k retrieved results with a reranker model
-        4. Returns top-k results per query
+        1. Embeds all queries using nvidia/llama-nemotron-embed-vl-1b-v2
+        2. Computes similarity scores and retrieves top candidates
+        3. Re-ranks results with a cross-encoder
 
         Args:
             query_ids: List of query identifiers
             queries: List of query texts
-            corpus_ids: List of corpus item identifiers
-            corpus: List of PIL.Image objects
 
         Returns:
-            Dictionary mapping query_id to {corpus_id: score} for top-k results
+            Tuple of (results_dict, infos_dict) where:
+            - results_dict: Dictionary mapping query_id to {corpus_id: score}
+            - infos_dict: Dictionary with timing and configuration metrics
         """
-        start_time = time.time()
-
-        # Step 1: Embed corpus (GPU → CPU)
-        corpus_embeddings = self.embedding_model._embed_corpus_batched(corpus_images, corpus_texts)
-
-        # Step 2: Embed queries (GPU → CPU)
+        # Step 1: Embed queries
+        print(f"\nEmbedding {len(queries)} queries...")
+        query_embed_start = time.time()
         query_embeddings = self.embedding_model._embed_queries_batched(queries)
+        query_embed_time = time.time() - query_embed_start
+        print(f"Query embedding complete in {query_embed_time:.2f} seconds. Shape: {query_embeddings.shape}")
 
-        # Step 3: Compute scores (CPU)
-        scores = self.embedding_model._compute_scores(query_embeddings, corpus_embeddings, batched_scoring=False)
+        # Step 2: Compute similarity scores
+        print("\nComputing similarity scores...")
+        retrieve_start = time.time()
+        scores = self.embedding_model._compute_scores(query_embeddings, self.corpus_embeddings, batched_scoring=False) 
+        print(f"Similarity computation complete. Score range: [{scores.min():.4f}, {scores.max():.4f}]")
 
-        ######### Retrieving with Embedding #########
-        print(f"\nRetrieving top-{self.top_k} candidates per query...")
+        # top-k results per query
+        print(f"\nExtracting top-{self.top_k} results per query...")
         results = dict()
         
         # Retrieving top-k corpus items per query using the embedding model
@@ -447,25 +467,24 @@ class NemotronEmbedRerankVLPipeline(BasePipeline):
             query_scores = scores[q_idx]
 
             # Get top-k indices and scores
-            topk_scores, topk_indices = torch.topk(query_scores, min(self.top_k, len(corpus_ids)))
+            topk_scores, topk_indices = torch.topk(query_scores, min(self.top_k, len(self.corpus_ids)))
 
             # Build results dictionary
             topk_corpus_ids = OrderedDict()
             for idx, score in zip(topk_indices, topk_scores):
-                topk_corpus_ids[corpus_ids[idx.item()]] = score.item()
+                topk_corpus_ids[self.corpus_ids[idx.item()]] = score.item()
             results[query_id] = topk_corpus_ids
 
-        elapsed = time.time() - start_time
-        print(f"\nRetrieval complete in {elapsed:.2f} seconds")
-        print(f"Average time per query: {elapsed / len(query_ids):.2f} seconds")             
+        retrieve_time = time.time() - retrieve_start
+        print(f"\nRetrieval complete in {retrieve_time:.2f} seconds")
+        print(f"Average time per query: {retrieve_time / len(query_ids):.2f} seconds")
 
-        ######### Reranking #########
+        ######### 3. Reranking #########
         print(f"\nRerank top-{self.top_k} candidates per query...")
-        
-        start_time = time.time()
+        rerank_start = time.time()
         
         query_id2idx_mapping = dict(zip(query_ids, list(range(len(query_ids)))))
-        corpus_id2idx_mapping = dict(zip(corpus_ids, list(range(len(corpus_ids)))))
+        corpus_id2idx_mapping = dict(zip(self.corpus_ids, list(range(len(self.corpus_ids)))))
         
         # Re-ranking top results
         results_reranked = dict()
@@ -475,8 +494,8 @@ class NemotronEmbedRerankVLPipeline(BasePipeline):
             query_topk_corpus_texts = []
             for corpus_id, corpus_score in topk_corpus_ids.items(): 
                 corpus_idx = corpus_id2idx_mapping[corpus_id]
-                corpus_image = corpus_images[corpus_idx]
-                corpus_text = corpus_texts[corpus_idx]
+                corpus_image = self.corpus_images[corpus_idx]
+                corpus_text = self.corpus_texts[corpus_idx]
                 query_topk_corpus_ids.append(corpus_id)
                 query_topk_corpus_images.append(corpus_image)
                 query_topk_corpus_texts.append(corpus_text)
@@ -485,8 +504,24 @@ class NemotronEmbedRerankVLPipeline(BasePipeline):
             query = queries[query_idx]
             results_reranked[query_id] = self.reranker.rerank(query, query_topk_corpus_ids, query_topk_corpus_images, query_topk_corpus_texts)
 
-        elapsed = time.time() - start_time
-        print(f"\nReranking complete in {elapsed:.2f} seconds")
-        print(f"Average time per query: {elapsed / len(query_ids):.2f} seconds")
+        rerank_time = time.time() - rerank_start
+        total_time = time.time() - query_embed_start
 
-        return results_reranked
+        print(f"\nReranking complete in {rerank_time:.2f} seconds")
+
+        # Build info dictionary with metrics
+        infos = {
+            "query_embed_time_ms": query_embed_time * 1000,
+            "retrieval_time_ms": retrieve_time * 1000,
+            "rerank_time_ms": rerank_time * 1000,
+            "total_search_time_ms": total_time * 1000,
+            "retriever_model": self.embedding_model.model_name,
+            "reranker_model": self.reranker.model_name,
+            "modality": self.modality,
+            "device": self.embedding_model.device,
+            "embedding_batch_size": self.batch_size,
+            "rerank_batch_size": self.ranker_batch_size,
+            "retriever_top_k": self.top_k
+        }
+
+        return results_reranked, infos
