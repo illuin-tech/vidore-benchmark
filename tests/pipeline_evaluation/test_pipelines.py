@@ -6,9 +6,9 @@ import json
 
 import pytest
 
+from pipeline_implementations.file_based_pipeline import FileBasedPipeline
+from pipeline_implementations.random_pipeline import RandomPipeline
 from vidore_benchmark.pipeline_evaluation.base_pipeline import BasePipeline
-from vidore_benchmark.pipeline_evaluation.pipelines.file_based_pipeline import FileBasedPipeline
-from vidore_benchmark.pipeline_evaluation.pipelines.random_pipeline import RandomPipeline
 
 
 class TestRandomPipeline:
