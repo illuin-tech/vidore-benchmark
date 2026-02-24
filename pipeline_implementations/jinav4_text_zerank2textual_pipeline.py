@@ -20,7 +20,7 @@ Usage:
 
 import sys
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List
 
 from tqdm import tqdm
 
@@ -233,60 +233,53 @@ class JinaV4TextZeRank2TextualPipeline(BasePipeline):
 
         return results
 
-    def retrieve(
-        self,
-        query_ids: List[str],
-        queries: List[str],
-        corpus_ids: List[str],
-        corpus_images: List[Any],
-        corpus_texts: List[str],
-    ) -> Tuple[Dict[str, Dict[str, float]], Optional[Dict[str, Any]]]:
+    def index(self, corpus_ids: List[str], corpus_images: List[str], corpus_texts: List[str]) -> None:
         """
-        Retrieve relevant documents using two-stage retrieval + reranking.
+        Indexing step for the pipeline. For this implementation, we don't need to do
+        anything here since we compute embeddings on the fly in the search method.
+        However, we could add caching logic here if desired.
+
+        Args:
+            corpus_ids: List of corpus item identifiers
+            corpus_images: List of corpus images
+            corpus_texts: List of corpus texts
+        """
+        self.corpus_ids = corpus_ids
+        self.corpus_texts = corpus_texts
+
+        print(f"\nEmbedding {len(corpus_texts)} corpus documents...")
+        self.corpus_embeddings = self._embed_texts(corpus_texts, is_query=False)
+        print(f"Corpus embedding complete. {len(self.corpus_embeddings)} multi-vector embeddings")
+
+    def search(self, query_ids: List[str], queries: List[str]) -> Dict[str, Dict[str, float]]:
+        """
+        Search method to perform retrieval and reranking.
 
         This method:
-        1. Embeds all corpus texts using JinaV4
-        2. Embeds all queries using JinaV4
-        3. Computes similarity scores and retrieves top candidates
-        4. Reranks candidates using ZeRank2
-        5. Returns final results
+        1. Embeds queries using JinaV4
+        2. Computes similarity scores with pre-embedded corpus
+        3. Reranks top-k candidates using ZeRank2
+        4. Returns final results
 
         Args:
             query_ids: List of query identifiers
             queries: List of query texts
-            corpus_ids: List of corpus item identifiers
-            corpus_images: List of PIL.Image objects (not used in this text-only pipeline)
-            corpus_texts: List of markdown text strings
 
         Returns:
-            Tuple of (results_dict, infos_dict) where:
-            - results_dict: Dictionary mapping query_id to {corpus_id: score}
-            - infos_dict: Dictionary with timing and configuration metrics
+            Dictionary mapping query_id to {corpus_id: score} pairs
         """
-        start_time = time.time()
-
-        # Step 1: Embed corpus texts
-        print(f"\nEmbedding {len(corpus_texts)} corpus documents...")
-        corpus_embed_start = time.time()
-        corpus_embeddings = self._embed_texts(corpus_texts, is_query=False)
-        corpus_embed_time = time.time() - corpus_embed_start
-        print(f"Corpus embedding complete. {len(corpus_embeddings)} multi-vector embeddings")
-
-        # Step 2: Embed queries
         print(f"\nEmbedding {len(queries)} queries...")
         query_embed_start = time.time()
         query_embeddings = self._embed_texts(queries, is_query=True)
         query_embed_time = time.time() - query_embed_start
         print(f"Query embedding complete. {len(query_embeddings)} multi-vector embeddings")
 
-        # Step 3: Compute similarity scores
         print("\nComputing similarity scores...")
         similarity_start = time.time()
-        scores = self._compute_similarity(query_embeddings, corpus_embeddings)
+        scores = self._compute_similarity(query_embeddings, self.corpus_embeddings)
         similarity_time = time.time() - similarity_start
         print(f"Similarity computation complete. Score range: [{scores.min():.4f}, {scores.max():.4f}]")
 
-        # Step 4: Retrieve top candidates and rerank
         print(f"\nReranking top-{self.retriever_top_k} candidates per query...")
         rerank_start = time.time()
         results = {}
@@ -294,11 +287,11 @@ class JinaV4TextZeRank2TextualPipeline(BasePipeline):
         for q_idx, query_id in tqdm(enumerate(query_ids), total=len(query_ids), desc="Reranking queries"):
             # Get top-k candidates from retrieval stage
             query_scores = scores[q_idx]
-            topk_scores, topk_indices = torch.topk(query_scores, min(self.retriever_top_k, len(corpus_ids)))
+            topk_scores, topk_indices = torch.topk(query_scores, min(self.retriever_top_k, len(self.corpus_ids)))
 
             # Get candidate texts and IDs
-            candidate_ids = [corpus_ids[idx.item()] for idx in topk_indices]
-            candidate_texts = [corpus_texts[idx.item()] for idx in topk_indices]
+            candidate_ids = [self.corpus_ids[idx.item()] for idx in topk_indices]
+            candidate_texts = [self.corpus_texts[idx.item()] for idx in topk_indices]
 
             # Rerank candidates
             reranked_results = self._rerank_candidates(queries[q_idx], candidate_texts, candidate_ids)
@@ -311,13 +304,11 @@ class JinaV4TextZeRank2TextualPipeline(BasePipeline):
                 print(f"  Processed {q_idx + 1}/{len(query_ids)} queries...")
 
         rerank_time = time.time() - rerank_start
-        total_time = time.time() - start_time
+        total_time = time.time() - query_embed_start
 
         print(f"\nRetrieval and reranking complete in {total_time:.2f} seconds")
 
-        # Build info dictionary with metrics
-        infos = {
-            "corpus_embed_time_ms": corpus_embed_time * 1000,
+        additional_info = {
             "query_embed_time_ms": query_embed_time * 1000,
             "similarity_time_ms": similarity_time * 1000,
             "rerank_time_ms": rerank_time * 1000,
@@ -331,7 +322,7 @@ class JinaV4TextZeRank2TextualPipeline(BasePipeline):
             "retriever_top_k": self.retriever_top_k,
             "final_top_k": self.final_top_k,
             "num_queries": len(query_ids),
-            "corpus_size": len(corpus_ids),
+            "corpus_size": len(self.corpus_ids),
         }
 
-        return results, infos
+        return results, additional_info

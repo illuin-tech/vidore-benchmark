@@ -49,4 +49,9 @@ class RandomPipeline(BasePipeline):
 
             results[query_id] = query_results
 
-        return results
+        additional_info = {
+            "seed": self.seed,
+            "top_k": self.top_k,
+        }
+
+        return results, additional_info

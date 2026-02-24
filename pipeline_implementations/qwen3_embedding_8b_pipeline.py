@@ -18,7 +18,7 @@ Usage:
 
 import sys
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 try:
     import torch
@@ -178,84 +178,78 @@ class Qwen3Embedding8BPipeline(BasePipeline):
 
         return scores
 
-    def retrieve(
-        self,
-        query_ids: List[str],
-        queries: List[str],
-        corpus_ids: List[str],
-        corpus_images: List[Any],
-        corpus_texts: List[str],
-    ) -> Tuple[Dict[str, Dict[str, float]], Optional[Dict[str, Any]]]:
+    def index(self, corpus_ids: List[str], corpus_images: List[Any], corpus_texts: List[str]) -> None:
         """
-        Retrieve relevant documents using dense embedding retrieval.
+        Index the corpus by embedding all texts and storing them in memory.
+        The embeddings are stored in self.corpus_embeddings and the corresponding IDs and texts are stored
+        in self.corpus_ids and self.corpus_texts for later retrieval.
+        """
+        self.corpus_ids = corpus_ids
+        self.corpus_texts = corpus_texts
 
-        This method:
-        1. Embeds all corpus texts using Qwen3-Embedding-8B
-        2. Embeds all queries using Qwen3-Embedding-8B (with query prompt)
-        3. Computes cosine similarity scores
-        4. Returns top-k results
+        print(f"\nEmbedding {len(corpus_texts)} corpus documents...")
+        corpus_embed_start = time.time()
+        self.corpus_embeddings = self._embed_documents(corpus_texts)
+        corpus_embed_time = time.time() - corpus_embed_start
+        print(
+            f"Corpus embedding complete. Shape: {self.corpus_embeddings.shape}."
+            f" Time taken: {corpus_embed_time:.2f} seconds"
+        )
+
+    def search(self, query_ids: List[str], queries: List[str]) -> Tuple[Dict[str, Dict[str, float]], Dict[str, Any]]:
+        """
+        Perform retrieval by embedding queries and computing similarity scores against the indexed corpus embeddings.
 
         Args:
             query_ids: List of query identifiers
-            queries: List of query texts
-            corpus_ids: List of corpus item identifiers
-            corpus_images: List of PIL.Image objects (not used in this text-only pipeline)
-            corpus_texts: List of markdown text strings
-
+            queries: List of query strings
         Returns:
+
             Tuple of (results_dict, infos_dict) where:
             - results_dict: Dictionary mapping query_id to {corpus_id: score}
             - infos_dict: Dictionary with timing and configuration metrics
         """
-        start_time = time.time()
-
-        # Step 1: Embed corpus texts
-        print(f"\nEmbedding {len(corpus_texts)} corpus documents...")
-        corpus_embed_start = time.time()
-        corpus_embeddings = self._embed_documents(corpus_texts)
-        corpus_embed_time = time.time() - corpus_embed_start
-        print(f"Corpus embedding complete. Shape: {corpus_embeddings.shape}")
-
-        # Step 2: Embed queries
+        # Step 1: Embed queries
         print(f"\nEmbedding {len(queries)} queries...")
         query_embed_start = time.time()
         query_embeddings = self._embed_queries(queries)
         query_embed_time = time.time() - query_embed_start
         print(f"Query embedding complete. Shape: {query_embeddings.shape}")
 
-        # Step 3: Compute similarity scores
+        # Step 2: Compute similarity scores
         print("\nComputing similarity scores...")
         scoring_start = time.time()
-        scores = self._compute_similarity(query_embeddings, corpus_embeddings)
+        scores = self._compute_similarity(query_embeddings, self.corpus_embeddings)
         scoring_time = time.time() - scoring_start
         print(f"Scoring complete. Score range: [{scores.min():.4f}, {scores.max():.4f}]")
 
-        # Step 4: Extract top-k results per query
+        # Step 3: Extract top-k results per query
         print(f"\nExtracting top-{self.top_k} results per query...")
         results = {}
 
         for q_idx, query_id in enumerate(query_ids):
             query_scores = scores[q_idx]
-            topk_scores, topk_indices = torch.topk(query_scores, min(self.top_k, len(corpus_ids)))
+            topk_scores, topk_indices = torch.topk(query_scores, min(self.top_k, len(self.corpus_ids)))
 
-            results[query_id] = {corpus_ids[idx.item()]: score.item() for idx, score in zip(topk_indices, topk_scores)}
+            results[query_id] = {
+                self.corpus_ids[idx.item()]: score.item() for idx, score in zip(topk_indices, topk_scores)
+            }
 
-        total_time = time.time() - start_time
+        total_time = time.time() - query_embed_start
         print(f"\nRetrieval complete in {total_time:.2f} seconds")
 
         # Build info dictionary with metrics
         infos = {
-            "corpus_embed_time_ms": corpus_embed_time * 1000,
             "query_embed_time_ms": query_embed_time * 1000,
             "scoring_time_ms": scoring_time * 1000,
-            "total_time_ms": total_time * 1000,
+            "total_search_time_ms": total_time * 1000,
             "retriever_model": "Qwen/Qwen3-Embedding-8B",
             "device": self.device,
             "batch_size": self.batch_size,
             "scoring_batch_size": self.scoring_batch_size,
             "top_k": self.top_k,
             "num_queries": len(query_ids),
-            "corpus_size": len(corpus_ids),
+            "corpus_size": len(self.corpus_ids),
         }
 
         return results, infos
