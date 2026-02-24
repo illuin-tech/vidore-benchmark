@@ -49,19 +49,27 @@ def evaluate_retrieval(
     if metrics is None:
         metrics = ["ndcg_cut_10"]
 
-    if track_time:
-        start_time = time.time()
+    # Call the pipeline's method to get retrieval results
+    # Indexing step
+    start_time_indexing = time.time()
+    pipeline.index(corpus_ids=corpus_ids, corpus_images=corpus_images, corpus_texts=corpus_texts)
+    indexing_time = time.time() - start_time_indexing
 
-    # Call pipeline.retrieve() and handle both single and tuple returns
-    result = pipeline.retrieve(query_ids, queries, corpus_ids, corpus_images, corpus_texts)
+    # Avoid tracking indexing time if no other thing is done than storing the corpus
+    if indexing_time < 1e-5:
+        indexing_time = 0.0
+
+    # Search step
+    start_time_search = time.time()
+    result = pipeline.search(query_ids=query_ids, queries=queries)
+    search_time = time.time() - start_time_search
+
+    total_time = indexing_time + search_time
+
     if isinstance(result, tuple):
         run, infos = result
     else:
         run, infos = result, None
-
-    if track_time:
-        end_time = time.time()
-        total_time = (end_time - start_time) * 1000  # milliseconds
 
     # Validate run format
     if not isinstance(run, dict):
@@ -81,10 +89,15 @@ def evaluate_retrieval(
     # Add timing information if tracking
     if track_time:
         num_queries = len(query_ids)
+        num_corpus = len(corpus_ids)
         results["_timing"] = {
-            "total_retrieval_time_milliseconds": total_time,
+            "total_retrieval_time_milliseconds": total_time * 1000,
+            "indexing_time_milliseconds": indexing_time * 1000,
+            "search_time_milliseconds": search_time * 1000,
             "num_queries": num_queries,
-            "queries_per_second": num_queries / (total_time / 1000) if total_time > 0 else 0.0,
+            "num_corpus": num_corpus,
+            "throughput_indexing": (indexing_time * 1000) / num_corpus if num_corpus > 0 else None,
+            "throughput_search": (search_time * 1000) / num_queries if num_queries > 0 else None,
         }
     # Add additional pipeline infos if provided
     if infos is not None:

@@ -18,7 +18,7 @@ Usage:
 
 import sys
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 try:
     import torch
@@ -159,83 +159,74 @@ class MxbaiEdgeColbertPipeline(BasePipeline):
 
         return torch.cat(scores, dim=0)
 
-    def retrieve(
-        self,
-        query_ids: List[str],
-        queries: List[str],
-        corpus_ids: List[str],
-        corpus_images: List[Any],
-        corpus_texts: List[str],
-    ) -> Tuple[Dict[str, Dict[str, float]], Optional[Dict[str, Any]]]:
+    def index(self, corpus_ids: List[str], corpus_images: List[Any], corpus_texts: List[str]) -> None:
         """
-        Retrieve relevant documents using ColBERT late-interaction scoring.
+        Indexing is performed on-the-fly in the retrieve method for this pipeline.
+        This method is not used but must be implemented to satisfy the BasePipeline interface.
+        """
+        self.corpus_ids = corpus_ids
 
-        This method:
-        1. Embeds all corpus texts using ColBERT
-        2. Embeds all queries using ColBERT
-        3. Computes MaxSim scores
-        4. Returns top-k results
+        print(f"\nEmbedding {len(corpus_texts)} corpus documents...")
+        corpus_embed_start = time.time()
+        self.corpus_embeddings = self._embed_documents(corpus_texts)
+        corpus_embed_time = time.time() - corpus_embed_start
+        print(
+            f"Corpus embedding complete. {len(self.corpus_embeddings)} embeddings generated."
+            f"Time taken: {corpus_embed_time:.2f} seconds"
+        )
+
+    def search(self, query_ids: List[str], queries: List[str]) -> Dict[str, Dict[str, float]]:
+        """
+        Perform retrieval by embedding queries and computing MaxSim scores with corpus.
 
         Args:
             query_ids: List of query identifiers
             queries: List of query texts
-            corpus_ids: List of corpus item identifiers
-            corpus_images: List of PIL.Image objects (not used in this text-only pipeline)
-            corpus_texts: List of markdown text strings
 
         Returns:
-            Tuple of (results_dict, infos_dict) where:
-            - results_dict: Dictionary mapping query_id to {corpus_id: score}
-            - infos_dict: Dictionary with timing and configuration metrics
+            Dictionary mapping query_id to {corpus_id: score}
         """
-        start_time = time.time()
-
-        # Step 1: Embed corpus texts
-        print(f"\nEmbedding {len(corpus_texts)} corpus documents...")
-        corpus_embed_start = time.time()
-        corpus_embeddings = self._embed_documents(corpus_texts)
-        corpus_embed_time = time.time() - corpus_embed_start
-        print(f"Corpus embedding complete. {len(corpus_embeddings)} embeddings generated.")
-
-        # Step 2: Embed queries
+        # Step 1: Embed queries
         print(f"\nEmbedding {len(queries)} queries...")
         query_embed_start = time.time()
         query_embeddings = self._embed_queries(queries)
         query_embed_time = time.time() - query_embed_start
-        print(f"Query embedding complete. {len(query_embeddings)} embeddings generated.")
+        print(
+            f"Query embedding complete. {len(query_embeddings)} embeddings generated.\n"
+            f"Time taken: {query_embed_time:.2f} seconds"
+        )
 
-        # Step 3: Compute MaxSim scores
+        # Step 2: Compute MaxSim scores
         print("\nComputing MaxSim scores...")
         scoring_start = time.time()
-        scores = self._compute_maxsim_scores(query_embeddings, corpus_embeddings)
+        scores = self._compute_maxsim_scores(query_embeddings, self.corpus_embeddings)
         scoring_time = time.time() - scoring_start
         print(f"Scoring complete. Score range: [{scores.min():.4f}, {scores.max():.4f}]")
 
-        # Step 4: Extract top-k results per query
+        # Step 3: Extract top-k results per query
         print(f"\nExtracting top-{self.top_k} results per query...")
         results = {}
 
         for q_idx, query_id in enumerate(query_ids):
             query_scores = scores[q_idx]
-            topk_scores, topk_indices = torch.topk(query_scores, min(self.top_k, len(corpus_ids)))
+            topk_scores, topk_indices = torch.topk(query_scores, min(self.top_k, len(self.corpus_ids)))
 
-            results[query_id] = {corpus_ids[idx.item()]: score.item() for idx, score in zip(topk_indices, topk_scores)}
+            results[query_id] = {
+                self.corpus_ids[idx.item()]: score.item() for idx, score in zip(topk_indices, topk_scores)
+            }
 
-        total_time = time.time() - start_time
+        total_time = time.time() - query_embed_start
         print(f"\nRetrieval complete in {total_time:.2f} seconds")
 
-        # Build info dictionary with metrics
-        infos = {
-            "corpus_embed_time_ms": corpus_embed_time * 1000,
+        additional_info = {
             "query_embed_time_ms": query_embed_time * 1000,
             "scoring_time_ms": scoring_time * 1000,
-            "total_time_ms": total_time * 1000,
+            "total_search_time_ms": total_time * 1000,
             "retriever_model": "mixedbread-ai/mxbai-edge-colbert-v0-32m",
             "device": self.device,
             "batch_size": self.batch_size,
             "top_k": self.top_k,
             "num_queries": len(query_ids),
-            "corpus_size": len(corpus_ids),
+            "corpus_size": len(self.corpus_ids),
         }
-
-        return results, infos
+        return results, additional_info

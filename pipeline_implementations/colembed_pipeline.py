@@ -272,45 +272,49 @@ class ColEmbedPipeline(BasePipeline):
 
         return all_scores
 
-    def retrieve(
+    def index(
         self,
-        query_ids: List[str],
-        queries: List[str],
         corpus_ids: List[str],
         corpus_images: List[Any],
         corpus_texts: List[Any],
+    ) -> Dict[str, Any]:
+        """
+        Precompute and store corpus embeddings for later search.
+
+        Returns:
+            Dictionary containing indexed data needed for search.
+        """
+        start_time = time.time()
+        corpus_embeddings = self._embed_corpus_batched(corpus_images)
+        elapsed = time.time() - start_time
+        print(f"\nIndexing complete in {elapsed:.2f} seconds")
+
+        self.corpus_ids = corpus_ids
+        self.corpus_embeddings = corpus_embeddings
+
+    def search(
+        self,
+        query_ids: List[str],
+        queries: List[str],
     ) -> Dict[str, Dict[str, float]]:
         """
-        Retrieve relevant corpus items for each query using late-interaction.
-
-        This method:
-        1. Embeds all corpus images on GPU → CPU
-        2. Embeds all queries on GPU → CPU
-        3. Computes MaxSim scores on CPU
-        4. Returns top-k results per query
+        Search indexed corpus for each query.
 
         Args:
             query_ids: List of query identifiers
             queries: List of query texts
-            corpus_ids: List of corpus item identifiers
-            corpus_images: List of PIL.Image objects
-            corpus_texts: List of str objects
 
         Returns:
             Dictionary mapping query_id to {corpus_id: score} for top-k results
         """
         start_time = time.time()
-
-        # Step 1: Embed corpus (GPU → CPU)
-        corpus_embeddings = self._embed_corpus_batched(corpus_images)
-
-        # Step 2: Embed queries (GPU → CPU)
         query_embeddings = self._embed_queries_batched(queries)
+        embed_query_time = time.time() - start_time
+        print(f"\nQuery embedding complete in {embed_query_time:.2f} seconds")
+        scores = self._compute_maxsim_scores(query_embeddings, self.corpus_embeddings)
+        scoring_time = time.time() - start_time - embed_query_time
+        print(f"Relevance scoring complete in {scoring_time:.2f} seconds")
 
-        # Step 3: Compute scores (CPU)
-        scores = self._compute_maxsim_scores(query_embeddings, corpus_embeddings)
-
-        # Step 4: Extract top-k results per query
         print(f"\nExtracting top-{self.top_k} results per query...")
         results = {}
 
@@ -319,13 +323,21 @@ class ColEmbedPipeline(BasePipeline):
             query_scores = scores[q_idx]
 
             # Get top-k indices and scores
-            topk_scores, topk_indices = torch.topk(query_scores, min(self.top_k, len(corpus_ids)))
+            topk_scores, topk_indices = torch.topk(query_scores, min(self.top_k, len(self.corpus_ids)))
 
             # Build results dictionary
-            results[query_id] = {corpus_ids[idx.item()]: score.item() for idx, score in zip(topk_indices, topk_scores)}
+            results[query_id] = {
+                self.corpus_ids[idx.item()]: score.item() for idx, score in zip(topk_indices, topk_scores)
+            }
 
         elapsed = time.time() - start_time
         print(f"\nRetrieval complete in {elapsed:.2f} seconds")
         print(f"Average time per query: {elapsed / len(query_ids):.2f} seconds")
 
-        return results
+        additional_info = {
+            "embedding_time_ms": embed_query_time * 1000,
+            "scoring_time_ms": scoring_time * 1000,
+            "total_search_time_ms": elapsed * 1000,
+        }
+
+        return results, additional_info

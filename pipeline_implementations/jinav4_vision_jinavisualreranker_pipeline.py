@@ -20,7 +20,7 @@ Usage:
 
 import sys
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 try:
     import torch
@@ -263,60 +263,66 @@ class JinaV4VisionJinaVisualRerankerPipeline(BasePipeline):
 
         return results
 
-    def retrieve(
-        self,
-        query_ids: List[str],
-        queries: List[str],
-        corpus_ids: List[str],
-        corpus_images: List[Any],
-        corpus_texts: List[str],
-    ) -> Tuple[Dict[str, Dict[str, float]], Optional[Dict[str, Any]]]:
+    def index(self, corpus_ids, corpus_images, corpus_texts):
+        """
+        Store corpus data for use in search().
+
+        This pipeline does not require additional indexing or preprocessing steps,
+        so we simply store the corpus data for use during retrieval.
+
+        Args:
+            corpus_ids: List of corpus item identifiers
+            corpus_images: List of PIL.Image objects
+            corpus_texts: List of markdown text strings (not used in this vision pipeline)
+        """
+        self.corpus_ids = corpus_ids
+        self.corpus_images = corpus_images
+
+        # Step 1: Embed corpus images
+        print(f"\nEmbedding {len(corpus_images)} corpus images...")
+        corpus_embed_start = time.time()
+        self.corpus_embeddings = self._embed_images(corpus_images)
+        corpus_embed_time = time.time() - corpus_embed_start
+        print(
+            f"Corpus embedding complete. Shape: {self.corpus_embeddings.shape}"
+            f", Time taken: {corpus_embed_time:.2f} seconds"
+        )
+
+    def search(self, query_ids: List[str], queries: List[str]) -> Tuple[Dict[str, Dict[str, float]], Dict[str, Any]]:
         """
         Retrieve relevant documents using two-stage retrieval + visual reranking.
 
         This method:
-        1. Embeds all corpus images using JinaV4
-        2. Embeds all queries using JinaV4
-        3. Computes similarity scores and retrieves top candidates
-        4. Reranks candidates using Jina Visual Reranker
-        5. Returns final results
+        1. Embeds all queries using JinaV4
+        2. Computes similarity scores and retrieves top candidates
+        3. Reranks candidates using Jina Visual Reranker
+        4. Returns final results
 
         Args:
             query_ids: List of query identifiers
             queries: List of query texts
-            corpus_ids: List of corpus item identifiers
-            corpus_images: List of PIL.Image objects
-            corpus_texts: List of markdown text strings (not used in this vision pipeline)
 
         Returns:
             Tuple of (results_dict, infos_dict) where:
             - results_dict: Dictionary mapping query_id to {corpus_id: score}
             - infos_dict: Dictionary with timing and configuration metrics
         """
-        start_time = time.time()
 
-        # Step 1: Embed corpus images
-        print(f"\nEmbedding {len(corpus_images)} corpus images...")
-        corpus_embed_start = time.time()
-        corpus_embeddings = self._embed_images(corpus_images)
-        corpus_embed_time = time.time() - corpus_embed_start
-        print(f"Corpus embedding complete. Shape: {corpus_embeddings.shape}")
-
-        # Step 2: Embed queries
+        # Step 1: Embed queries
         print(f"\nEmbedding {len(queries)} queries...")
         query_embed_start = time.time()
         query_embeddings = self._embed_queries(queries)
         query_embed_time = time.time() - query_embed_start
         print(f"Query embedding complete. Shape: {query_embeddings.shape}")
 
-        # Step 3: Compute similarity scores
+        # Step 2: Compute similarity scores
         print("\nComputing similarity scores...")
         similarity_start = time.time()
-        scores = self._compute_similarity(query_embeddings, corpus_embeddings)
+        scores = self._compute_similarity(query_embeddings, self.corpus_embeddings)
         similarity_time = time.time() - similarity_start
         print(f"Similarity computation complete. Score range: [{scores.min():.4f}, {scores.max():.4f}]")
 
-        # Step 4: Retrieve top candidates and rerank
+        # Step 3: Retrieve top candidates and rerank
         print(f"\nReranking top-{self.retriever_top_k} candidates per query...")
         rerank_start = time.time()
         results = {}
@@ -324,11 +330,11 @@ class JinaV4VisionJinaVisualRerankerPipeline(BasePipeline):
         for q_idx, query_id in enumerate(query_ids):
             # Get top-k candidates from retrieval stage
             query_scores = scores[q_idx]
-            topk_scores, topk_indices = torch.topk(query_scores, min(self.retriever_top_k, len(corpus_ids)))
+            topk_scores, topk_indices = torch.topk(query_scores, min(self.retriever_top_k, len(self.corpus_ids)))
 
             # Get candidate images and IDs
-            candidate_ids = [corpus_ids[idx.item()] for idx in topk_indices]
-            candidate_images_batch = [corpus_images[idx.item()] for idx in topk_indices]
+            candidate_ids = [self.corpus_ids[idx.item()] for idx in topk_indices]
+            candidate_images_batch = [self.corpus_images[idx.item()] for idx in topk_indices]
 
             # Rerank candidates
             reranked_results = self._rerank_candidates(queries[q_idx], candidate_images_batch, candidate_ids)
@@ -341,17 +347,16 @@ class JinaV4VisionJinaVisualRerankerPipeline(BasePipeline):
                 print(f"  Processed {q_idx + 1}/{len(query_ids)} queries...")
 
         rerank_time = time.time() - rerank_start
-        total_time = time.time() - start_time
+        total_time = time.time() - query_embed_start
 
         print(f"\nRetrieval and reranking complete in {total_time:.2f} seconds")
 
         # Build info dictionary with metrics
         infos = {
-            "corpus_embed_time_ms": corpus_embed_time * 1000,
             "query_embed_time_ms": query_embed_time * 1000,
             "similarity_time_ms": similarity_time * 1000,
             "rerank_time_ms": rerank_time * 1000,
-            "total_time_ms": total_time * 1000,
+            "total_search_time_ms": total_time * 1000,
             "retriever_model": "jinaai/jina-embeddings-v4",
             "reranker_model": "jinaai/jina-reranker-m0",
             "device": self.device,
@@ -361,7 +366,7 @@ class JinaV4VisionJinaVisualRerankerPipeline(BasePipeline):
             "retriever_top_k": self.retriever_top_k,
             "final_top_k": self.final_top_k,
             "num_queries": len(query_ids),
-            "corpus_size": len(corpus_ids),
+            "corpus_size": len(self.corpus_ids),
         }
 
         return results, infos

@@ -7,7 +7,7 @@ pytrec_eval format: {query_id: {corpus_id: score}}.
 """
 
 import json
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from vidore_benchmark.pipeline_evaluation.base_pipeline import BasePipeline
 
@@ -68,14 +68,7 @@ class FileBasedPipeline(BasePipeline):
                     f"but query '{query_id}' maps to {type(corpus_scores)}"
                 )
 
-    def retrieve(
-        self,
-        query_ids: List[str],
-        queries: List[str],
-        corpus_ids: List[str],
-        corpus_images: List[Any],
-        corpus_texts: List[Any],
-    ) -> Dict[str, Dict[str, float]]:
+    def search(self, query_ids: List[str], queries: List[str]) -> Dict[str, Dict[str, float]]:
         """
         Return pre-computed retrieval results from the loaded file.
 
