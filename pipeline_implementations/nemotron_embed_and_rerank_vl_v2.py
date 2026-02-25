@@ -354,7 +354,7 @@ class NemotronRerankVL():
             # Run inference
             with torch.no_grad():
                 outputs = self.model(**batch_dict, return_dict=True)
-
+                
             # Get logits
             logits = outputs.logits
             logits_flat = logits.squeeze(-1)
@@ -412,6 +412,10 @@ class NemotronEmbedRerankVLPipeline(BasePipeline):
             corpus_images: List of PIL.Image objects
             corpus_texts: List of markdown text strings (not used in this vision pipeline)
         """
+        corpus_ids = corpus_ids[:10]
+        corpus_images = corpus_images[:10]
+        corpus_texts = corpus_texts[:10]
+        
         self.corpus_ids = corpus_ids
         self.corpus_images = corpus_images
         self.corpus_texts = corpus_texts
@@ -488,7 +492,7 @@ class NemotronEmbedRerankVLPipeline(BasePipeline):
         
         # Re-ranking top results
         results_reranked = dict()
-        for query_id, topk_corpus_ids in results.items():
+        for query_id, topk_corpus_ids in tqdm(results.items()):
             query_topk_corpus_ids = []
             query_topk_corpus_images = []
             query_topk_corpus_texts = []
