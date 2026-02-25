@@ -1,0 +1,18 @@
+{
+    "pipeline_name": "NemotronColEmbed8BPipeline",
+    "description": "Retrieves relevant documents based on image embeddings using nvidia/nemotron-colembed-vl-8b-v2 embedding model with late interaction.",
+    "nodes": [
+        {
+            "id": "retriever_node",
+            "component_type": "Retriever",
+            "model_name": "nvidia/nemotron-colembed-vl-8b-v2",
+            "modalities": [
+                "visual"
+            ],
+            "description": "Queries the document store and returns the top matching results."
+        }
+    ],
+    "edges": [
+        
+    ]
+}

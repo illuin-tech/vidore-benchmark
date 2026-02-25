@@ -1,0 +1,79 @@
+{
+  "dataset": "vidore/vidore_v3_physics",
+  "split": "test",
+  "language": "english",
+  "pipeline_type": null,
+  "module_path": "pipeline_implementations/nemotron_colembed_8b_v2.py",
+  "class_name": "NemotronColEmbed8BPipeline",
+  "pipeline_args": {
+    "batch_size": 32,
+    "top_k": 100
+  },
+  "aggregated_metrics": {
+    "overall": {
+      "map": 0.4364076941248639,
+      "recip_rank": 0.6439036346967931,
+      "P_1": 0.4900662251655629,
+      "P_5": 0.3264900662251662,
+      "P_10": 0.2642384105960266,
+      "P_20": 0.1900662251655627,
+      "recall_1": 0.1581259642065304,
+      "recall_5": 0.41507749585563947,
+      "recall_10": 0.5538777499679,
+      "recall_20": 0.6771558912411855,
+      "recall_50": 0.8140991800879568,
+      "recall_100": 0.9019544991374772,
+      "ndcg_cut_1": 0.4470198675496689,
+      "ndcg_cut_5": 0.4746813871172409,
+      "ndcg_cut_10": 0.508296307029759,
+      "ndcg_cut_20": 0.5496234565169041,
+      "ndcg_cut_100": 0.6276432371420406,
+      "map_cut_1": 0.1581259642065304,
+      "map_cut_10": 0.35508126615973135,
+      "map_cut_100": 0.4364076941248639
+    },
+    "by_language": {
+      "english": {
+        "map": 0.4364076941248639,
+        "recip_rank": 0.6439036346967931,
+        "P_1": 0.4900662251655629,
+        "P_5": 0.3264900662251662,
+        "P_10": 0.2642384105960266,
+        "P_20": 0.1900662251655627,
+        "recall_1": 0.1581259642065304,
+        "recall_5": 0.41507749585563947,
+        "recall_10": 0.5538777499679,
+        "recall_20": 0.6771558912411855,
+        "recall_50": 0.8140991800879568,
+        "recall_100": 0.9019544991374772,
+        "ndcg_cut_1": 0.4470198675496689,
+        "ndcg_cut_5": 0.4746813871172409,
+        "ndcg_cut_10": 0.508296307029759,
+        "ndcg_cut_20": 0.5496234565169041,
+        "ndcg_cut_100": 0.6276432371420406,
+        "map_cut_1": 0.1581259642065304,
+        "map_cut_10": 0.35508126615973135,
+        "map_cut_100": 0.4364076941248639,
+        "num_queries": 302
+      }
+    },
+    "timing": {
+      "total_retrieval_time_milliseconds": 1470353.7254333496,
+      "indexing_time_milliseconds": 868111.1602783203,
+      "search_time_milliseconds": 602242.5651550293,
+      "num_queries": 302,
+      "num_corpus": 1674,
+      "indexing_throughput_ms_per_doc": 518.5849225079572,
+      "search_throughput_ms_per_query": 1994.180679321289
+    },
+    "infos": {
+      "query_embed_time_ms": 7643.636703491211,
+      "retrieve_time_ms": 594598.0820655823,
+      "total_search_time_ms": 602241.7433261871,
+      "retriever_model": "nvidia/nemotron-colembed-vl-8b-v2",
+      "device": "cuda",
+      "batch_size": 32,
+      "retriever_top_k": 100
+    }
+  }
+}

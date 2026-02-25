@@ -1,0 +1,81 @@
+{
+  "dataset": "vidore/vidore_v3_computer_science",
+  "split": "test",
+  "language": "english",
+  "pipeline_type": null,
+  "module_path": "pipeline_implementations/nemotron_embed_vl_v2.py",
+  "class_name": "NemotronEmbedVLPipeline",
+  "pipeline_args": {
+    "batch_size": 32,
+    "top_k": 100,
+    "modality": "image"
+  },
+  "aggregated_metrics": {
+    "overall": {
+      "map": 0.6548928992117021,
+      "recip_rank": 0.8837750036154579,
+      "P_1": 0.8186046511627907,
+      "P_5": 0.442790697674419,
+      "P_10": 0.2939534883720931,
+      "P_20": 0.18395348837209305,
+      "recall_1": 0.3089886599188929,
+      "recall_5": 0.6055324004161213,
+      "recall_10": 0.7248867024448419,
+      "recall_20": 0.8330552651482885,
+      "recall_50": 0.9200413669018321,
+      "recall_100": 0.963834382671592,
+      "ndcg_cut_1": 0.7534883720930232,
+      "ndcg_cut_5": 0.7029117209058305,
+      "ndcg_cut_10": 0.7216232044886842,
+      "ndcg_cut_20": 0.7600973616161987,
+      "ndcg_cut_100": 0.8015259397036525,
+      "map_cut_1": 0.3089886599188929,
+      "map_cut_10": 0.5986858213768512,
+      "map_cut_100": 0.6548928992117021
+    },
+    "by_language": {
+      "english": {
+        "map": 0.6548928992117021,
+        "recip_rank": 0.8837750036154579,
+        "P_1": 0.8186046511627907,
+        "P_5": 0.442790697674419,
+        "P_10": 0.2939534883720931,
+        "P_20": 0.18395348837209305,
+        "recall_1": 0.3089886599188929,
+        "recall_5": 0.6055324004161213,
+        "recall_10": 0.7248867024448419,
+        "recall_20": 0.8330552651482885,
+        "recall_50": 0.9200413669018321,
+        "recall_100": 0.963834382671592,
+        "ndcg_cut_1": 0.7534883720930232,
+        "ndcg_cut_5": 0.7029117209058305,
+        "ndcg_cut_10": 0.7216232044886842,
+        "ndcg_cut_20": 0.7600973616161987,
+        "ndcg_cut_100": 0.8015259397036525,
+        "map_cut_1": 0.3089886599188929,
+        "map_cut_10": 0.5986858213768512,
+        "map_cut_100": 0.6548928992117021,
+        "num_queries": 215
+      }
+    },
+    "timing": {
+      "total_retrieval_time_milliseconds": 285013.6022567749,
+      "indexing_time_milliseconds": 284318.65644454956,
+      "search_time_milliseconds": 694.9458122253418,
+      "num_queries": 215,
+      "num_corpus": 1360,
+      "indexing_throughput_ms_per_doc": 209.05783562099234,
+      "search_throughput_ms_per_query": 3.232306103373683
+    },
+    "infos": {
+      "query_embed_time_ms": 327.47840881347656,
+      "retrieve_time_ms": 367.30146408081055,
+      "total_search_time_ms": 694.9238777160645,
+      "retriever_model": "nvidia/llama-nemotron-embed-vl-1b-v2",
+      "modality": "image",
+      "device": "cuda",
+      "batch_size": 32,
+      "retriever_top_k": 100
+    }
+  }
+}

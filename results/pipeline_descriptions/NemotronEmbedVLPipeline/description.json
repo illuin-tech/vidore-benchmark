@@ -1,0 +1,18 @@
+{
+    "pipeline_name": "NemotronEmbedVLPipeline",
+    "description": "Retrieves relevant documents based on image embeddings using nvidia/llama-nemotron-embed-vl-1b-v2 embedding model.",
+    "nodes": [
+        {
+            "id": "retriever_node",
+            "component_type": "Retriever",
+            "model_name": "nvidia/llama-nemotron-embed-vl-1b-v2",
+            "modalities": [
+                "visual"
+            ],
+            "description": "Queries the document store and returns the top matching results."
+        }
+    ],
+    "edges": [
+        
+    ]
+}

@@ -1,0 +1,85 @@
+{
+  "dataset": "vidore/vidore_v3_pharmaceuticals",
+  "split": "test",
+  "language": "english",
+  "pipeline_type": null,
+  "module_path": "pipeline_implementations/nemotron_embed_and_rerank_vl_v2.py",
+  "class_name": "NemotronEmbedRerankVLPipeline",
+  "pipeline_args": {
+    "batch_size": 32,
+    "ranker_batch_size": 20,
+    "top_k": 100,
+    "modality": "image"
+  },
+  "aggregated_metrics": {
+    "overall": {
+      "map": 0.6052588932185595,
+      "recip_rank": 0.7795337978030138,
+      "P_1": 0.6620879120879121,
+      "P_5": 0.34560439560439676,
+      "P_10": 0.23571428571428574,
+      "P_20": 0.15247252747252718,
+      "recall_1": 0.3440427320935001,
+      "recall_5": 0.6076279096752909,
+      "recall_10": 0.70122274515986,
+      "recall_20": 0.7900113960419701,
+      "recall_50": 0.8769940681305127,
+      "recall_100": 0.9004916701053451,
+      "ndcg_cut_1": 0.6428571428571429,
+      "ndcg_cut_5": 0.6610530869238107,
+      "ndcg_cut_10": 0.6742321296026764,
+      "ndcg_cut_20": 0.7029660378693348,
+      "ndcg_cut_100": 0.7408383745194103,
+      "map_cut_1": 0.3440427320935001,
+      "map_cut_10": 0.5587105218967086,
+      "map_cut_100": 0.6052588932185595
+    },
+    "by_language": {
+      "english": {
+        "map": 0.6052588932185595,
+        "recip_rank": 0.7795337978030138,
+        "P_1": 0.6620879120879121,
+        "P_5": 0.34560439560439676,
+        "P_10": 0.23571428571428574,
+        "P_20": 0.15247252747252718,
+        "recall_1": 0.3440427320935001,
+        "recall_5": 0.6076279096752909,
+        "recall_10": 0.70122274515986,
+        "recall_20": 0.7900113960419701,
+        "recall_50": 0.8769940681305127,
+        "recall_100": 0.9004916701053451,
+        "ndcg_cut_1": 0.6428571428571429,
+        "ndcg_cut_5": 0.6610530869238107,
+        "ndcg_cut_10": 0.6742321296026764,
+        "ndcg_cut_20": 0.7029660378693348,
+        "ndcg_cut_100": 0.7408383745194103,
+        "map_cut_1": 0.3440427320935001,
+        "map_cut_10": 0.5587105218967086,
+        "map_cut_100": 0.6052588932185595,
+        "num_queries": 364
+      }
+    },
+    "timing": {
+      "total_retrieval_time_milliseconds": 10909516.873598099,
+      "indexing_time_milliseconds": 742220.2062606812,
+      "search_time_milliseconds": 10167296.667337418,
+      "num_queries": 364,
+      "num_corpus": 2313,
+      "indexing_throughput_ms_per_doc": 320.8907074192309,
+      "search_throughput_ms_per_query": 27932.13370147642
+    },
+    "infos": {
+      "query_embed_time_ms": 488.25907707214355,
+      "retrieval_time_ms": 1014.9970054626465,
+      "rerank_time_ms": 10165792.560100555,
+      "total_search_time_ms": 10167295.838594437,
+      "retriever_model": "nvidia/llama-nemotron-embed-vl-1b-v2",
+      "reranker_model": "nvidia/llama-nemotron-rerank-vl-1b-v2",
+      "modality": "image",
+      "device": "cuda",
+      "embedding_batch_size": 32,
+      "rerank_batch_size": 20,
+      "retriever_top_k": 100
+    }
+  }
+}
