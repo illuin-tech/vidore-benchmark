@@ -412,10 +412,6 @@ class NemotronEmbedRerankVLPipeline(BasePipeline):
             corpus_images: List of PIL.Image objects
             corpus_texts: List of markdown text strings (not used in this vision pipeline)
         """
-        corpus_ids = corpus_ids[:10]
-        corpus_images = corpus_images[:10]
-        corpus_texts = corpus_texts[:10]
-        
         self.corpus_ids = corpus_ids
         self.corpus_images = corpus_images
         self.corpus_texts = corpus_texts
