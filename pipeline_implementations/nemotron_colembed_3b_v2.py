@@ -47,7 +47,7 @@ except ImportError:
     sys.exit(1)
 
 
-class ColEmbedPipeline(BasePipeline):
+class ColEmbed3BPipeline(BasePipeline):
     """
     Late-interaction retrieval pipeline using NVIDIA NeMo Retriever ColEmbed.
 
@@ -61,7 +61,7 @@ class ColEmbedPipeline(BasePipeline):
     while maintaining reasonable scoring performance.
     """
 
-    def __init__(self, batch_size: int = 32, scoring_batch_size: int = 32, top_k: int = 100):
+    def __init__(self, model_name="nvidia/llama-nemotron-colembed-vl-3b-v2", batch_size: int = 32, scoring_batch_size: int = 32, top_k: int = 100):
         """
         Initialize the ColEmbed pipeline.
 
@@ -70,6 +70,7 @@ class ColEmbedPipeline(BasePipeline):
             scoring_batch_size: Number of items to process per batch for MaxSim scoring
             top_k: Number of top results to return per query
         """
+        self.model_name = model_name
         self.batch_size = batch_size
         self.scoring_batch_size = scoring_batch_size
         self.top_k = top_k
@@ -85,12 +86,12 @@ class ColEmbedPipeline(BasePipeline):
             sys.exit(1)
 
         print("Initializing ColEmbed model on GPU...")
-        print("Loading nvidia/llama-nemoretriever-colembed-1b-v1...")
+        print(f"Loading {self.model_name}...")
 
         # Load model with GPU settings
         try:
             self.model = AutoModel.from_pretrained(
-                "nvidia/llama-nemoretriever-colembed-1b-v1",
+                self.model_name,
                 device_map="cuda",
                 torch_dtype=torch.bfloat16,
                 trust_remote_code=True,
@@ -107,7 +108,7 @@ class ColEmbedPipeline(BasePipeline):
             print("\nRetrying without flash attention...")
 
             self.model = AutoModel.from_pretrained(
-                "nvidia/llama-nemoretriever-colembed-1b-v1",
+                self.model_name,
                 device_map="cuda",
                 torch_dtype=torch.bfloat16,
                 trust_remote_code=True,
@@ -311,10 +312,8 @@ class ColEmbedPipeline(BasePipeline):
         query_embeddings = self._embed_queries_batched(queries)
         embed_query_time = time.time() - start_time
         print(f"\nQuery embedding complete in {embed_query_time:.2f} seconds")
-        scores = self._compute_maxsim_scores(query_embeddings, self.corpus_embeddings)
-        scoring_time = time.time() - start_time - embed_query_time
-        print(f"Relevance scoring complete in {scoring_time:.2f} seconds")
-
+        scores = self._compute_maxsim_scores(query_embeddings, self.corpus_embeddings)        
+        retrieval_time = time.time()
         print(f"\nExtracting top-{self.top_k} results per query...")
         results = {}
 
@@ -330,13 +329,16 @@ class ColEmbedPipeline(BasePipeline):
                 self.corpus_ids[idx.item()]: score.item() for idx, score in zip(topk_indices, topk_scores)
             }
 
+        retrieval_time = time.time() - retrieval_time
+        print(f"Relevance scoring complete in {retrieval_time:.2f} seconds")
+
         elapsed = time.time() - start_time
         print(f"\nRetrieval complete in {elapsed:.2f} seconds")
         print(f"Average time per query: {elapsed / len(query_ids):.2f} seconds")
 
         additional_info = {
             "embedding_time_ms": embed_query_time * 1000,
-            "scoring_time_ms": scoring_time * 1000,
+            "retrieval_time": retrieval_time * 1000,
             "total_search_time_ms": elapsed * 1000,
         }
 
