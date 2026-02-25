@@ -3,7 +3,7 @@
     "pipeline_name": "nvidia_llama-nemotron-colembed-vl-3b-v2",
     "description": "Retrieves relevant documents based on page images using nvidia/llama-nemotron-colembed-vl-3b-v2 embedding (late-interaction) model",
     "class_name": "ColEmbed3BPipeline",
-    "module_path": "https://github.com/illuin-tech/vidore-benchmark/blob/vidore_v3_pipeline/pipeline_implementations/jinav4_text_zerank2textual_pipeline.py",
+    "module_path": "pipeline_implementations/nemotron_colembed_3b_v2.py",
     "hardware_information": {
         "GPU_type": "A100-SXM4-80GB",
         "num_gpus": 1,

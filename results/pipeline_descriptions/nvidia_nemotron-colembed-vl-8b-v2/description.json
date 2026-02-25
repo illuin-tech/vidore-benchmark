@@ -3,7 +3,7 @@
     "pipeline_name": "nvidia_nemotron-colembed-vl-8b-v2",
     "description": "Retrieves relevant documents based on image embeddings using nvidia/nemotron-colembed-vl-8b-v2 embedding model with late interaction.",
     "class_name": "NemotronColEmbed8BPipeline",
-    "module_path": "https://github.com/illuin-tech/vidore-benchmark/blob/vidore_v3_pipeline/pipeline_implementations/jinav4_text_zerank2textual_pipeline.py",
+    "module_path": "pipeline_implementations/nemotron_colembed_8b_v2.py",
     "hardware_information": {
         "GPU_type": "A100-SXM4-80GB",
         "num_gpus": 1,
