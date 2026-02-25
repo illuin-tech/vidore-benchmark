@@ -1,6 +1,15 @@
 {
-    "pipeline_name": "NemotronEmbedRerankVLPipeline",
+    "pipeline_alias": "nvidia/llama-nemotron-embed-vl-1b-v2 + nvidia/llama-nemotron-rerank-vl-1b-v2 (image+OCR text)",
+    "pipeline_name": "nvidia_llama-nemotron-embed-rerank-vl-1b-v2_mod_image",
     "description": "Retrieves relevant documents based on embeddings from page images + OCR text using nvidia/llama-nemotron-embed-vl-1b-v2 embedding model + nvidia/llama-nemotron-rerank-vl-1b-v2 reranker model.",
+    "class_name": "NemotronEmbedRerankVLPipeline",
+    "module_path": "pipeline_implementations/nemotron_embed_and_rerank_vl_v2.py",
+    "hardware_information": {
+        "GPU_type": "A100-SXM4-80GB",
+        "num_gpus": 1,
+        "num_cpu_cores": 32,
+        "RAM": "256 GB"
+    },
     "nodes": [
         {
             "id": "retriever_node",

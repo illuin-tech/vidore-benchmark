@@ -1,6 +1,15 @@
 {
-    "pipeline_name": "NemotronColEmbed8BPipeline",
+    "pipeline_alias": "nvidia/nemotron-colembed-vl-8b-v2",
+    "pipeline_name": "nvidia_nemotron-colembed-vl-8b-v2",
     "description": "Retrieves relevant documents based on image embeddings using nvidia/nemotron-colembed-vl-8b-v2 embedding model with late interaction.",
+    "class_name": "NemotronColEmbed8BPipeline",
+    "module_path": "https://github.com/illuin-tech/vidore-benchmark/blob/vidore_v3_pipeline/pipeline_implementations/jinav4_text_zerank2textual_pipeline.py",
+    "hardware_information": {
+        "GPU_type": "A100-SXM4-80GB",
+        "num_gpus": 1,
+        "num_cpu_cores": 32,
+        "RAM": "256 GB"
+    },
     "nodes": [
         {
             "id": "retriever_node",
