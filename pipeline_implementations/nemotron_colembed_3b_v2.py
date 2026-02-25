@@ -1,11 +1,13 @@
-#!/usr/bin/env python3
-"""
-NeMo Retriever ColEmbed Pipeline for Vidore v3 Evaluation
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: MIT.
 
-This script implements a late-interaction retrieval pipeline using NVIDIA's
-llama-nemoretriever-colembed-1b-v1 model. It demonstrates how to:
-1. Subclass BasePipeline for a custom retrieval implementation
-2. Handle GPU memory constraints by computing embeddings on GPU and storing on CPU
+"""
+Pipeline for Vidore v3 Evaluation using nvidia/llama-nemotron-colembed-vl-3b-v2
+
+This script implements a dense retrieval pipeline using NVIDIA's
+nvidia/llama-nemotron-colembed-vl-3b-v22 model. It demonstrates how to:
+1. Subclass BasePipeline for a custom dense retrieval implementation
+2. Handle GPU memory constraints by computing embeddings on GPU in batches and storing on CPU
 3. Implement ColBERT-style late-interaction scoring on CPU
 4. Evaluate on vidore v3 datasets
 
@@ -14,15 +16,22 @@ GPU Requirements:
 - CUDA toolkit installed
 - Sufficient GPU memory for batch processing (adjust --batch_size if needed)
 
-Dependencies:
-    pip install torch --index-url https://download.pytorch.org/whl/cu118
+Dependencies: 
+    cd vidore-benchmark/ && pip install -e .
+
     pip install transformers==4.49.0
-    pip install flash-attn==2.6.3
+    pip install flash-attn==2.6.3 --no-build-isolation
+    pip install datasets==4.5.0
 
 Usage:
-    python scripts/nemoretriever_colembed_pipeline.py --dataset vidore/vidore_v3_computer_science
-    python scripts/nemoretriever_colembed_pipeline.py --dataset vidore/vidore_v3_industrial --batch_size 2 --top_k 50
+    vidore-benchmark pipeline evaluate \
+        --dataset-name vidore/vidore_v3_hr \
+        --module-path example_pipelines/nemotron_colembed_3b_v2.py \
+        --class-name ColEmbed3BPipeline \
+        --pipeline-args '{"batch_size": 32, "top_k": 100}' \
+        --language english    
 """
+
 
 import sys
 import time
