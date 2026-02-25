@@ -1,6 +1,6 @@
 {
     "pipeline_name": "NemotronEmbedVLPipeline",
-    "description": "Retrieves relevant documents based on image embeddings using nvidia/llama-nemotron-embed-vl-1b-v2 embedding model.",
+    "description": "Retrieves relevant documents based on embeddings from page images + OCR text using nvidia/llama-nemotron-embed-vl-1b-v2 embedding model.",
     "nodes": [
         {
             "id": "retriever_node",
