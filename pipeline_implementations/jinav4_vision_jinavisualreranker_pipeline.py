@@ -53,9 +53,9 @@ class JinaV4VisionJinaVisualRerankerPipeline(BasePipeline):
 
     def __init__(
         self,
-        batch_size: int = 8,
+        batch_size: int = 1,
         scoring_batch_size: int = 128,
-        rerank_batch_size: int = 8,
+        rerank_batch_size: int = 1,
         retriever_top_k: int = 100,
         final_top_k: int = 100,
         device: str = "auto",
@@ -131,12 +131,31 @@ class JinaV4VisionJinaVisualRerankerPipeline(BasePipeline):
             Tensor of embeddings
         """
         # Use jina-embeddings-v4 encode_image API with retrieval task
-        embeddings = self.retriever.encode_image(
-            images=images,
-            task="retrieval",
-            batch_size=self.batch_size,
-            return_multivector=True,
-        )
+        embeddings = []
+        for image in images:
+            embedding = self.retriever.encode_image(
+                images=[image],
+                task="retrieval",
+                # batch_size=self.batch_size,
+                return_multivector=True,
+            )
+
+            embeddings.append(embedding[0])
+
+        # Pad embeddings to max length
+        max_length = max(e.shape[0] for e in embeddings)
+        padded_embeddings = []
+        for e in embeddings:
+            if e.shape[0] < max_length:
+                padding = torch.zeros(max_length - e.shape[0], e.shape[1], device=e.device)
+                padded = torch.cat([e, padding], dim=0)
+            else:
+                padded = e
+            padded_embeddings.append(padded)
+
+        embeddings = torch.stack(padded_embeddings).to(self.device)
+
+        assert len(embeddings) == len(images), "Number of embeddings must match number of images"
 
         return embeddings
 
@@ -151,13 +170,32 @@ class JinaV4VisionJinaVisualRerankerPipeline(BasePipeline):
             List of tensors, each of shape [num_tokens, embed_dim] for each query
         """
         # Use jina-embeddings-v4 encode_text API with retrieval task
-        embeddings = self.retriever.encode_text(
-            texts=queries,
-            task="retrieval",
-            prompt_name="query",
-            batch_size=self.batch_size,
-            return_multivector=True,
-        )
+        embeddings = []
+        for query in queries:
+            embedding = self.retriever.encode_text(
+                texts=[query],
+                task="retrieval",
+                prompt_name="query",
+                # batch_size=self.batch_size,
+                return_multivector=True,
+            )
+
+            embeddings.append(embedding[0])
+
+        # Pad embeddings to max length
+        max_length = max(e.shape[0] for e in embeddings)
+        padded_embeddings = []
+        for e in embeddings:
+            if e.shape[0] < max_length:
+                padding = torch.zeros(max_length - e.shape[0], e.shape[1], device=e.device)
+                padded = torch.cat([e, padding], dim=0)
+            else:
+                padded = e
+            padded_embeddings.append(padded)
+
+        embeddings = torch.stack(padded_embeddings).to(self.device)
+
+        assert len(embeddings) == len(queries), "Number of embeddings must match number of queries"
 
         return embeddings
 

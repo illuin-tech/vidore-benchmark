@@ -56,7 +56,7 @@ class JinaV4TextZeRank2TextualPipeline(BasePipeline):
 
     def __init__(
         self,
-        batch_size: int = 1,
+        batch_size: int = 8,
         scoring_batch_size: int = 128,
         rerank_batch_size: int = 1,
         retriever_top_k: int = 100,
@@ -106,7 +106,16 @@ class JinaV4TextZeRank2TextualPipeline(BasePipeline):
 
         # Initialize the reranker model (ZeRank2)
         print("Loading zeroentropy/zerank-2 reranker model...")
-        self.reranker = CrossEncoder("zeroentropy/zerank-2", trust_remote_code=True)
+        self.reranker = CrossEncoder(
+            "zeroentropy/zerank-2",
+            trust_remote_code=True,
+            device="cuda",
+            revision="refs/pr/2",
+            automodel_args={
+                "attn_implementation": "flash_attention_2",
+                "torch_dtype": torch.bfloat16,  # Flash Attention requires half precision
+            },
+        )
         print("Reranker model loaded successfully!")
 
     def _embed_texts(self, texts: List[str], is_query: bool = False) -> List[torch.Tensor]:
@@ -123,14 +132,29 @@ class JinaV4TextZeRank2TextualPipeline(BasePipeline):
         prompt_name = "query" if is_query else "passage"
 
         # Use jina-embeddings-v4 encode_text API with retrieval task
-        embeddings = self.retriever.encode_text(
-            texts=texts,
-            task="retrieval",
-            prompt_name=prompt_name,
-            batch_size=self.batch_size,
-            return_multivector=True,
-        )
+        embeddings = []
+        for text in texts:
+            embedding = self.retriever.encode_text(
+                texts=[text],
+                task="retrieval",
+                prompt_name=prompt_name,
+                return_multivector=True,
+            )
 
+            embeddings.append(embedding[0])
+
+        # Pad embeddings to max length
+        max_length = max(e.shape[0] for e in embeddings)
+        padded_embeddings = []
+        for e in embeddings:
+            if e.shape[0] < max_length:
+                padding = torch.zeros(max_length - e.shape[0], e.shape[1], device=e.device)
+                padded = torch.cat([e, padding], dim=0)
+            else:
+                padded = e
+            padded_embeddings.append(padded)
+
+        embeddings = torch.stack(padded_embeddings).to(self.device)
         # Returns list of tensors, each [num_tokens, embed_dim]
         return embeddings
 
@@ -279,6 +303,8 @@ class JinaV4TextZeRank2TextualPipeline(BasePipeline):
         scores = self._compute_similarity(query_embeddings, self.corpus_embeddings)
         similarity_time = time.time() - similarity_start
         print(f"Similarity computation complete. Score range: [{scores.min():.4f}, {scores.max():.4f}]")
+        self.corpus_embeddings = None  # Free memory
+        query_embeddings = None  # Free memory
 
         print(f"\nReranking top-{self.retriever_top_k} candidates per query...")
         rerank_start = time.time()

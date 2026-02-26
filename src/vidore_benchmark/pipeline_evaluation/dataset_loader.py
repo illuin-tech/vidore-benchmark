@@ -66,21 +66,27 @@ def load_vidore_dataset(
     # Extract queries (with optional language filtering)
     query_languages = {}  # Map query_id to language
 
+    # 1. Filter using HF's native .filter() (keeps it as an Arrow dataset and is highly optimized)
     if language:
-        queries_ds = [item for item in queries_ds if item.get("language") == language]
+        queries_ds = queries_ds.filter(lambda x: x["language"] == language)
 
-    query_ids = [str(item["query_id"]) for item in queries_ds]
-    queries = [item["query"] for item in queries_ds]
+    # 2. Extract columns entirely at once (instantaneous Arrow read)
+    # We still use a list comprehension ONLY to convert the IDs to strings
+    query_ids = [str(qid) for qid in queries_ds["query_id"]]
+    queries = queries_ds["query"]
 
-    # Store language information for each query
-    for item in queries_ds:
-        query_id = str(item["query_id"])
-        query_languages[query_id] = item.get("language", "unknown")
+    # 3. Build the language dictionary efficiently using zip()
+    # We check the column names to handle the .get(..., "unknown") logic natively
+    if "language" in queries_ds.column_names:
+        query_languages.update(zip(query_ids, queries_ds["language"]))
+    else:
+        # If the column doesn't exist, fast-fill with "unknown"
+        query_languages.update({qid: "unknown" for qid in query_ids})
 
-    # Extract corpus (images)
-    corpus_ids = [str(item["corpus_id"]) for item in corpus_ds]
-    corpus_images = [item["image"] for item in corpus_ds]
-    corpus_texts = [item["markdown"] for item in corpus_ds]
+    # 4. Extract corpus data column-wise
+    corpus_ids = [str(cid) for cid in corpus_ds["corpus_id"]]
+    corpus_images = corpus_ds["image"]
+    corpus_texts = corpus_ds["markdown"]
 
     assert len(corpus_ids) == len(corpus_images), "Mismatch in corpus items lengths"
     assert len(corpus_images) == len(corpus_texts), "Mismatch in corpus items lengths"
