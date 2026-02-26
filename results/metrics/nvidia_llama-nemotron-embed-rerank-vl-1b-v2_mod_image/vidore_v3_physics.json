@@ -1,0 +1,85 @@
+{
+  "dataset": "vidore/vidore_v3_physics",
+  "split": "test",
+  "language": "english",
+  "pipeline_type": null,
+  "module_path": "pipeline_implementations/nemotron_embed_and_rerank_vl_v2.py",
+  "class_name": "NemotronEmbedRerankVLPipeline",
+  "pipeline_args": {
+    "batch_size": 32,
+    "ranker_batch_size": 20,
+    "top_k": 100,
+    "modality": "image"
+  },
+  "aggregated_metrics": {
+    "overall": {
+      "map": 0.3524387479642727,
+      "recip_rank": 0.5730530215008098,
+      "P_1": 0.41721854304635764,
+      "P_5": 0.27748344370861,
+      "P_10": 0.21556291390728508,
+      "P_20": 0.15380794701986733,
+      "recall_1": 0.13671575194989796,
+      "recall_5": 0.35485955754800497,
+      "recall_10": 0.45336040811318695,
+      "recall_20": 0.5675699254160613,
+      "recall_50": 0.7299466617179433,
+      "recall_100": 0.8166502097656742,
+      "ndcg_cut_1": 0.39072847682119205,
+      "ndcg_cut_5": 0.4126429672626112,
+      "ndcg_cut_10": 0.4322513888365736,
+      "ndcg_cut_20": 0.4653707381416808,
+      "ndcg_cut_100": 0.5488727948381867,
+      "map_cut_1": 0.13671575194989796,
+      "map_cut_10": 0.2892317474375065,
+      "map_cut_100": 0.3524387479642727
+    },
+    "by_language": {
+      "english": {
+        "map": 0.3524387479642727,
+        "recip_rank": 0.5730530215008098,
+        "P_1": 0.41721854304635764,
+        "P_5": 0.27748344370861,
+        "P_10": 0.21556291390728508,
+        "P_20": 0.15380794701986733,
+        "recall_1": 0.13671575194989796,
+        "recall_5": 0.35485955754800497,
+        "recall_10": 0.45336040811318695,
+        "recall_20": 0.5675699254160613,
+        "recall_50": 0.7299466617179433,
+        "recall_100": 0.8166502097656742,
+        "ndcg_cut_1": 0.39072847682119205,
+        "ndcg_cut_5": 0.4126429672626112,
+        "ndcg_cut_10": 0.4322513888365736,
+        "ndcg_cut_20": 0.4653707381416808,
+        "ndcg_cut_100": 0.5488727948381867,
+        "map_cut_1": 0.13671575194989796,
+        "map_cut_10": 0.2892317474375065,
+        "map_cut_100": 0.3524387479642727,
+        "num_queries": 302
+      }
+    },
+    "timing": {
+      "total_retrieval_time_milliseconds": 5625332.880973816,
+      "indexing_time_milliseconds": 310873.16608428955,
+      "search_time_milliseconds": 5314459.714889526,
+      "num_queries": 302,
+      "num_corpus": 1674,
+      "indexing_throughput_ms_per_doc": 185.70678977556125,
+      "search_throughput_ms_per_query": 17597.548724799755
+    },
+    "infos": {
+      "query_embed_time_ms": 435.9443187713623,
+      "retrieval_time_ms": 634.5770359039307,
+      "rerank_time_ms": 5313388.628721237,
+      "total_search_time_ms": 5314459.17224884,
+      "retriever_model": "nvidia/llama-nemotron-embed-vl-1b-v2",
+      "reranker_model": "nvidia/llama-nemotron-rerank-vl-1b-v2",
+      "modality": "image",
+      "device": "cuda",
+      "embedding_batch_size": 32,
+      "rerank_batch_size": 20,
+      "retriever_top_k": 100
+    }
+  }
+}
