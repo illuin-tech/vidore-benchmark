@@ -1,5 +1,5 @@
 {
-    "pipeline_alias": "nvidia/llama-nemotron-embed-vl-1b-v2 (image)",
+    "pipeline_alias": "nemotron-embed-vl-1b-v2 (image)",
     "pipeline_name": "nvidia_llama-nemotron-embed-vl-1b-v2_mod_image",
     "description": "Retrieves relevant documents based on embeddings from page images using nvidia/llama-nemotron-embed-vl-1b-v2 embedding model.",
     "class_name": "NemotronEmbedVLPipeline",

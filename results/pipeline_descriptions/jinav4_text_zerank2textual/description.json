@@ -1,6 +1,6 @@
 {
     "pipeline_name": "jinav4_text_zerank2_textual",
-    "pipeline_alias": "jinaai/jina-embeddings-v4 + zeroentropy/zerank-2 (OCR text)",
+    "pipeline_alias": "jina-embeddings-v4 + zerank-2 (text)",
     "description": "Retrieves relevant documents based on textual embeddings using jinaai/jina-embeddings-v4 on text transcription and zerank2 for reranking.",
     "module_path": "pipeline_implementations/jinav4_text_zerank2textual_pipeline.py",
     "class_name": "JinaV4TextZeRank2TextualPipeline",

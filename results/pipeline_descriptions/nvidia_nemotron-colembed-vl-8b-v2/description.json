@@ -1,5 +1,5 @@
 {
-    "pipeline_alias": "nvidia/nemotron-colembed-vl-8b-v2",
+    "pipeline_alias": "nemotron-colembed-vl-8b-v2",
     "pipeline_name": "nvidia_nemotron-colembed-vl-8b-v2",
     "description": "Retrieves relevant documents based on image embeddings using nvidia/nemotron-colembed-vl-8b-v2 embedding model with late interaction.",
     "class_name": "NemotronColEmbed8BPipeline",

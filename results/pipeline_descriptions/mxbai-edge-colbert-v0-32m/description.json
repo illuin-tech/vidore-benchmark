@@ -1,6 +1,6 @@
 {
     "pipeline_name": "mixedbread_mxbai-edge-colbert-v0-32m",
-    "pipeline_alias": "mixedbread/mxbai-edge-colbert-v0-32m (OCR text)",
+    "pipeline_alias": "mxbai-edge-colbert-v0-32m",
     "description": "Retrieves relevant documents based on mixedbread/mxbai-edge-colbert-v0-32m textual retriever without additional steps",
     "module_path": "pipeline_implementations/mxbai_edge_colbert_v0_32m_pipeline.py",
     "class_name": "MxbaiEdgeColbertV032mPipeline",

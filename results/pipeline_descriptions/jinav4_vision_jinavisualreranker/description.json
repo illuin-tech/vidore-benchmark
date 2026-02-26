@@ -1,6 +1,6 @@
 {
     "pipeline_name": "jinav4_vision_jina-reranker-m0",
-    "pipeline_alias": "jinaai/jina-embeddings-v4 + jinaai/jina-reranker-m0 (image)",
+    "pipeline_alias": "jina-embeddings-v4 + jina-reranker-m0 (image)",
     "description": "Retrieves relevant documents based on image embeddings using jinaai/jina-embeddings-v4 and jinaai/jina-reranker-m0 for reranking.",
     "module_path": "pipeline_implementations/jinav4_vision_jinavisualreranker_pipeline.py",
     "class_name": "JinaV4VisionJinaVisualRerankerPipeline",
