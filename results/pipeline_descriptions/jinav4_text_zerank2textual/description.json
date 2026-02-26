@@ -1,6 +1,15 @@
 {
-    "pipeline_name": "nvidia_jinav4_text_zerank2_textual",
+    "pipeline_name": "jinav4_text_zerank2_textual",
+    "pipeline_alias": "jinaai/jina-embeddings-v4 + zeroentropy/zerank-2 (OCR text)",
     "description": "Retrieves relevant documents based on textual embeddings using jinaai/jina-embeddings-v4 on text transcription and zerank2 for reranking.",
+    "module_path": "pipeline_implementations/jinav4_text_zerank2textual_pipeline.py",
+    "class_name": "JinaV4TextZeRank2TextualPipeline",
+    "hardware_information": {
+        "GPU_type": "A100-80GB",
+        "num_gpus": 1,
+        "num_cpu_cores": 12,
+        "RAM": "128GB"
+    },
     "nodes": [
         {
             "id": "retriever_node",

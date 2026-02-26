@@ -1,6 +1,15 @@
 {
     "pipeline_name": "mixedbread_mxbai-edge-colbert-v0-32m",
+    "pipeline_alias": "mixedbread/mxbai-edge-colbert-v0-32m (OCR text)",
     "description": "Retrieves relevant documents based on mixedbread/mxbai-edge-colbert-v0-32m textual retriever without additional steps",
+    "module_path": "pipeline_implementations/mxbai_edge_colbert_v0_32m_pipeline.py",
+    "class_name": "MxbaiEdgeColbertV032mPipeline",
+    "hardware_information": {
+        "GPU_type": "A100-80GB",
+        "num_gpus": 1,
+        "num_cpu_cores": 12,
+        "RAM": "128GB"
+    },
     "nodes": [
         {
             "id": "retriever_node",
