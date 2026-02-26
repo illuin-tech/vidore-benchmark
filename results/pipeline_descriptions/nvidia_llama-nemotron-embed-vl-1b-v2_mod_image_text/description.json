@@ -1,5 +1,5 @@
 {
-    "pipeline_alias": "nemotron-embed-vl-1b-v2 (image+text)",
+    "pipeline_alias": "llama-nemotron-embed-vl-1b-v2 (image+text)",
     "pipeline_name": "nvidia_llama-nemotron-embed-vl-1b-v2_mod_image_text",
     "description": "Retrieves relevant documents based on embeddings from page images + OCR text using nvidia/llama-nemotron-embed-vl-1b-v2 embedding model.",
     "class_name": "NemotronEmbedVLPipeline",
