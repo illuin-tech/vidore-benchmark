@@ -17,14 +17,12 @@ class MockPipeline(BasePipeline):
         self.results = results
         self.infos = infos
 
-    def retrieve(
-        self,
-        query_ids: List[str],
-        queries: List[str],
-        corpus_ids: List[str],
-        corpus_images: List[Any],
-        corpus_texts: List[str],
-    ):
+    def index(self, corpus_ids: List[str], corpus_images: List[Any], corpus_texts: List[str]):
+        """Mock index method."""
+        pass
+
+    def search(self, query_ids: List[str], queries: List[str]):
+        """Mock search method."""
         if self.infos is not None:
             return self.results, self.infos
         return self.results
@@ -148,7 +146,8 @@ class TestEvaluateRetrieval:
         timing = results["_timing"]
         assert "total_retrieval_time_milliseconds" in timing
         assert "num_queries" in timing
-        assert "queries_per_second" in timing
+        assert "indexing_time_milliseconds" in timing
+        assert "search_time_milliseconds" in timing
         assert timing["num_queries"] == 2
 
     def test_timing_can_be_disabled(self, simple_qrels, perfect_results, sample_inputs):
@@ -211,8 +210,11 @@ class TestEvaluateRetrieval:
         """Test that invalid pipeline return type raises ValueError."""
 
         class InvalidReturnPipeline(BasePipeline):
-            def retrieve(self, *args, **kwargs):
+            def search(self, *args, **kwargs):
                 return "not_a_dict"
+
+            def index(self, *args, **kwargs):
+                pass
 
         pipeline = InvalidReturnPipeline()
 

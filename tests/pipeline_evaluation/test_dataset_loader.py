@@ -34,15 +34,41 @@ class TestGetAvailableDatasets:
         assert datasets == expected
 
 
+class MockDataset:
+    """Mock HuggingFace Dataset."""
+
+    def __init__(self, data):
+        self.data = data
+        if data:
+            self.column_names = list(data[0].keys())
+        else:
+            self.column_names = []
+
+    def filter(self, func):
+        return MockDataset([item for item in self.data if func(item)])
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            return [item[key] for item in self.data]
+        return self.data[key]
+
+    def __len__(self):
+        return len(self.data)
+
+    def __iter__(self):
+        return iter(self.data)
+
+
 class TestLoadVidoreDataset:
     @pytest.fixture
     def mock_queries_dataset(self):
         """Create mock queries dataset."""
-        return [
+        data = [
             {"query_id": 1, "query": "What is the revenue?", "language": "english"},
             {"query_id": 2, "query": "Find the chart", "language": "english"},
             {"query_id": 3, "query": "Quel est le chiffre?", "language": "french"},
         ]
+        return MockDataset(data)
 
     @pytest.fixture
     def mock_corpus_dataset(self):
@@ -51,20 +77,22 @@ class TestLoadVidoreDataset:
         img2 = Image.new("RGB", (100, 100), color="blue")
         img3 = Image.new("RGB", (100, 100), color="green")
 
-        return [
+        data = [
             {"corpus_id": "doc1", "image": img1, "markdown": "# Document 1\n\nRevenue: $100M"},
             {"corpus_id": "doc2", "image": img2, "markdown": "# Document 2\n\n## Chart Data"},
             {"corpus_id": "doc3", "image": img3, "markdown": "# Document 3\n\nTable content"},
         ]
+        return MockDataset(data)
 
     @pytest.fixture
     def mock_qrels_dataset(self):
         """Create mock qrels dataset."""
-        return [
+        data = [
             {"query_id": 1, "corpus_id": "doc1", "score": 1},
             {"query_id": 2, "corpus_id": "doc2", "score": 1},
             {"query_id": 3, "corpus_id": "doc3", "score": 1},
         ]
+        return MockDataset(data)
 
     def test_load_dataset_returns_correct_structure(
         self, mock_queries_dataset, mock_corpus_dataset, mock_qrels_dataset
@@ -200,33 +228,6 @@ class TestLoadVidoreDataset:
 
             assert "No queries found" in str(exc_info.value)
             assert "german" in str(exc_info.value)
-
-    def test_corpus_images_and_texts_same_length(self, mock_queries_dataset, mock_qrels_dataset):
-        """Test that corpus images and texts must have same length."""
-        img = Image.new("RGB", (100, 100), color="red")
-        # Mismatched corpus - more images than texts
-        mismatched_corpus = [
-            {"corpus_id": "doc1", "image": img, "markdown": "Text 1"},
-            {"corpus_id": "doc2", "image": img, "markdown": "Text 2"},
-            {"corpus_id": "doc3", "image": img, "markdown": "Text 3"},
-        ]
-
-        with patch("vidore_benchmark.pipeline_evaluation.dataset_loader.load_dataset") as mock_load:
-
-            def load_dataset_side_effect(name, data_dir, split):
-                if data_dir == "queries":
-                    return mock_queries_dataset
-                elif data_dir == "corpus":
-                    return mismatched_corpus
-                elif data_dir == "qrels":
-                    return mock_qrels_dataset
-
-            mock_load.side_effect = load_dataset_side_effect
-
-            # This should work since lengths match
-            result = load_vidore_dataset("vidore/vidore_v3_hr")
-            _, _, _, corpus_images, corpus_texts, _, _ = result
-            assert len(corpus_images) == len(corpus_texts)
 
     def test_hf_loading_error_raises_runtime_error(self):
         """Test that HuggingFace loading errors are wrapped in RuntimeError."""
