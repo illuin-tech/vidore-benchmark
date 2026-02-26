@@ -106,28 +106,6 @@ def list_datasets():
 
 
 @app.command()
-def list_pipelines():
-    """
-    List available built-in pipeline types.
-
-    Example:
-        vidore-benchmark pipeline list-pipelines
-    """
-    print("\n" + "=" * 70)
-    print("Built-in Pipeline Types")
-    print("=" * 70)
-    print("1. random       - Random baseline pipeline")
-    print("2. file-based   - Load pre-computed results from JSON file")
-    print("=" * 70)
-    print("\nTo use a custom pipeline, use the 'evaluate' command with --module-path")
-    print("Example:")
-    print("  vidore-benchmark pipeline evaluate \\")
-    print("    --module-path my_pipeline.py \\")
-    print("    --class-name MyPipeline \\")
-    print("    --dataset-name vidore/vidore_v3_hr\n")
-
-
-@app.command()
 def evaluate(
     dataset_name: Annotated[str, typer.Option(help="Name of ViDoRe v3 dataset (e.g., 'vidore/vidore_v3_hr')")],
     pipeline_type: Annotated[

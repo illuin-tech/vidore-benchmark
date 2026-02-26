@@ -36,7 +36,7 @@ Pipeline evaluation allows you to evaluate **complete end-to-end retrieval syste
 
 To contribute your pipeline results to the leaderboard:
 
-1. **Run evaluations** using this framework on the ViDoRe v3 datasets
+1. **Run evaluations** using this framework on the ViDoRe v3 datasets **english splits** (`--language english` in cli). It tracks raw scores as well as indexing and search computing times.
 2. **Open a Pull Request** with the following:
    - **Results files**: Add your JSON result files to the `results/metrics` folder, organized as:
      ```
@@ -48,6 +48,8 @@ To contribute your pipeline results to the leaderboard:
      ```
    - **Pipeline description**: Include a `description.json` file in the same PR that describes the architecture used. A pipeline is represented as a graph of a set of modules (OCR, retriever, reranker, mcp server... linked together via edges)
      Some pipeline descriptions files example are written in `results/pipeline_descriptions`
+
+    We encourage adding as much hardware information as possible in the description to enable the community to get a feel about the latency of each pipeline.
 
 ### Installation
 
@@ -73,45 +75,22 @@ Available datasets:
 - `vidore/vidore_v3_physics` - Physics documents
 - `vidore/vidore_v3_finance_fr` - Financial documents (French)
 
-### List Available Pipelines
-
-List built-in pipeline types:
-
-```bash
-vidore-benchmark pipeline list-pipelines
-```
-
 ### Evaluate a Pipeline
 
 You can evaluate any pipeline that inherits from `BasePipeline`:
 
-#### Option 1: Built-in Pipelines
+Some pipelines are already implemented in the `pipeline_implementations` folder.
 
-**Random baseline:**
-```bash
-vidore-benchmark pipeline evaluate \
-    --dataset-name vidore/vidore_v3_hr \
-    --pipeline-type random \
-    --pipeline-args '{"seed": 42, "top_k": 10}'
-```
-
-**File-based (pre-computed results):**
-```bash
-vidore-benchmark pipeline evaluate \
-    --dataset-name vidore/vidore_v3_hr \
-    --pipeline-type file-based \
-    --pipeline-args '{"run_file_path": "results.json"}'
-```
-
-#### Option 2: Custom Pipeline
+## Custom Pipeline
 
 Evaluate your own pipeline implementation:
 
 ```bash
 vidore-benchmark pipeline evaluate \
     --dataset-name vidore/vidore_v3_hr \
-    --module-path my_pipeline.py \
+    --module-path path/to/my_pipeline.py \
     --class-name MyCustomPipeline \
+    --language english \
     --pipeline-args '{"model_name": "my-model"}'
 ```
 
@@ -123,10 +102,27 @@ class MyCustomPipeline(BasePipeline):
     def __init__(self, model_name):
         self.model_name = model_name
         # Initialize your model here
-    
-    def retrieve(self, query_ids, queries, corpus_ids, corpus):
-        # Your retrieval logic
+
+    def index(self, corpus_ids, corpus_images, corpus_texts):
+        # Indexing function to process corpus, should store anything
+        # relevant as class attributes
+        self.corpus_ids = corpus_ids
+        ...
+
+    def search(self, query_ids, queries):
+        # Your search logic, returns scores dict (see BasePipeline file for description)
         return {query_id: {corpus_id: score}}
+```
+
+### Language Filtering
+
+Some datasets contain multilingual queries. You can filter by language:
+
+```bash
+vidore-benchmark pipeline evaluate \
+    --dataset-name vidore/vidore_v3_hr \
+    --pipeline-type random \
+    --language english
 ```
 
 ### Evaluate on All Datasets
@@ -149,74 +145,16 @@ vidore-benchmark pipeline evaluate-all \
     --output-dir results/
 ```
 
-### Language Filtering
-
-Some datasets contain multilingual queries. You can filter by language:
-
-```bash
-vidore-benchmark pipeline evaluate \
-    --dataset-name vidore/vidore_v3_hr \
-    --pipeline-type random \
-    --language english
-```
-
 ## Python API
 
 ### Implementing Your Own Pipeline
 
-To evaluate a custom pipeline, inherit from `BasePipeline` and implement the `retrieve()` method:
-
-```python
-from vidore_benchmark.pipeline_evaluation import BasePipeline
-from typing import Dict, List, Any
-
-class MyCustomPipeline(BasePipeline):
-    """
-    Example: A simple two-stage pipeline with retrieval + reranking.
-    """
-    
-    def __init__(self, retriever, reranker):
-        self.retriever = retriever
-        self.reranker = reranker
-    
-    def retrieve(
-        self,
-        query_ids: List[str],
-        queries: List[str],
-        corpus_ids: List[str],
-        corpus: List[Any],  # PIL.Image objects for ViDoRe v3
-    ) -> Dict[str, Dict[str, float]]:
-        """
-        Two-stage retrieval: first-stage retrieval → reranking.
-        
-        Returns:
-            Dictionary mapping query_id to {corpus_id: score}
-        """
-        results = {}
-        
-        for query_id, query_text in zip(query_ids, queries):
-            # Stage 1: Fast first-stage retrieval (top-100)
-            candidates = self.retriever.retrieve(query_text, corpus, top_k=100)
-            
-            # Stage 2: Rerank candidates (top-10)
-            reranked = self.reranker.rerank(
-                query_text, 
-                candidates, 
-                top_k=10
-            )
-            
-            # Format results as {corpus_id: score}
-            results[query_id] = {
-                corpus_ids[idx]: score 
-                for idx, score in reranked
-            }
-        
-        return results
-```
+To evaluate a custom pipeline, inherit from `BasePipeline` and implement the `index()` and `search()` methods:
 
 ### Running Evaluation
 
 ```python
+from path_to_pipeline import MyCustomPipeline
 from vidore_benchmark.pipeline_evaluation import (
     load_vidore_dataset,
     evaluate_retrieval,
@@ -224,7 +162,7 @@ from vidore_benchmark.pipeline_evaluation import (
 )
 
 # Load dataset
-query_ids, queries, corpus_ids, corpus, qrels = load_vidore_dataset(
+query_ids, queries, corpus_ids, corpus_images, corpus_texts, qrels = load_vidore_dataset(
     dataset_name="vidore/vidore_v3_hr",
     split="test"
 )
@@ -238,7 +176,8 @@ results = evaluate_retrieval(
     query_ids=query_ids,
     queries=queries,
     corpus_ids=corpus_ids,
-    corpus=corpus,
+    corpus_images=corpus_images,
+    corpus_texts=corpus_texts,
     qrels=qrels,
     metrics=["ndcg_cut_10", "recall_10"]
 )
@@ -248,29 +187,7 @@ aggregated = aggregate_results(results)
 print(f"NDCG@10: {aggregated['ndcg_cut_10']:.4f}")
 ```
 
-### Example: Random Baseline
-
-```python
-from vidore_benchmark.pipeline_evaluation import RandomPipeline
-
-# Create a random baseline pipeline
-pipeline = RandomPipeline(seed=42, top_k=10)
-
-# Evaluate (same as above)
-results = evaluate_retrieval(pipeline, query_ids, queries, corpus_ids, corpus, qrels)
-```
-
-### Example: File-based Pipeline
-
-```python
-from vidore_benchmark.pipeline_evaluation import FileBasedPipeline
-
-# Load pre-computed results from a JSON file
-pipeline = FileBasedPipeline("my_results.json")
-
-# Evaluate
-results = evaluate_retrieval(pipeline, query_ids, queries, corpus_ids, corpus, qrels)
-```
+Some examples of pipeline implementations can be found in the `pipeline_implementations` folder
 
 ## Advanced Usage
 
@@ -354,7 +271,7 @@ print_dataset_info(
 
 ### Custom Metrics
 
-By default, the evaluation computes `ndcg@10`. You can specify custom metrics:
+You can specify custom metrics to evaluate if you want to:
 
 ```python
 results = evaluate_retrieval(
@@ -392,20 +309,9 @@ vidore_benchmark/
 │   ├── dataset_loader.py          # ViDoRe v3 dataset loading
 │   ├── evaluator.py               # Evaluation orchestration
 │   ├── utils.py                   # Helper utilities
-│   └── pipelines/
-│       ├── file_based_pipeline.py # Load pre-computed results
-│       └── random_pipeline.py     # Random baseline
 └── cli/
     └── pipeline_evaluation.py     # CLI for pipeline evaluation
 ```
-
-**Key Features:**
-- ✅ Evaluate any `BasePipeline` implementation
-- ✅ Dynamic loading of custom pipeline classes
-- ✅ Built-in pipelines (random, file-based)
-- ✅ Support for pipeline-specific arguments via JSON
-- ✅ Evaluate on single or all datasets
-- ✅ Language filtering for multilingual datasets
 
 ## Reproducibility & Legacy Features
 
