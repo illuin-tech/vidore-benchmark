@@ -3,7 +3,7 @@
   "split": "test",
   "language": "english",
   "pipeline_type": null,
-  "module_path": "pipeline_implementations/nemotron_embed_and_rerank_vl_v2_top25.py",
+  "module_path": "pipeline_implementations/nemotron_embed_and_rerank_vl_v2.py",
   "class_name": "NemotronEmbedRerankVLPipeline",
   "pipeline_args": {
     "batch_size": 32,
