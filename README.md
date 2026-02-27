@@ -199,12 +199,19 @@ Pipelines can optionally return additional tracking information alongside retrie
 from typing import Dict, List, Any, Optional, Tuple
 
 class PipelineWithMetrics(BasePipeline):
-    def retrieve(
+    def index(
+        self,
+        corpus_ids: List[str],
+        corpus_images: List[Any],
+        corpus_texts: List[str],
+    ) -> None:
+        # Indexing logic
+        ...
+
+    def search(
         self,
         query_ids: List[str],
         queries: List[str],
-        corpus_ids: List[str],
-        corpus: List[Any],
     ) -> Tuple[Dict[str, Dict[str, float]], Optional[Dict[str, Any]]]:
         """
         Return both retrieval results and optional tracking metrics.
@@ -234,7 +241,7 @@ The `infos` dictionary will be stored in the evaluation results under the `_info
 
 ```python
 class SimplePipeline(BasePipeline):
-    def retrieve(...) -> Dict[str, Dict[str, float]]:
+    def search(...) -> Dict[str, Dict[str, float]]:
         # Just return results, no tracking needed
         return results
 ```
