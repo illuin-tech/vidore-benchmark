@@ -1,3 +1,11 @@
+from .pipeline_evaluation import (
+    BasePipeline,
+    aggregate_results,
+    evaluate_retrieval,
+    get_available_datasets,
+    load_vidore_dataset,
+    print_dataset_info,
+)
 from .retrievers import (
     BaseVisionRetriever,
     BGEM3ColbertRetriever,

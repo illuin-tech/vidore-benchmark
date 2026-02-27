@@ -1,0 +1,72 @@
+{
+  "dataset": "vidore/vidore_v3_physics",
+  "split": "test",
+  "language": "english",
+  "pipeline_type": null,
+  "module_path": "pipeline_implementations/nemotron_colembed_3b_v2.py",
+  "class_name": "ColEmbed3BPipeline",
+  "pipeline_args": {},
+  "aggregated_metrics": {
+    "overall": {
+      "map": 0.39100964448992903,
+      "recip_rank": 0.6047894949522208,
+      "P_1": 0.4470198675496689,
+      "P_5": 0.2953642384105966,
+      "P_10": 0.23973509933774856,
+      "P_20": 0.17251655629139054,
+      "recall_1": 0.15493534019795785,
+      "recall_5": 0.3544524278859083,
+      "recall_10": 0.4868227425673111,
+      "recall_20": 0.6242603198456526,
+      "recall_50": 0.7680260711591727,
+      "recall_100": 0.8543951611491353,
+      "ndcg_cut_1": 0.4105960264900662,
+      "ndcg_cut_5": 0.4293895188552207,
+      "ndcg_cut_10": 0.4625316946326065,
+      "ndcg_cut_20": 0.5054591637678316,
+      "ndcg_cut_100": 0.5837663385612354,
+      "map_cut_1": 0.15493534019795785,
+      "map_cut_10": 0.31842536948812916,
+      "map_cut_100": 0.39100964448992903
+    },
+    "by_language": {
+      "english": {
+        "map": 0.39100964448992903,
+        "recip_rank": 0.6047894949522208,
+        "P_1": 0.4470198675496689,
+        "P_5": 0.2953642384105966,
+        "P_10": 0.23973509933774856,
+        "P_20": 0.17251655629139054,
+        "recall_1": 0.15493534019795785,
+        "recall_5": 0.3544524278859083,
+        "recall_10": 0.4868227425673111,
+        "recall_20": 0.6242603198456526,
+        "recall_50": 0.7680260711591727,
+        "recall_100": 0.8543951611491353,
+        "ndcg_cut_1": 0.4105960264900662,
+        "ndcg_cut_5": 0.4293895188552207,
+        "ndcg_cut_10": 0.4625316946326065,
+        "ndcg_cut_20": 0.5054591637678316,
+        "ndcg_cut_100": 0.5837663385612354,
+        "map_cut_1": 0.15493534019795785,
+        "map_cut_10": 0.31842536948812916,
+        "map_cut_100": 0.39100964448992903,
+        "num_queries": 302
+      }
+    },
+    "timing": {
+      "total_retrieval_time_milliseconds": 1429011.0023021698,
+      "indexing_time_milliseconds": 1143014.3790245056,
+      "search_time_milliseconds": 285996.6232776642,
+      "num_queries": 302,
+      "num_corpus": 1674,
+      "indexing_throughput_ms_per_doc": 682.8042885451049,
+      "search_throughput_ms_per_query": 947.0086863498814
+    },
+    "infos": {
+      "embedding_time_ms": 4691.3299560546875,
+      "retrieval_time": 75.53291320800781,
+      "total_search_time_ms": 285996.15383148193
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+    "split": "test",
+    "language": null,
+    "pipeline_args": null,
+    "info": "Those results were computed using MTEB's evaluation framework.",
+    "aggregated_metrics": {
+        "overall": {
+            "map": 0.22310876075198705,
+            "recip_rank": 0.3751850317994883,
+            "P_1": 0.22185430463576158,
+            "P_5": 0.17417218543046378,
+            "P_10": 0.14701986754966914,
+            "P_20": 0.11589403973509939,
+            "recall_1": 0.07781545421684431,
+            "recall_5": 0.22146355171532942,
+            "recall_10": 0.31299963822414556,
+            "recall_20": 0.4282952937047128,
+            "recall_50": 0.5666059367392741,
+            "recall_100": 0.6543317422955105,
+            "ndcg_cut_1": 0.21026490066225165,
+            "ndcg_cut_5": 0.25279657234503167,
+            "ndcg_cut_10": 0.2771489751085879,
+            "ndcg_cut_20": 0.31618620793629626,
+            "ndcg_cut_100": 0.391353658298114,
+            "map_cut_1": 0.07781545421684431,
+            "map_cut_10": 0.17539567182178245,
+            "map_cut_100": 0.22310876075198705,
+            "num_queries": 302
+        },
+        "by_language": {
+            "english": {
+                "map": 0.22310876075198705,
+                "recip_rank": 0.3751850317994883,
+                "P_1": 0.22185430463576158,
+                "P_5": 0.17417218543046378,
+                "P_10": 0.14701986754966914,
+                "P_20": 0.11589403973509939,
+                "recall_1": 0.07781545421684431,
+                "recall_5": 0.22146355171532942,
+                "recall_10": 0.31299963822414556,
+                "recall_20": 0.4282952937047128,
+                "recall_50": 0.5666059367392741,
+                "recall_100": 0.6543317422955105,
+                "ndcg_cut_1": 0.21026490066225165,
+                "ndcg_cut_5": 0.25279657234503167,
+                "ndcg_cut_10": 0.2771489751085879,
+                "ndcg_cut_20": 0.31618620793629626,
+                "ndcg_cut_100": 0.391353658298114,
+                "map_cut_1": 0.07781545421684431,
+                "map_cut_10": 0.17539567182178245,
+                "map_cut_100": 0.22310876075198705,
+                "num_queries": 302
+            }
+        },
+        "timing": {
+            "total_retrieval_time_milliseconds": 4524.017810821533,
+            "indexing_time_milliseconds": 3175.252676010132,
+            "search_time_milliseconds": 1348.7651348114014,
+            "num_queries": 302,
+            "num_corpus": 1674,
+            "indexing_throughput_ms_per_doc": 1.8968056606990036,
+            "search_throughput_ms_per_query": 4.466109717918547
+        },
+        "infos": {
+            "query_embed_time_ms": 215.77072143554688,
+            "scoring_time_ms": 317.59047508239746,
+            "total_search_time_ms": 1347.9464054107666,
+            "retriever_model": "mixedbread-ai/mxbai-edge-colbert-v0-32m",
+            "device": "cuda",
+            "batch_size": 32,
+            "top_k": 100,
+            "num_queries": 302,
+            "corpus_size": 1674
+        }
+    }
+}

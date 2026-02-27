@@ -1,0 +1,25 @@
+{
+    "pipeline_alias": "llama-nemotron-colembed-vl-3b-v2",
+    "pipeline_name": "nvidia_llama-nemotron-colembed-vl-3b-v2",
+    "description": "Retrieves relevant documents based on page images using nvidia/llama-nemotron-colembed-vl-3b-v2 embedding (late-interaction) model",
+    "class_name": "ColEmbed3BPipeline",
+    "module_path": "pipeline_implementations/nemotron_colembed_3b_v2.py",
+    "hardware_information": {
+        "GPU_type": "A100-SXM4-80GB",
+        "num_gpus": 1,
+        "num_cpu_cores": 32,
+        "RAM": "256 GB"
+    },
+    "nodes": [
+        {
+            "id": "retriever_node",
+            "component_type": "Retriever",
+            "model_name": "nvidia/llama-nemotron-colembed-vl-3b-v2",
+            "modalities": [
+                "visual"
+            ],
+            "description": "Queries the document store and returns the top matching results."
+        }
+    ],
+    "edges": []
+}

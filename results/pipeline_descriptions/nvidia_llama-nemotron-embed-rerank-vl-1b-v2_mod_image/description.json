@@ -1,0 +1,40 @@
+{
+    "pipeline_alias": "llama-nemotron-embed-vl + rerank-vl-1b-v2 (image)",
+    "pipeline_name": "nvidia_llama-nemotron-embed-rerank-vl-1b-v2_mod_image",
+    "description": "Retrieves relevant documents based on embeddings from page images using nvidia/llama-nemotron-embed-vl-1b-v2 embedding model + nvidia/llama-nemotron-rerank-vl-1b-v2 reranker model.",
+    "class_name": "NemotronEmbedRerankVLPipeline",
+    "module_path": "pipeline_implementations/nemotron_embed_and_rerank_vl_v2.py",
+    "hardware_information": {
+        "GPU_type": "A100-SXM4-80GB",
+        "num_gpus": 1,
+        "num_cpu_cores": 32,
+        "RAM": "256 GB"
+    },
+    "nodes": [
+        {
+            "id": "retriever_node",
+            "component_type": "Retriever",
+            "model_name": "nvidia/llama-nemotron-embed-vl-1b-v2",
+            "modalities": [
+                "visual"
+            ],
+            "description": "Queries the document store and returns the top matching results."
+        },
+        {
+            "id": "reranker_node",
+            "component_type": "Reranker",
+            "model_name": "nvidia/llama-nemotron-rerank-vl-1b-v2",
+            "modalities": [
+                "visual"
+            ],
+            "description": "Reranks the retrieved documents based on relevance to the query."
+        }
+    ],
+    "edges": [
+        {
+            "source": "retriever_node",
+            "target": "reranker_node",
+            "description": "Passes the retrieved documents to the reranker for further processing."
+        }
+    ]
+}

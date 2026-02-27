@@ -1,0 +1,81 @@
+{
+    "split": "test",
+    "language": null,
+    "pipeline_args": null,
+    "info": "Those results were computed using MTEB's evaluation framework.",
+    "aggregated_metrics": {
+        "overall": {
+            "map": 0.7326186796668034,
+            "recip_rank": 0.906921373200443,
+            "P_1": 0.8418604651162791,
+            "P_5": 0.5060465116279075,
+            "P_10": 0.3316279069767442,
+            "P_20": 0.20720930232558138,
+            "recall_1": 0.31724206026531626,
+            "recall_5": 0.6826753479079064,
+            "recall_10": 0.7984162091138832,
+            "recall_20": 0.9065860108883363,
+            "recall_50": 0.9661552142947494,
+            "recall_100": 0.9786929349720047,
+            "ndcg_cut_1": 0.786046511627907,
+            "ndcg_cut_5": 0.7729566405617866,
+            "ndcg_cut_10": 0.787825026672689,
+            "ndcg_cut_20": 0.8264474112400173,
+            "ndcg_cut_100": 0.8506296396296108,
+            "map_cut_1": 0.31724206026531626,
+            "map_cut_10": 0.676145204509407,
+            "map_cut_100": 0.7326186796668034,
+            "num_queries": 215
+        },
+        "by_language": {
+            "english": {
+                "map": 0.7326186796668034,
+                "recip_rank": 0.906921373200443,
+                "P_1": 0.8418604651162791,
+                "P_5": 0.5060465116279075,
+                "P_10": 0.3316279069767442,
+                "P_20": 0.20720930232558138,
+                "recall_1": 0.31724206026531626,
+                "recall_5": 0.6826753479079064,
+                "recall_10": 0.7984162091138832,
+                "recall_20": 0.9065860108883363,
+                "recall_50": 0.9661552142947494,
+                "recall_100": 0.9786929349720047,
+                "ndcg_cut_1": 0.786046511627907,
+                "ndcg_cut_5": 0.7729566405617866,
+                "ndcg_cut_10": 0.787825026672689,
+                "ndcg_cut_20": 0.8264474112400173,
+                "ndcg_cut_100": 0.8506296396296108,
+                "map_cut_1": 0.31724206026531626,
+                "map_cut_10": 0.676145204509407,
+                "map_cut_100": 0.7326186796668034,
+                "num_queries": 215
+            }
+        },
+        "timing": {
+            "total_retrieval_time_milliseconds": 3983988.7400865555,
+            "indexing_time_milliseconds": 382377.6614665985,
+            "search_time_milliseconds": 3601611.078619957,
+            "num_queries": 215,
+            "num_corpus": 1360,
+            "indexing_throughput_ms_per_doc": 281.1600451960283,
+            "search_throughput_ms_per_query": 16751.67943544166
+        },
+        "infos": {
+            "query_embed_time_ms": 28472.74684906006,
+            "similarity_time_ms": 8443.212747573853,
+            "rerank_time_ms": 3564695.119023323,
+            "total_search_time_ms": 3601611.078619957,
+            "retriever_model": "jinaai/jina-embeddings-v4",
+            "reranker_model": "jinaai/jina-reranker-m0",
+            "device": "cuda",
+            "batch_size": 1,
+            "scoring_batch_size": 128,
+            "rerank_batch_size": 1,
+            "retriever_top_k": 100,
+            "final_top_k": 100,
+            "num_queries": 215,
+            "corpus_size": 1360
+        }
+    }
+}

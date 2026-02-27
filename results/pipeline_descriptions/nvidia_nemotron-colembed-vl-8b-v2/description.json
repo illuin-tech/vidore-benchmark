@@ -1,0 +1,27 @@
+{
+    "pipeline_alias": "nemotron-colembed-vl-8b-v2",
+    "pipeline_name": "nvidia_nemotron-colembed-vl-8b-v2",
+    "description": "Retrieves relevant documents based on image embeddings using nvidia/nemotron-colembed-vl-8b-v2 embedding model with late interaction.",
+    "class_name": "NemotronColEmbed8BPipeline",
+    "module_path": "pipeline_implementations/nemotron_colembed_8b_v2.py",
+    "hardware_information": {
+        "GPU_type": "A100-SXM4-80GB",
+        "num_gpus": 1,
+        "num_cpu_cores": 32,
+        "RAM": "256 GB"
+    },
+    "nodes": [
+        {
+            "id": "retriever_node",
+            "component_type": "Retriever",
+            "model_name": "nvidia/nemotron-colembed-vl-8b-v2",
+            "modalities": [
+                "visual"
+            ],
+            "description": "Queries the document store and returns the top matching results."
+        }
+    ],
+    "edges": [
+        
+    ]
+}

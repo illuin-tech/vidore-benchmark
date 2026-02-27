@@ -1,0 +1,25 @@
+{
+    "pipeline_alias": "qwen3-embedding-8b",
+    "pipeline_name": "qwen_qwen3-embedding-8b",
+    "description": "Retrieves relevant documents based on qwen/qwen3-embedding-8b textual retriever without additional steps",
+    "module_path": "pipeline_implementations/qwen3_embedding_8b_pipeline.py",
+    "class_name": "Qwen3Embedding8BPipeline",
+    "hardware_information": {
+        "GPU_type": "A100-80GB",
+        "num_gpus": 1,
+        "num_cpu_cores": 12,
+        "RAM": "128GB"
+    },
+    "nodes": [
+        {
+            "id": "retriever_node",
+            "component_type": "Retriever",
+            "model_name": "Qwen/Qwen3-Embedding-8B",
+            "modalities": [
+                "textual"
+            ],
+            "description": "Queries the document store and returns the top matching results."
+        }
+    ],
+    "edges": []
+}

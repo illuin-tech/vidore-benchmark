@@ -9,6 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
+      # Configure the action to check only specific folders
       - uses: astral-sh/ruff-action@v3
-      - run: ruff check --fix
-      - run: ruff format --check
+        with:
+          # Limit the default check to these folders
+          src: "./src ./tests"
+          # Add the fix flag directly here
+          args: "check --fix"
+      
+      - run: ruff format --check src tests

@@ -1,0 +1,40 @@
+{
+    "pipeline_name": "jinav4_vision_jina-reranker-m0",
+    "pipeline_alias": "jina-embeddings-v4 + jina-reranker-m0 (image)",
+    "description": "Retrieves relevant documents based on image embeddings using jinaai/jina-embeddings-v4 and jinaai/jina-reranker-m0 for reranking.",
+    "module_path": "pipeline_implementations/jinav4_vision_jinavisualreranker_pipeline.py",
+    "class_name": "JinaV4VisionJinaVisualRerankerPipeline",
+    "hardware_information": {
+        "GPU_type": "A100-80GB",
+        "num_gpus": 1,
+        "num_cpu_cores": 12,
+        "RAM": "128GB"
+    },
+    "nodes": [
+        {
+            "id": "retriever_node",
+            "component_type": "Retriever",
+            "model_name": "jinaai/jina-embeddings-v4",
+            "modalities": [
+                "visual"
+            ],
+            "description": "Queries the document store and returns the top matching results."
+        },
+        {
+            "id": "reranker_node",
+            "component_type": "Reranker",
+            "model_name": "jinaai/jina-reranker-m0",
+            "modalities": [
+                "visual"
+            ],
+            "description": "Reranks the retrieved documents based on relevance to the query."
+        }
+    ],
+    "edges": [
+        {
+            "source": "retriever_node",
+            "target": "reranker_node",
+            "description": "Passes the retrieved documents to the reranker for further processing."
+        }
+    ]
+}
