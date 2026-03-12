@@ -1,0 +1,99 @@
+{
+  "dataset": "vidore/vidore_v3_finance_en",
+  "split": "test",
+  "language": "english",
+  "query_ids_selector": null,
+  "traces_dir": "traces",
+  "trace_run_name": "AgenticRetrievalPipeline__nemotron-colembed-vl-8b-v2__claude-opus-4-5",
+  "pipeline_label": "agentic-retrieval/nemotron-colembed-vl-8b-v2",
+  "pipeline_args": {
+    "backend": "nemotron-colembed-vl-8b-v2",
+    "llm_model": "openai/aws/anthropic/claude-opus-4-5",
+    "num_concurrent": 1,
+    "reasoning_effort": "high",
+    "target_top_k": 10,
+    "retriever_top_k": 500
+  },
+  "aggregated_metrics": {
+    "overall": {
+      "map": 0.6567668459546471,
+      "recip_rank": 0.8497110494683311,
+      "P_1": 0.7799352750809061,
+      "P_5": 0.4258899676375413,
+      "P_10": 0.287378640776699,
+      "P_20": 0.1436893203883495,
+      "recall_1": 0.35882760140657893,
+      "recall_5": 0.6590966163318804,
+      "recall_10": 0.7820466670393028,
+      "recall_20": 0.7820466670393028,
+      "recall_50": 0.7820466670393028,
+      "recall_100": 0.7820466670393028,
+      "ndcg_cut_1": 0.7475728155339806,
+      "ndcg_cut_5": 0.7346118550102307,
+      "ndcg_cut_10": 0.7588381428140882,
+      "ndcg_cut_20": 0.7483214887411541,
+      "ndcg_cut_100": 0.7482113609493929,
+      "map_cut_1": 0.35882760140657893,
+      "map_cut_10": 0.6567668459546471,
+      "map_cut_100": 0.6567668459546471
+    },
+    "by_language": {
+      "english": {
+        "map": 0.6567668459546471,
+        "recip_rank": 0.8497110494683311,
+        "P_1": 0.7799352750809061,
+        "P_5": 0.4258899676375413,
+        "P_10": 0.287378640776699,
+        "P_20": 0.1436893203883495,
+        "recall_1": 0.35882760140657893,
+        "recall_5": 0.6590966163318804,
+        "recall_10": 0.7820466670393028,
+        "recall_20": 0.7820466670393028,
+        "recall_50": 0.7820466670393028,
+        "recall_100": 0.7820466670393028,
+        "ndcg_cut_1": 0.7475728155339806,
+        "ndcg_cut_5": 0.7346118550102307,
+        "ndcg_cut_10": 0.7588381428140882,
+        "ndcg_cut_20": 0.7483214887411541,
+        "ndcg_cut_100": 0.7482113609493929,
+        "map_cut_1": 0.35882760140657893,
+        "map_cut_10": 0.6567668459546471,
+        "map_cut_100": 0.6567668459546471,
+        "num_queries": 309
+      }
+    },
+    "timing": {
+      "total_retrieval_time_milliseconds": 48147602.2769001,
+      "total_retrieval_time_milliseconds_executed": 0,
+      "indexing_time_milliseconds": 206030.7161808014,
+      "average_time_per_query_milliseconds": 155817.48309676407,
+      "total_wall_time_milliseconds": 208353.01613702904,
+      "expected_num_queries": 309,
+      "num_queries": 309,
+      "num_corpus": 2942,
+      "missing_num_queries": 0,
+      "queries_per_second": 0.006417765067986568,
+      "num_queries_loaded_from_trace": 309,
+      "num_queries_executed": 0,
+      "indexing_throughput_ms_per_doc": 392.6052999,
+      "search_throughput_ms_per_query": 155817.48
+    },
+    "infos": {
+      "tracing": {
+        "traces_dir": "traces",
+        "trace_run_name": "AgenticRetrievalPipeline__nemotron-colembed-vl-8b-v2__claude-opus-4-5",
+        "dataset_dir": "vidore_v3_finance_en"
+      },
+      "pipeline_infos": {
+        "llm_error_query_ids": [],
+        "llm_total_prompt_tokens": 263853849,
+        "llm_total_completion_tokens": 1817575,
+        "llm_total_tokens": 265671424,
+        "avg_trajectory_steps": 20.15210355987055,
+        "avg_llm_turns": 7.611650485436893,
+        "avg_retrieval_calls": 6.699029126213592
+      }
+    }
+  },
+  "wall_time_per_query_milliseconds": 674.2816056214532
+}
