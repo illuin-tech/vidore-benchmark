@@ -1,0 +1,95 @@
+{
+  "dataset": "vidore/vidore_v3_physics",
+  "split": "test",
+  "language": "english",  
+  "pipeline_args": {
+    "backend": "nemotron-colembed-vl-8b-v2",
+    "llm_model": "openai/aws/anthropic/claude-opus-4-5",
+    "num_concurrent": 1,
+    "reasoning_effort": "high",
+    "target_top_k": 10,
+    "retriever_top_k": 500
+  },
+  "aggregated_metrics": {
+    "overall": {
+      "map": 0.3206067329571538,
+      "recip_rank": 0.5974219489120154,
+      "P_1": 0.4470198675496689,
+      "P_5": 0.2953642384105967,
+      "P_10": 0.22980132450331128,
+      "P_20": 0.11490066225165564,
+      "recall_1": 0.15533827670227324,
+      "recall_5": 0.37574392849460414,
+      "recall_10": 0.49053804468454915,
+      "recall_20": 0.49053804468454915,
+      "recall_50": 0.49053804468454915,
+      "recall_100": 0.49053804468454915,
+      "ndcg_cut_1": 0.41721854304635764,
+      "ndcg_cut_5": 0.4447399280137823,
+      "ndcg_cut_10": 0.4658578787721269,
+      "ndcg_cut_20": 0.447669731566664,
+      "ndcg_cut_100": 0.44689393456273113,
+      "map_cut_1": 0.15533827670227324,
+      "map_cut_10": 0.3206067329571538,
+      "map_cut_100": 0.3206067329571538
+    },
+    "by_language": {
+      "english": {
+        "map": 0.3206067329571538,
+        "recip_rank": 0.5974219489120154,
+        "P_1": 0.4470198675496689,
+        "P_5": 0.2953642384105967,
+        "P_10": 0.22980132450331128,
+        "P_20": 0.11490066225165564,
+        "recall_1": 0.15533827670227324,
+        "recall_5": 0.37574392849460414,
+        "recall_10": 0.49053804468454915,
+        "recall_20": 0.49053804468454915,
+        "recall_50": 0.49053804468454915,
+        "recall_100": 0.49053804468454915,
+        "ndcg_cut_1": 0.41721854304635764,
+        "ndcg_cut_5": 0.4447399280137823,
+        "ndcg_cut_10": 0.4658578787721269,
+        "ndcg_cut_20": 0.447669731566664,
+        "ndcg_cut_100": 0.44689393456273113,
+        "map_cut_1": 0.15533827670227324,
+        "map_cut_10": 0.3206067329571538,
+        "map_cut_100": 0.3206067329571538,
+        "num_queries": 302
+      }
+    },
+    "timing": {
+      "total_retrieval_time_milliseconds": 53248303.12900536,
+      "search_time_milliseconds": 53174727.508115694,
+      "indexing_time_milliseconds": 73575.6208896637,      
+      "num_queries": 302,
+      "num_corpus": 1674,      
+      "indexing_throughput_ms_per_doc": 442.522169,
+      "search_throughput_ms_per_query": 176075.26
+    },
+    "infos": {
+      "tracing": {
+        "traces_dir": "traces",
+        "trace_run_name": "AgenticRetrievalPipeline__nemotron-colembed-vl-8b-v2__claude-opus-4-5",
+        "dataset_dir": "vidore_v3_physics"
+      },
+      "pipeline_infos": {
+        "backend": "nemotron-colembed-vl-8b-v2",
+        "model_id": "nvidia/nemotron-colembed-vl-8b-v2",
+        "retriever_top_k": 500,
+        "retriever_init_ms": 42532.955239061266,
+        "per_query_retrieval_time_milliseconds": {
+          "602": 124868.01400803961,
+          "603": 136882.74642499164
+        },
+        "llm_error_query_ids": [],
+        "llm_total_prompt_tokens": 178492512,
+        "llm_total_completion_tokens": 2222986,
+        "llm_total_tokens": 180715498,
+        "avg_trajectory_steps": 29.7317880794702,
+        "avg_llm_turns": 10.609271523178808,
+        "avg_retrieval_calls": 12.887417218543046
+      }
+    }
+  }
+}

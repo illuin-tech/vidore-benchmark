@@ -1,0 +1,79 @@
+{
+    "pipeline_alias": "NeMo Retriever Agentic (ColEmbed-VL-8B + Opus 4.5)",
+    "pipeline_name": "nvidia_nemo-retriever-agentic_colembed-vl-8b-v2_opus-4-5",
+    "description": "Agentic retrieval pipeline where the agent LLM (Opus 4.5) has a loop rewriting the query and retrieving more content (using ColEmbed-VL-8B embedding model), until the agent thinks it has enough candidates to select and rank top-k relevant pages.",
+    "class_name": "AgenticRetrievalPipeline",
+    "module_path": "https://github.com/NVIDIA/NeMo-Retriever/blob/main/retrieval-bench/src/retrieval_bench/pipelines/agentic.py",    
+    "info_url": "https://github.com/NVIDIA/NeMo-Retriever/blob/main/retrieval-bench/submissions/vidore_v3_agentic_pipeline.md",
+    "hardware_information": {
+        "GPU_type": "A100-SXM4-80GB",
+        "num_gpus": 1,
+        "num_cpu_cores": 32,
+        "RAM": "256 GB"
+    },
+    "nodes": [
+        {
+            "id": "llm_agent",
+            "component_type": "Agent",
+            "model_name": "anthropic/claude-opus-4-5",
+            "modalities": [
+                "visual"
+            ],
+            "description": "LLM Agent with a loop that rewrites original query and calls retrieve tool to get pages. It might decide to stop retrieving more content, and then select and rank top-k relevant pages."
+        },
+        {
+            "id": "think_tool",
+            "component_type": "llm",
+            "model_name": "anthropic/claude-opus-4-5",
+            "modalities": [
+                "text"
+            ],
+            "description": "If the query is complex or vague, the agent might decide to call this tool to reason about the query and plan the actions."
+        },
+        {
+            "id": "retrieve_tool",
+            "component_type": "retriever",
+            "model_name": "nvidia/nemotron-colembed-vl-8b-v2",
+            "modalities": [
+                "text"
+            ],
+            "description": "Retrieves top-k relevant content for a query (original or rewritten) using an embedding model, in this case, the nvidia/nemotron-colembed-vl-8b-v2 model (late-interaction)."
+        },
+        {
+            "id": "select_rerank_tool",
+            "component_type": "llm_reranker",
+            "model_name": "anthropic/claude-opus-4-5",
+            "modalities": [
+                "text"
+            ],
+            "description": "Selects and reranks top-k relevant pages from the pool, retrieved by the multiple retrieval tool calls."
+        }
+    ],
+    "edges": [
+        {
+            "source": "llm_agent",
+            "target": "think_tool",
+            "description": "Query is vague or complex, and agent calls think tool to reason more."
+        },
+        {
+            "source": "think_tool",
+            "target": "llm_agent",
+            "description": "Reasoning text is returned to the LLM agent."
+        },
+        {
+            "source": "llm_agent",
+            "target": "retrieve_tool",
+            "description": "Agent rewrites the query and calls retrieve tool."
+        },
+        {
+            "source": "retrieve_tool",
+            "target": "llm_agent",
+            "description": "Top-k retrieved pages are returned to the agent."
+        },
+        {
+            "source": "llm_agent",
+            "target": "select_rerank_tool",
+            "description": "Selects and rerankes top-k pages among pages retrieved in the many retrieve tool calls."
+        }
+    ]
+}
