@@ -2,6 +2,9 @@
   "dataset": "vidore/vidore_v3_hr",
   "split": "test",
   "language": "english",  
+  "pipeline_type": null,
+  "module_path": "https://github.com/NVIDIA/NeMo-Retriever/blob/main/retrieval-bench/src/retrieval_bench/pipelines/agentic.py",
+  "class_name": "AgenticRetrievalPipeline",
   "pipeline_args": {
     "backend": "nemotron-colembed-vl-8b-v2",
     "llm_model": "openai/aws/anthropic/claude-opus-4-5",
