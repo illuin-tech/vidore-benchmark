@@ -1,11 +1,7 @@
 {
   "dataset": "vidore/vidore_v3_industrial",
   "split": "test",
-  "language": "english",
-  "query_ids_selector": null,
-  "traces_dir": "traces",
-  "trace_run_name": "AgenticRetrievalPipeline__nemotron-colembed-vl-8b-v2__claude-opus-4-5",
-  "pipeline_label": "agentic-retrieval/nemotron-colembed-vl-8b-v2",
+  "language": "english",  
   "pipeline_args": {
     "backend": "nemotron-colembed-vl-8b-v2",
     "llm_model": "openai/aws/anthropic/claude-opus-4-5",
@@ -63,18 +59,11 @@
       }
     },
     "timing": {
-      "total_retrieval_time_milliseconds": 50092782.565775774,
-      "total_retrieval_time_milliseconds_executed": 9376279.11178628,
-      "indexing_time_milliseconds": 290150.69699287415,
-      "average_time_per_query_milliseconds": 177006.29881899568,
-      "total_wall_time_milliseconds": 9672248.60559986,
-      "expected_num_queries": 283,
+      "total_retrieval_time_milliseconds": 50382933.26276865,
+      "search_time_milliseconds": 50092782.565775774,
+      "indexing_time_milliseconds": 290150.69699287415,      
       "num_queries": 283,
-      "num_corpus": 5244,
-      "missing_num_queries": 0,
-      "queries_per_second": 0.005649516467335363,
-      "num_queries_loaded_from_trace": 227,
-      "num_queries_executed": 56,
+      "num_corpus": 5244,      
       "indexing_throughput_ms_per_doc": 384.1294548,
       "search_throughput_ms_per_query": 177006.30
     },
@@ -156,6 +145,5 @@
         "avg_retrieval_calls": 9.72791519434629
       }
     }
-  },
-  "wall_time_per_query_milliseconds": 34177.55691024685
+  }
 }

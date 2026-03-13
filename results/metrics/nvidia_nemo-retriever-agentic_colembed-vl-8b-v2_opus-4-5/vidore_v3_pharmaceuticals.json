@@ -1,11 +1,7 @@
 {
   "dataset": "vidore/vidore_v3_pharmaceuticals",
   "split": "test",
-  "language": "english",
-  "query_ids_selector": null,
-  "traces_dir": "traces",
-  "trace_run_name": "AgenticRetrievalPipeline__nemotron-colembed-vl-8b-v2__claude-opus-4-5",
-  "pipeline_label": "agentic-retrieval/nemotron-colembed-vl-8b-v2",
+  "language": "english",  
   "pipeline_args": {
     "backend": "nemotron-colembed-vl-8b-v2",
     "llm_model": "openai/aws/anthropic/claude-opus-4-5",
@@ -63,18 +59,11 @@
       }
     },
     "timing": {
-      "total_retrieval_time_milliseconds": 46479814.89931589,
-      "total_retrieval_time_milliseconds_executed": 5810052.919414826,
-      "indexing_time_milliseconds": 103862.47324943542,
-      "average_time_per_query_milliseconds": 127691.79917394476,
-      "total_wall_time_milliseconds": 5921212.2714170255,
-      "expected_num_queries": 364,
+      "total_retrieval_time_milliseconds": 46583677.37256533,
+      "search_time_milliseconds": 46479814.89931589,
+      "indexing_time_milliseconds": 103862.47324943542,      
       "num_queries": 364,
-      "num_corpus": 2313,
-      "missing_num_queries": 0,
-      "queries_per_second": 0.007831356488585274,
-      "num_queries_loaded_from_trace": 315,
-      "num_queries_executed": 49,
+      "num_corpus": 2313,      
       "indexing_throughput_ms_per_doc": 354.5147861,
       "search_throughput_ms_per_query": 127691.80
     },
@@ -149,6 +138,5 @@
         "avg_retrieval_calls": 14.815934065934066
       }
     }
-  },
-  "wall_time_per_query_milliseconds": 16267.066679717103
+  }
 }
