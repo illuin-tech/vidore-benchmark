@@ -1,0 +1,255 @@
+name: Validate Results JSON
+
+on:
+  pull_request:
+    paths:
+      - "results/metrics/**"
+      - "results/pipeline_descriptions/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-json:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate changed JSON files
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          mapfile -t changed_json_files < <(
+            git diff --name-only --diff-filter=ACMRD "$BASE_SHA" "$HEAD_SHA" \
+              -- ':(glob)results/metrics/**/*.json' \
+                 ':(glob)results/pipeline_descriptions/**/*.json'
+          )
+
+          if [ ${#changed_json_files[@]} -eq 0 ]; then
+            echo "No changed JSON files to validate."
+            exit 0
+          fi
+
+          printf '%s\n' "${changed_json_files[@]}" > changed_json_files.txt
+
+          python - <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          paths = [Path(line.strip()) for line in Path("changed_json_files.txt").read_text().splitlines() if line.strip()]
+          errors = []
+
+          # Derive model names only from well-structured paths:
+          # results/{metrics,pipeline_descriptions}/<model>/<file>.json
+          model_names = set(
+              p.parts[2]
+              for p in paths
+              if (
+                  len(p.parts) == 4
+                  and p.parts[0] == "results"
+                  and p.parts[1] in {"metrics", "pipeline_descriptions"}
+                  and p.suffix == ".json"
+              )
+          )
+
+          # Detect JSON files under results/{metrics,pipeline_descriptions} that do not
+          # match the expected layout and report them explicitly.
+          for p in paths:
+              if (
+                  len(p.parts) >= 2
+                  and p.parts[0] == "results"
+                  and p.parts[1] in {"metrics", "pipeline_descriptions"}
+                  and p.suffix == ".json"
+                  and not (len(p.parts) == 4)
+              ):
+                  errors.append(
+                      f"Unexpected JSON file location: {p}. Expected layout "
+                      "results/{metrics,pipeline_descriptions}/<model>/<file>.json."
+                  )
+
+          required_metrics_file_names_for_submission = {
+              "vidore_v3_computer_science.json",
+              "vidore_v3_energy.json",
+              "vidore_v3_finance_en.json",
+              "vidore_v3_finance_fr.json",
+              "vidore_v3_hr.json",
+              "vidore_v3_industrial.json",
+              "vidore_v3_pharmaceuticals.json",
+              "vidore_v3_physics.json",
+          }
+
+          metrics_paths = [
+              p
+              for p in paths
+              if len(p.parts) == 4 and p.parts[0] == "results" and p.parts[1] == "metrics" and p.suffix == ".json"
+          ]
+          description_paths = [
+              p
+              for p in paths
+              if len(p.parts) == 4 and p.parts[0] == "results" and p.parts[1] == "pipeline_descriptions" and p.suffix == ".json"
+          ]
+
+          required_description_keys = {
+              "pipeline_name",
+              "pipeline_alias",
+              "description",
+              "class_name",
+              "module_path",
+              "nodes",
+              "edges"
+          }
+
+          required_top_level_keys = {"split", "language", "pipeline_args", "aggregated_metrics"}
+          required_aggregated_metrics_keys = {"overall", "by_language", "timing"}
+          required_overall_metric_keys = {
+              "map",
+              "recip_rank",
+              "P_1",
+              "P_5",
+              "P_10",
+              "P_20",
+              "recall_1",
+              "recall_5",
+              "recall_10",
+              "recall_20",
+              "recall_50",
+              "recall_100",
+              "ndcg_cut_1",
+              "ndcg_cut_5",
+              "ndcg_cut_10",
+              "ndcg_cut_20",
+              "ndcg_cut_100",
+              "map_cut_1",
+              "map_cut_10",
+              "map_cut_100",
+              "num_queries",
+          }
+          required_timing_keys = {
+              "total_retrieval_time_milliseconds",
+              "indexing_time_milliseconds",
+              "search_time_milliseconds",
+              "num_queries",
+              "num_corpus",
+              "indexing_throughput_ms_per_doc",
+              "search_throughput_ms_per_query",
+          }
+
+          def add_not_all_required_files_errors(folder_path, actual_files, required_files):
+              "for each submission model folder (e.g., results/metrics/jinav4_text_zerank2textual), check that all required files are present"
+              missing = sorted(required_files - set(actual_files))
+              if missing:
+                  errors.append(f"{folder_path}: missing files: {', '.join(missing)}")
+
+          def validate_required_files_for_submission(metrics_folder_path):
+              actual_files = [p.name for p in Path(metrics_folder_path).glob("*.json")]
+              add_not_all_required_files_errors(metrics_folder_path, actual_files, required_metrics_file_names_for_submission)
+
+          def add_missing_key_errors(file_path, actual_keys, required_keys, section_name):
+              missing = sorted(required_keys - set(actual_keys))
+              if missing:
+                  errors.append(f"{file_path}: missing keys in {section_name}: {', '.join(missing)}")
+
+          def validate_description_schema(file_path, payload):
+              add_missing_key_errors(file_path, payload.keys(), required_description_keys, "root")
+
+          def validate_metrics_schema(file_path, payload):
+              add_missing_key_errors(file_path, payload.keys(), required_top_level_keys, "root")
+
+              aggregated = payload.get("aggregated_metrics")
+              if not isinstance(aggregated, dict):
+                errors.append(f"{file_path}: key 'aggregated_metrics' must be an object")
+                return
+
+              add_missing_key_errors(
+                  file_path,
+                  aggregated.keys(),
+                  required_aggregated_metrics_keys,
+                  "aggregated_metrics",
+              )
+
+              overall = aggregated.get("overall")
+              if not isinstance(overall, dict):
+                errors.append(f"{file_path}: key 'aggregated_metrics.overall' must be an object")
+              else:
+                add_missing_key_errors(
+                    file_path,
+                    overall.keys(),
+                  required_overall_metric_keys,
+                    "aggregated_metrics.overall",
+                )
+
+              by_language = aggregated.get("by_language")
+              if not isinstance(by_language, dict):
+                errors.append(f"{file_path}: key 'aggregated_metrics.by_language' must be an object")
+              else:
+                english = by_language.get("english")
+                if not isinstance(english, dict):
+                  errors.append(
+                    f"{file_path}: key 'aggregated_metrics.by_language.english' must be an object"
+                  )
+                else:
+                  add_missing_key_errors(
+                    file_path,
+                    english.keys(),
+                    required_overall_metric_keys,
+                    "aggregated_metrics.by_language.english",
+                  )
+
+              timing = aggregated.get("timing")
+              if not isinstance(timing, dict):
+                errors.append(f"{file_path}: key 'aggregated_metrics.timing' must be an object")
+              else:
+                add_missing_key_errors(
+                    file_path,
+                    timing.keys(),
+                  required_timing_keys,
+                    "aggregated_metrics.timing",
+                )
+
+          for model_name in model_names:
+              metrics_folder = Path("results/metrics") / model_name
+              validate_required_files_for_submission(metrics_folder)
+
+              description_folder = Path("results/pipeline_descriptions") / model_name
+              description_file_path = description_folder / "description.json"
+              if not description_file_path.exists():
+                  errors.append(f"{description_file_path}: missing pipeline description file for model {model_name}")
+
+          for path in paths:
+              if not path.exists():
+                  # File might have been removed or renamed after diff selection.
+                  continue
+              try:
+                  with path.open("r", encoding="utf-8") as fh:
+                      payload = json.load(fh)
+              except json.JSONDecodeError as exc:
+                  errors.append(f"{path}: line {exc.lineno}, column {exc.colno} -> {exc.msg}")
+                  continue
+
+              # Enforce metrics schema only for files under results/metrics/*/*.json.
+              if path in metrics_paths:
+                  validate_metrics_schema(path, payload)
+              elif path in description_paths:
+                  validate_description_schema(path, payload)
+
+          if errors:
+              print("JSON validation failed:")
+              for err in errors:
+                  print(f"- {err}")
+              sys.exit(1)
+
+          print(f"Validated {len(paths)} JSON file(s) successfully.")
+          PY
