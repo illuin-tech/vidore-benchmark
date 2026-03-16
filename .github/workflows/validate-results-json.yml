@@ -27,7 +27,7 @@ jobs:
           set -euo pipefail
 
           mapfile -t changed_json_files < <(
-            git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA" \
+            git diff --name-only --diff-filter=ACMRD "$BASE_SHA" "$HEAD_SHA" \
               -- ':(glob)results/metrics/**/*.json' \
                  ':(glob)results/pipeline_descriptions/**/*.json'
           )
