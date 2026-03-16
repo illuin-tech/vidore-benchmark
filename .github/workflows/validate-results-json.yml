@@ -47,6 +47,19 @@ jobs:
           paths = [Path(line.strip()) for line in Path("changed_json_files.txt").read_text().splitlines() if line.strip()]
           errors = []
 
+          model_names = set(p.parts[2] for p in paths if len(p.parts) >= 3 and p.parts[0] == "results" and p.parts[1] in {"metrics", "pipeline_descriptions"})
+
+          required_metrics_file_names_for_submission = {
+              "vidore_v3_computer_science.json",
+              "vidore_v3_energy.json",
+              "vidore_v3_finance_en.json",
+              "vidore_v3_finance_fr.json",
+              "vidore_v3_hr.json",
+              "vidore_v3_industrial.json",
+              "vidore_v3_pharmaceuticals.json",
+              "vidore_v3_physics.json",
+          }
+
           metrics_paths = [
               p
               for p in paths
@@ -102,6 +115,16 @@ jobs:
               "indexing_throughput_ms_per_doc",
               "search_throughput_ms_per_query",
           }
+
+          def add_not_all_required_files_errors(folder_path, actual_files, required_files):
+              "for each sumbission model forlder (e.g, results/metrics/jinav4_text_zerank2textual), check that all required files are present"
+              missing = sorted(required_files - set(actual_files))
+              if missing:
+                  errors.append(f"{folder_path}: missing files: {', '.join(missing)}")
+
+          def validate_required_files_for_submission(metrics_folder_path):
+              actual_files = [p.name for p in Path(metrics_folder_path).glob("*.json")]
+              add_not_all_required_files_errors(metrics_folder_path, actual_files, required_metrics_file_names_for_submission)
 
           def add_missing_key_errors(file_path, actual_keys, required_keys, section_name):
               missing = sorted(required_keys - set(actual_keys))
@@ -164,6 +187,15 @@ jobs:
                   required_timing_keys,
                     "aggregated_metrics.timing",
                 )
+
+          for model_name in model_names:
+              metrics_folder = Path("results/metrics") / model_name
+              validate_required_files_for_submission(metrics_folder)
+
+              description_folder = Path("results/pipeline_descriptions") / model_name
+              description_file_path = description_folder / "description.json"
+              if not description_file_path.exists():
+                  errors.append(f"{description_file_path}: missing pipeline description file for model {model_name}")
 
           for path in paths:
               if not path.exists():
