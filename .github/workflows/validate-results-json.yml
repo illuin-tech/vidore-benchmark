@@ -52,7 +52,33 @@ jobs:
           paths = [Path(line.strip()) for line in Path("changed_json_files.txt").read_text().splitlines() if line.strip()]
           errors = []
 
-          model_names = set(p.parts[2] for p in paths if len(p.parts) >= 3 and p.parts[0] == "results" and p.parts[1] in {"metrics", "pipeline_descriptions"})
+          # Derive model names only from well-structured paths:
+          # results/{metrics,pipeline_descriptions}/<model>/<file>.json
+          model_names = set(
+              p.parts[2]
+              for p in paths
+              if (
+                  len(p.parts) == 4
+                  and p.parts[0] == "results"
+                  and p.parts[1] in {"metrics", "pipeline_descriptions"}
+                  and p.suffix == ".json"
+              )
+          )
+
+          # Detect JSON files under results/{metrics,pipeline_descriptions} that do not
+          # match the expected layout and report them explicitly.
+          for p in paths:
+              if (
+                  len(p.parts) >= 2
+                  and p.parts[0] == "results"
+                  and p.parts[1] in {"metrics", "pipeline_descriptions"}
+                  and p.suffix == ".json"
+                  and not (len(p.parts) == 4)
+              ):
+                  errors.append(
+                      f"Unexpected JSON file location: {p}. Expected layout "
+                      "results/{metrics,pipeline_descriptions}/<model>/<file>.json."
+                  )
 
           required_metrics_file_names_for_submission = {
               "vidore_v3_computer_science.json",
