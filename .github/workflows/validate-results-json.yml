@@ -117,7 +117,7 @@ jobs:
           }
 
           def add_not_all_required_files_errors(folder_path, actual_files, required_files):
-              "for each sumbission model forlder (e.g, results/metrics/jinav4_text_zerank2textual), check that all required files are present"
+              "for each submission model folder (e.g., results/metrics/jinav4_text_zerank2textual), check that all required files are present"
               missing = sorted(required_files - set(actual_files))
               if missing:
                   errors.append(f"{folder_path}: missing files: {', '.join(missing)}")
