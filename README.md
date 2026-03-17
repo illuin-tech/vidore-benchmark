@@ -39,10 +39,10 @@ results = mteb.evaluate(my_model, tasks=tasks)
 
 3. Open a PR on the [mteb_results_repo](https://github.com/embeddings-benchmark/results/tree/main) with the generated results file to submit your results to the leaderboard
 
-4. Optional : In order to eval on private sets
-    once all this is done, you can ask the MTEB team for evaluating your model on private ViDoRe v3 sets by opening a dedicated issue on [their repo](https://github.com/embeddings-benchmark/mteb/issues)
+4. Optional: To evaluate on private sets, once all this is done you can ask the MTEB team to evaluate your model on private ViDoRe v3 sets by opening a dedicated issue on [their repo](https://github.com/embeddings-benchmark/mteb/issues)
 
 ## Evaluating a complex pipeline
+
 
 Pipeline evaluation allows you to evaluate **complete end-to-end retrieval systems** on the ViDoRe v3 benchmark datasets. Unlike traditional retriever evaluation that focuses on individual model components, pipeline evaluation lets you test:
 
