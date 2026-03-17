@@ -17,7 +17,7 @@ class MockPipeline(BasePipeline):
         self.results = results
         self.infos = infos
 
-    def index(self, corpus_ids: List[str], corpus_images: List[Any], corpus_texts: List[str], dataset_name = None):
+    def index(self, corpus_ids: List[str], corpus_images: List[Any], corpus_texts: List[str], dataset_name=None):
         """Mock index method."""
         pass
 

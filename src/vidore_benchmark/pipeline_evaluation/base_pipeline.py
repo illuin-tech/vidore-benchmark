@@ -14,11 +14,9 @@ class BasePipeline(ABC):
     with their custom pipeline logic.
     """
 
-    def index(self, 
-              corpus_ids: List[str],
-              corpus_images: List[Any],
-              corpus_texts: List[str],
-              dataset_name = None) -> None:
+    def index(
+        self, corpus_ids: List[str], corpus_images: List[Any], corpus_texts: List[str], dataset_name=None
+    ) -> None:
         """
         Optional method to perform indexing or preprocessing on the corpus.
 

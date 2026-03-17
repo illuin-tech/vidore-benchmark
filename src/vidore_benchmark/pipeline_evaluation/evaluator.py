@@ -54,10 +54,9 @@ def evaluate_retrieval(
     # Call the pipeline's method to get retrieval results
     # Indexing step
     start_time_indexing = time.time()
-    pipeline.index(corpus_ids=corpus_ids,
-                   corpus_images=corpus_images,
-                   corpus_texts=corpus_texts,
-                   dataset_name=dataset_name)
+    pipeline.index(
+        corpus_ids=corpus_ids, corpus_images=corpus_images, corpus_texts=corpus_texts, dataset_name=dataset_name
+    )
     indexing_time = time.time() - start_time_indexing
 
     # Avoid tracking indexing time if no other thing is done than storing the corpus
