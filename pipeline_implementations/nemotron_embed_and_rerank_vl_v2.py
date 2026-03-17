@@ -400,7 +400,7 @@ class NemotronEmbedRerankVLPipeline(BasePipeline):
                                         batch_size=ranker_batch_size,
                                         modality=self.modality)
         
-    def index(self, corpus_ids, corpus_images, corpus_texts):
+    def index(self, corpus_ids, corpus_images, corpus_texts, dataset_name = None):
         """
         Store corpus data for use in search().
 

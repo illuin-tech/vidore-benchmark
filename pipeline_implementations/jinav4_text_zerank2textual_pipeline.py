@@ -257,7 +257,7 @@ class JinaV4TextZeRank2TextualPipeline(BasePipeline):
 
         return results
 
-    def index(self, corpus_ids: List[str], corpus_images: List[str], corpus_texts: List[str]) -> None:
+    def index(self, corpus_ids: List[str], corpus_images: List[str], corpus_texts: List[str], dataset_name: str = None) -> None:
         """
         Indexing step for the pipeline. For this implementation, we don't need to do
         anything here since we compute embeddings on the fly in the search method.

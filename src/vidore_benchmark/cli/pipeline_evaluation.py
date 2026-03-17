@@ -217,6 +217,7 @@ def evaluate(
             corpus_images=corpus_images,
             corpus_texts=corpus_texts,
             qrels=qrels,
+            dataset_name=dataset_name,
             metrics=[
                 "ndcg_cut_1",
                 "ndcg_cut_5",
@@ -452,6 +453,7 @@ def evaluate_all(
                 corpus_images=corpus_images,
                 corpus_texts=corpus_texts,
                 qrels=qrels,
+                dataset_name=dataset_name,
                 metrics=[
                     "ndcg_cut_1",
                     "ndcg_cut_5",

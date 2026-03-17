@@ -126,7 +126,7 @@ class MyCustomPipeline(BasePipeline):
         self.model_name = model_name
         # Initialize your model here
 
-    def index(self, corpus_ids, corpus_images, corpus_texts):
+    def index(self, corpus_ids, corpus_images, corpus_texts, dataset_name: str = None):
         # Indexing function to process corpus, should store anything
         # relevant as class attributes
         self.corpus_ids = corpus_ids
