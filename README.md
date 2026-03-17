@@ -19,10 +19,10 @@
 
 ---
 
-## Evaluating retrievers on ViDoRe v1-v3
-We shifted from in-house evals to be in line with the general eval framework of retrieval models by moving to [MTEB](https://github.com/embeddings-benchmark/mteb/tree/main)
+## Evaluating single-model retrievers on ViDoRe v1–v3 with MTEB
+We shifted from in-house evaluations to the general MTEB evaluation framework for retrieval models by moving to [MTEB](https://github.com/embeddings-benchmark/mteb/tree/main).
 
-Here is a rough sketch of how submission for ViDoRe v1-v3 works, more details in the [MTEB official documentation](https://embeddings-benchmark.github.io/mteb/contributing/adding_a_model/)
+Below is a high-level overview of how single-model retriever submissions for ViDoRe v1–v3 work via MTEB; see the [MTEB official documentation](https://embeddings-benchmark.github.io/mteb/contributing/adding_a_model/) for full details. This section covers single-model retriever evaluation only; for end-to-end pipeline evaluation, see the section below.
 
 1. Create your model implementation file (if it does not exist already) [here](https://github.com/embeddings-benchmark/mteb/tree/main/mteb/models/model_implementations). And open a PR on the repo, examples for Colpali-like models can be found in [this file for example](https://github.com/embeddings-benchmark/mteb/blob/main/mteb/models/model_implementations/colpali_models.py).
 
