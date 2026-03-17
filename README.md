@@ -19,7 +19,30 @@
 
 ---
 
-## What is Pipeline Evaluation?
+## Evaluating single-model retrievers on ViDoRe v1–v3 with MTEB
+We shifted from in-house evaluations to the general MTEB evaluation framework for retrieval models by moving to [MTEB](https://github.com/embeddings-benchmark/mteb/tree/main).
+
+Here are the main steps to evaluate and submit your retriever to the ViDoRe V1-V3 leaderboards ; see the [MTEB official documentation](https://embeddings-benchmark.github.io/mteb/contributing/adding_a_model/) for full details. This section covers mteb leaderboards only; for our in-house pipeline leaderboard, see the section below.
+
+1. Create your model implementation file (if it does not exist already) [here](https://github.com/embeddings-benchmark/mteb/tree/main/mteb/models/model_implementations), then open a PR to the [MTEB repository](https://github.com/embeddings-benchmark/mteb) with your changes; examples for Colpali-like models can be found in [this file](https://github.com/embeddings-benchmark/mteb/blob/main/mteb/models/model_implementations/colpali_models.py).
+
+2. Evaluate your model:
+```python
+import mteb
+from mteb.models.model_implementations.my_custom_model import MyCustomModel
+
+my_model = MyCustomModel(my_args)
+tasks = mteb.get_tasks(["ViDoRe (v3)"])
+
+results = mteb.evaluate(my_model, tasks=tasks)
+```
+
+3. Open a PR on the [mteb_results_repo](https://github.com/embeddings-benchmark/results/tree/main) with the generated results file to submit your results to the leaderboard
+
+4. To evaluate on private sets, once all this is done you can ask the MTEB team to evaluate your model on private ViDoRe v3 sets by opening a dedicated issue on [their repo](https://github.com/embeddings-benchmark/mteb/issues)
+
+## Evaluating a complex pipeline
+
 
 Pipeline evaluation allows you to evaluate **complete end-to-end retrieval systems** on the ViDoRe v3 benchmark datasets. Unlike traditional retriever evaluation that focuses on individual model components, pipeline evaluation lets you test:
 
@@ -28,7 +51,7 @@ Pipeline evaluation allows you to evaluate **complete end-to-end retrieval syste
 - **Custom preprocessing pipelines** (e.g., OCR → chunking → embedding)
 - **Arbitrary retrieval logic** that goes beyond standard dense/sparse retrievers
 
-## 📊 Results Repository & Submission Guidelines
+### 📊 Results Repository & Submission Guidelines
 
 **This repository serves as the primary community results repository for visual document retrieval benchmarks using complex pipelines.** We encourage researchers and practitioners to submit their pipeline evaluation results to create a centralized location where the community can compare different approaches and track progress on ViDoRe v3 datasets.
 
