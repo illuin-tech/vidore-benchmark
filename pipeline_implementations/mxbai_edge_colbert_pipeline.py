@@ -159,7 +159,7 @@ class MxbaiEdgeColbertPipeline(BasePipeline):
 
         return torch.cat(scores, dim=0)
 
-    def index(self, corpus_ids: List[str], corpus_images: List[Any], corpus_texts: List[str]) -> None:
+    def index(self, corpus_ids: List[str], corpus_images: List[Any], corpus_texts: List[str], dataset_name: str = None) -> None:
         """
         Indexing is performed on-the-fly in the retrieve method for this pipeline.
         This method is not used but must be implemented to satisfy the BasePipeline interface.

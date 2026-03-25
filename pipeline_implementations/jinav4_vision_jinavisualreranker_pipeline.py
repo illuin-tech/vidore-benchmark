@@ -301,7 +301,7 @@ class JinaV4VisionJinaVisualRerankerPipeline(BasePipeline):
 
         return results
 
-    def index(self, corpus_ids, corpus_images, corpus_texts):
+    def index(self, corpus_ids, corpus_images, corpus_texts, dataset_name: str = None):
         """
         Store corpus data for use in search().
 

@@ -178,7 +178,7 @@ class Qwen3Embedding8BPipeline(BasePipeline):
 
         return scores
 
-    def index(self, corpus_ids: List[str], corpus_images: List[Any], corpus_texts: List[str]) -> None:
+    def index(self, corpus_ids: List[str], corpus_images: List[Any], corpus_texts: List[str], dataset_name = None) -> None:
         """
         Index the corpus by embedding all texts and storing them in memory.
         The embeddings are stored in self.corpus_embeddings and the corresponding IDs and texts are stored

@@ -297,7 +297,7 @@ class NemotronColEmbed8BPipeline(BasePipeline):
         self.batch_size = batch_size
         self.embedding_model = NemotronColEmbed8B(model_name=model_name, batch_size=batch_size)
 
-    def index(self, corpus_ids, corpus_images, corpus_texts):
+    def index(self, corpus_ids, corpus_images, corpus_texts, dataset_name = None):
         """
         Store corpus data for use in search().
 

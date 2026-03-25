@@ -19,6 +19,7 @@ def evaluate_retrieval(
     corpus_images: List[Any],
     corpus_texts: List[str],
     qrels: Dict[str, Dict[str, int]],
+    dataset_name: Optional[str] = None,
     metrics: List[str] = None,
     track_time: bool = True,
 ) -> Dict[str, Dict[str, float]]:
@@ -34,6 +35,7 @@ def evaluate_retrieval(
         corpus_texts: List of corpus texts (markdown strings)
         qrels: Ground truth relevance judgments in pytrec_eval format
                {query_id: {doc_id: relevance_score}}
+        dataset_name: Dataset name,
         metrics: List of metrics to calculate (default: ['ndcg_cut_10'])
         track_time: Whether to track retrieval time (default: True)
 
@@ -52,7 +54,9 @@ def evaluate_retrieval(
     # Call the pipeline's method to get retrieval results
     # Indexing step
     start_time_indexing = time.time()
-    pipeline.index(corpus_ids=corpus_ids, corpus_images=corpus_images, corpus_texts=corpus_texts)
+    pipeline.index(
+        corpus_ids=corpus_ids, corpus_images=corpus_images, corpus_texts=corpus_texts, dataset_name=dataset_name
+    )
     indexing_time = time.time() - start_time_indexing
 
     # Avoid tracking indexing time if no other thing is done than storing the corpus
