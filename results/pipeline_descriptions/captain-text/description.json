@@ -1,0 +1,54 @@
+{
+    "pipeline_name": "captain-text",
+    "pipeline_alias": "Captain file-search API (text)",
+    "description": "Captain (runcaptain.com) managed file-search API. Each corpus page's provided NV-Ingest markdown is indexed as one document ({corpus_id}.md with a '# {doc_id} - page {n}' header); Captain performs server-side chunking, LLM enrichment, and gemini-embedding-2 dense embedding. Retrieval per query: hybrid BM25 + dense with voyage-rerank-2.5 reranking (candidate pool 200, top 100 chunks), pages ranked by best chunk score (MaxP). One API call per query. Closed API: requires CAPTAIN_API_KEY env var (keys at captain.dev).",
+    "module_path": "pipeline_implementations/captain_text_pipeline.py",
+    "class_name": "CaptainTextPipeline",
+    "hardware_information": {
+        "GPU_type": "none client-side (managed cloud API)",
+        "num_gpus": 0,
+        "num_cpu_cores": "n/a (client is a thin HTTP driver, 10 concurrent requests)",
+        "RAM": "n/a",
+        "runner_note": "Submitted runs executed from a workstation over WAN to the API in AWS us-east-1; reported search latency includes ~60-80ms/query network overhead. Bulk corpus indexing was performed once ahead of the runs via Captain's S3 batch-ingestion of the same per-page markdown files; the timed index() in the submitted runs therefore verifies the pre-built collection rather than re-ingesting. Measured ingestion from the indexing jobs: finance_en 2,942 pages in 218s as a single job (74 ms/page); the remaining 16,310 pages were indexed by 7 concurrent jobs completing together in ~16.5 min wall (~60 ms/page effective fleet throughput)."
+    },
+    "methodology_notes": {
+        "runs": "Each dataset was evaluated 3 times with identical configuration; the submitted JSON is the median run by ndcg_cut_10 (retrieval is mildly nondeterministic, about +/-1pt aggregate).",
+        "tuning": "Configuration (MaxP aggregation, candidate pool 200, semantic-only retrieval for the cross-lingual finance_fr set) was selected on 1,416 self-generated dev queries over the public corpus; ViDoRe benchmark queries were never used for tuning.",
+        "fallback_integrity": "Every query response was asserted to carry rerank.fallback == null (no silent reranker degradation) from retained raw responses."
+    },
+    "nodes": [
+        {
+            "id": "ingestion_node",
+            "component_type": "Ingestion",
+            "model_name": "captain-indexing (chunking + LLM enrichment + gemini-embedding-2)",
+            "modalities": ["text"],
+            "description": "Indexes one document per corpus page (provided NV-Ingest markdown) into a per-dataset collection."
+        },
+        {
+            "id": "retriever_node",
+            "component_type": "Retriever",
+            "model_name": "captain hybrid (BM25 + gemini-embedding-2 dense)",
+            "modalities": ["text"],
+            "description": "Hybrid retrieval over the page-document collection; returns top chunk candidates."
+        },
+        {
+            "id": "reranker_node",
+            "component_type": "Reranker",
+            "model_name": "voyage-rerank-2.5",
+            "modalities": ["text"],
+            "description": "Reranks a 200-candidate pool; final chunk scores are aggregated to pages by MaxP."
+        }
+    ],
+    "edges": [
+        {
+            "source": "ingestion_node",
+            "target": "retriever_node",
+            "description": "Indexed page documents form the retrieval corpus."
+        },
+        {
+            "source": "retriever_node",
+            "target": "reranker_node",
+            "description": "Candidate chunks are reranked, then aggregated to page-level rankings."
+        }
+    ]
+}

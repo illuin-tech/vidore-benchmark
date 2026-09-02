@@ -1,0 +1,70 @@
+{
+  "dataset": "vidore/vidore_v3_computer_science",
+  "split": "test",
+  "language": "english",
+  "pipeline_type": null,
+  "module_path": "captain_official.py",
+  "class_name": "CaptainTextOfficial",
+  "pipeline_args": {},
+  "aggregated_metrics": {
+    "overall": {
+      "map": 0.7895771479970486,
+      "recip_rank": 0.9343466223698782,
+      "P_1": 0.8930232558139535,
+      "P_5": 0.5469767441860466,
+      "P_10": 0.35953488372093023,
+      "P_20": 0.2111627906976744,
+      "recall_1": 0.3411533815022187,
+      "recall_5": 0.7229698854117459,
+      "recall_10": 0.8468431697501465,
+      "recall_20": 0.9193194789706417,
+      "recall_50": 0.9434451723986608,
+      "recall_100": 0.9521790225278597,
+      "ndcg_cut_1": 0.8348837209302326,
+      "ndcg_cut_5": 0.8248622688551305,
+      "ndcg_cut_10": 0.8411160239742446,
+      "ndcg_cut_20": 0.8648934625660156,
+      "ndcg_cut_100": 0.8761385960959897,
+      "map_cut_1": 0.3411533815022187,
+      "map_cut_10": 0.7474295024271491,
+      "map_cut_100": 0.7895771479970486
+    },
+    "by_language": {
+      "english": {
+        "map": 0.7895771479970486,
+        "recip_rank": 0.9343466223698782,
+        "P_1": 0.8930232558139535,
+        "P_5": 0.5469767441860466,
+        "P_10": 0.35953488372093023,
+        "P_20": 0.2111627906976744,
+        "recall_1": 0.3411533815022187,
+        "recall_5": 0.7229698854117459,
+        "recall_10": 0.8468431697501465,
+        "recall_20": 0.9193194789706417,
+        "recall_50": 0.9434451723986608,
+        "recall_100": 0.9521790225278597,
+        "ndcg_cut_1": 0.8348837209302326,
+        "ndcg_cut_5": 0.8248622688551305,
+        "ndcg_cut_10": 0.8411160239742446,
+        "ndcg_cut_20": 0.8648934625660156,
+        "ndcg_cut_100": 0.8761385960959897,
+        "map_cut_1": 0.3411533815022187,
+        "map_cut_10": 0.7474295024271491,
+        "map_cut_100": 0.7895771479970486,
+        "num_queries": 215
+      }
+    },
+    "timing": {
+      "total_retrieval_time_milliseconds": 102711.82107925415,
+      "indexing_time_milliseconds": 0.0,
+      "search_time_milliseconds": 102711.82107925415,
+      "num_queries": 215,
+      "num_corpus": 1360,
+      "indexing_throughput_ms_per_doc": 0.0,
+      "search_throughput_ms_per_query": 477.72940036862394
+    },
+    "infos": {
+      "total_retrieval_time_seconds": 102.71
+    }
+  }
+}
