@@ -1,0 +1,94 @@
+{
+  "dataset": "vidore/vidore_v3_industrial",
+  "split": "test",
+  "language": "english",
+  "pipeline_type": null,
+  "module_path": "/kaggle/working/tomoro_lean_zerank2_pipeline.py",
+  "class_name": "TomoroLeanZeRank2Pipeline",
+  "pipeline_args": {},
+  "aggregated_metrics": {
+    "overall": {
+      "map": 0.5847119817153839,
+      "recip_rank": 0.7265847990247457,
+      "P_1": 0.6466431095406361,
+      "P_5": 0.3286219081272085,
+      "P_10": 0.22120141342756183,
+      "P_20": 0.14434628975265018,
+      "recall_1": 0.33459965287028265,
+      "recall_5": 0.5657948676689696,
+      "recall_10": 0.6477289322919355,
+      "recall_20": 0.7273099016340275,
+      "recall_50": 0.8200029656589805,
+      "recall_100": 0.8762779381691835,
+      "ndcg_cut_1": 0.6307420494699647,
+      "ndcg_cut_5": 0.6255308704793818,
+      "ndcg_cut_10": 0.6349456281468652,
+      "ndcg_cut_20": 0.6594078017097114,
+      "ndcg_cut_100": 0.7120153328250762,
+      "map_cut_1": 0.33459965287028265,
+      "map_cut_10": 0.5319257764905219,
+      "map_cut_100": 0.5847119817153839,
+      "num_queries": 283
+    },
+    "by_language": {
+      "english": {
+        "map": 0.5847119817153839,
+        "recip_rank": 0.7265847990247457,
+        "P_1": 0.6466431095406361,
+        "P_5": 0.3286219081272085,
+        "P_10": 0.22120141342756183,
+        "P_20": 0.14434628975265018,
+        "recall_1": 0.33459965287028265,
+        "recall_5": 0.5657948676689696,
+        "recall_10": 0.6477289322919355,
+        "recall_20": 0.7273099016340275,
+        "recall_50": 0.8200029656589805,
+        "recall_100": 0.8762779381691835,
+        "ndcg_cut_1": 0.6307420494699647,
+        "ndcg_cut_5": 0.6255308704793818,
+        "ndcg_cut_10": 0.6349456281468652,
+        "ndcg_cut_20": 0.6594078017097114,
+        "ndcg_cut_100": 0.7120153328250762,
+        "map_cut_1": 0.33459965287028265,
+        "map_cut_10": 0.5319257764905219,
+        "map_cut_100": 0.5847119817153839,
+        "num_queries": 283
+      }
+    },
+    "timing": {
+      "total_retrieval_time_milliseconds": 8365659.979104996,
+      "indexing_time_milliseconds": 4968551.41210556,
+      "search_time_milliseconds": 3397108.5669994354,
+      "num_queries": 283,
+      "num_corpus": 5244,
+      "indexing_throughput_ms_per_doc": 947.4735721025096,
+      "search_throughput_ms_per_query": 12003.917197877863
+    },
+    "infos": {
+      "retriever_model": "TomoroAI/tomoro-colqwen3-embed-4b@13517a29e8",
+      "reranker_model": "zeroentropy/zerank-2-reranker@5eae30d5ee",
+      "num_gpus": 2,
+      "gpu_type": "Tesla T4",
+      "corpus_language": "english",
+      "bm25_used": true,
+      "num_documents": 27,
+      "config": {
+        "bm25_weight": 0.1,
+        "doc_weight": 2.0,
+        "rerank_top_k": 50,
+        "rerank_weight": 4.0,
+        "rerank_max_chars": 8000
+      },
+      "timing_breakdown_s": {
+        "page_embedding_s": 4965.187,
+        "bm25_and_doc_groups_s": 3.035,
+        "query_embedding_and_maxsim_s": 10.85,
+        "bm25_fusion_and_doc_aggregation_s": 4.912,
+        "reranker_loading_s": 37.065,
+        "rerank_s": 3343.91,
+        "rerank_mean_s_per_query": 11.815,
+        "search_total_s": 3396.738
+      }
+    }
+  }
+}
