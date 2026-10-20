@@ -1,0 +1,68 @@
+{
+    "pipeline_name": "tomoro-colqwen3-4b_bm25_maxp_zerank2",
+    "pipeline_alias": "Tomoro ColQwen3-4B + BM25 + doc MaxP + zerank-2",
+    "description": "Open-weight pipeline without generative models. TomoroAI/tomoro-colqwen3-embed-4b scores page images with late-interaction MaxSim. When the corpus language (detected from the page markdown) is the query language, a BM25 score on the page markdown is added (z(MaxSim) + 0.1 z(BM25)). Pages are then boosted by their document's best page score (z(page) + 2 z(max page score of the same document)). The document comes from the corpus doc_id column, used only as a grouping key: its text is never given to a model. The top 50 pages are reranked by zeroentropy/zerank-2 on the page markdown (first 8,000 characters), fused as z(first stage) + 4 z(zerank-2 logit). The weights (0.1, 2, 4) were fixed before this evaluation and are the same for every dataset.",
+    "class_name": "TomoroLeanZeRank2Pipeline",
+    "module_path": "https://github.com/shirin2105/vidore-v3-tomoro-zerank2/blob/main/tomoro_lean_zerank2_pipeline.py",
+    "info_url": "https://github.com/shirin2105/vidore-v3-tomoro-zerank2/blob/main/README.md",
+    "hardware_information": {
+        "GPU_type": "NVIDIA Tesla T4 16GB (Kaggle)",
+        "num_gpus": 2,
+        "num_cpu_cores": 4,
+        "RAM": "29 GB",
+        "notes": "Queries run one at a time. Indexing embeds pages on both GPUs. In search, queries are embedded on GPU 0, then the retriever is unloaded and one zerank-2 copy is loaded per GPU (both models do not fit on one 16 GB T4; the reranker loading time is included in the search time). The 50 candidates of each query are split across the 2 GPUs. Models in fp16 with SDPA attention (no flash-attention on T4)."
+    },
+    "nodes": [
+        {
+            "id": "visual_retriever",
+            "component_type": "Retriever",
+            "model_name": "TomoroAI/tomoro-colqwen3-embed-4b",
+            "modalities": [
+                "visual"
+            ],
+            "description": "Late-interaction (MaxSim) retrieval over multi-vector page image embeddings built in index() (max 1280 visual tokens per page)."
+        },
+        {
+            "id": "bm25",
+            "component_type": "Retriever",
+            "model_name": null,
+            "modalities": [
+                "text"
+            ],
+            "description": "BM25 (rank-bm25, Okapi) on page markdown. Used only when the detected corpus language equals the query language."
+        },
+        {
+            "id": "fusion_doc_aggregation",
+            "component_type": "Fusion",
+            "model_name": null,
+            "modalities": [],
+            "description": "z(MaxSim) + 0.1 z(BM25), then page score + 2 x (z-scored best page score of the same document, grouped by doc_id). No model call."
+        },
+        {
+            "id": "text_reranker",
+            "component_type": "Reranker",
+            "model_name": "zeroentropy/zerank-2-reranker",
+            "modalities": [
+                "text"
+            ],
+            "description": "Cross-encoder on (query, page markdown truncated to 8,000 characters) for the top 50 pages; raw logits fused as z(first stage) + 4 z(logit). Pages 51-100 keep the first-stage order."
+        }
+    ],
+    "edges": [
+        {
+            "source": "visual_retriever",
+            "target": "fusion_doc_aggregation",
+            "description": "MaxSim score of every page."
+        },
+        {
+            "source": "bm25",
+            "target": "fusion_doc_aggregation",
+            "description": "BM25 score of every page (same-language corpora only)."
+        },
+        {
+            "source": "fusion_doc_aggregation",
+            "target": "text_reranker",
+            "description": "Top 50 pages with their first-stage scores."
+        }
+    ]
+}
