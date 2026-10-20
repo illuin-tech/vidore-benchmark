@@ -1,0 +1,79 @@
+{
+    "pipeline_name": "visagentret_evie-4.5b_glm-5.3-flash",
+    "pipeline_alias": "VisAgentRet (EVIE-4.5B + GLM-5.3-Flash)",
+    "description": "GLM-5.3-Flash runs as an agent in the Codex CLI. It rewrites the query, searches EVIE-4.5B several times and looks at candidate page images. Then it returns its top 10 pages. EVIE-4.5B scores page images with late-interaction MaxSim. The agent may view at most 20 pages per query. Empty slots in its answer are filled by reciprocal rank fusion over its own search results. Search results also show the document name (doc_id) of each page, which is often a descriptive title. No OCR text is used.",
+    "class_name": "VisAgentRetPipeline",
+    "module_path": "https://github.com/Ryenhails/visagentret/blob/846ed2a92a24bb005d02a0eb7486265498649828/src/visagentret_pipeline.py",
+    "info_url": "https://github.com/Ryenhails/visagentret/blob/main/README.md",
+    "hardware_information": {
+        "GPU_type": "NVIDIA B300 288GB",
+        "num_gpus": 1,
+        "num_cpu_cores": 16,
+        "RAM": "256 GB",
+        "notes": "GLM-5.3-Flash (NVFP4 checkpoint nvidia/GLM-5.3-Flash-NVFP4, revision da920bb) runs in vLLM 0.30.0. EVIE-4.5B (revision b732dca) shares the same GPU. 16 queries run concurrently. The search time per query is the search wall time divided by the number of queries. One episode takes about 335 s at the median under this load. An episode stops after 900 s. With 1 query at a time (the first 30 queries of hr), search takes 49.3 s per query."
+    },
+    "nodes": [
+        {
+            "id": "llm_agent",
+            "component_type": "Agent",
+            "model_name": "nvidia/GLM-5.3-Flash-NVFP4",
+            "modalities": [
+                "text",
+                "visual"
+            ],
+            "description": "Agent in the Codex CLI. It rewrites the query, calls the search and get_page tools, and returns at most 10 page ids. It does not use the shell."
+        },
+        {
+            "id": "search_tool",
+            "component_type": "Retriever",
+            "model_name": "tencent/EVIE-4.5B",
+            "modalities": [
+                "visual"
+            ],
+            "description": "Late-interaction page retriever over EVIE-4.5B multi-vector page embeddings built in index(). Returns page ids, scores and document names for the agent's query."
+        },
+        {
+            "id": "get_page_tool",
+            "component_type": "Tool",
+            "model_name": null,
+            "modalities": [
+                "visual"
+            ],
+            "description": "Returns the page image (JPEG, longest side 1600 px). At most 20 views per query."
+        },
+        {
+            "id": "rrf_fill",
+            "component_type": "Fusion",
+            "model_name": null,
+            "modalities": [],
+            "description": "Fills the agent's ranking up to 10 pages with reciprocal rank fusion (k=60) over all search results of the episode. It makes no model call."
+        }
+    ],
+    "edges": [
+        {
+            "source": "llm_agent",
+            "target": "search_tool",
+            "description": "The agent sends the original or a rewritten query."
+        },
+        {
+            "source": "search_tool",
+            "target": "llm_agent",
+            "description": "The top k page ids with scores and document names."
+        },
+        {
+            "source": "llm_agent",
+            "target": "get_page_tool",
+            "description": "The agent asks to see a candidate page."
+        },
+        {
+            "source": "get_page_tool",
+            "target": "llm_agent",
+            "description": "The page image."
+        },
+        {
+            "source": "llm_agent",
+            "target": "rrf_fill",
+            "description": "The agent's ranking (up to 10 pages) and the search results of the episode."
+        }
+    ]
+}
