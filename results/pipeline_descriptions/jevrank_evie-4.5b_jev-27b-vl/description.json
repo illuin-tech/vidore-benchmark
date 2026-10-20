@@ -1,0 +1,42 @@
+{
+    "pipeline_name": "jevrank_evie-4.5b_jev-27b-vl",
+    "pipeline_alias": "EVIE-4.5B + JEV-27B-VL (one-pass rerank)",
+    "description": "EVIE-4.5B retrieves the top 100 pages with late-interaction MaxSim over page images. JEV-27B-VL then reranks the top 16 pages. It sees the 16 page images at 896 px and answers one multiple-choice question: which page best helps answer the query. Each page is labelled with its document name (doc_id), which is often a descriptive title. It returns a probability for every page in one forward pass. The 16 pages are sorted by this probability, and ranks 17 to 100 keep the EVIE order. No text is generated and no OCR text is used.",
+    "class_name": "JevRerankPipeline",
+    "module_path": "https://github.com/Ryenhails/Jev-reranker/blob/c112b72e51546409b4b23e37c2e84b51cb420bfa/src/jevrank_pipeline.py",
+    "info_url": "https://github.com/Ryenhails/Jev-reranker/blob/main/README.md",
+    "hardware_information": {
+        "GPU_type": "NVIDIA H200 141GB",
+        "num_gpus": 1,
+        "num_cpu_cores": 16,
+        "RAM": "192 GB",
+        "notes": "JEV-27B-VL (revision fee8c1d) runs in vLLM 0.30.0 with the model repo's serve_decide.py and --max-num-seqs 8. EVIE-4.5B (revision b732dca) shares the same GPU. 8 queries run concurrently. The search time per query is the search wall time divided by the number of queries. One query takes about 8 s end to end under this load. With 1 query at a time (the first 40 queries of hr), search takes 1.47 s per query."
+    },
+    "nodes": [
+        {
+            "id": "retriever_node",
+            "component_type": "Retriever",
+            "model_name": "tencent/EVIE-4.5B",
+            "modalities": [
+                "visual"
+            ],
+            "description": "Late-interaction page retriever over EVIE-4.5B multi-vector page embeddings built in index(). Returns the top 100 page ids."
+        },
+        {
+            "id": "reranker_node",
+            "component_type": "Reranker",
+            "model_name": "autotrust/JEV-27B-VL",
+            "modalities": [
+                "visual"
+            ],
+            "description": "One multiple-choice decision over the top 16 page images. Returns a probability per page from one forward pass without text generation."
+        }
+    ],
+    "edges": [
+        {
+            "source": "retriever_node",
+            "target": "reranker_node",
+            "description": "Top 16 page ids and their images. The reranked 16 pages are followed by ranks 17 to 100 from the retriever."
+        }
+    ]
+}
